@@ -24,7 +24,12 @@
 * Cộng điểm thưởng Fair-Play khi hoàn tất trận đấu đúng hẹn (+2 PTS).
 * Tự động cảnh báo và **khóa tính năng tìm trận** nếu điểm uy tín dưới 50 PTS do bùng kèo hoặc hủy trận cận giờ.
 
-### 3. 🏟️ Phân Hệ Dành Cho Chủ Sân (Court Owner)
+### 3. 👥 Cộng Đồng Câu Lạc Bộ & Nhóm Cố Định (Badminton Clubs)
+* **Thành lập & Quản lý CLB**: Tự tạo CLB cho nhóm bạn, thiết lập lịch đánh định kỳ (ví dụ: Tối 2-4-6 hoặc cuối tuần), chọn sân nhà và yêu cầu trình độ Elo.
+* **Bảng tin nội bộ & Tuyển Vãng Lai**: Khi nhóm thiếu chân, Trưởng nhóm / thành viên đăng tin *"Tuyển X Slot Vãng Lai"* kèm phí chia tiền sân, người chơi tự do có thể vào xin slot giao lưu tức thì.
+* **Danh sách thành viên**: Theo dõi danh sách lông thủ, cấp quyền Trưởng nhóm / Thành viên.
+
+### 4. 🏟️ Phân Hệ Dành Cho Chủ Sân (Court Owner)
 * **Quản lý cụm sân**: Thêm/Sửa/Xóa sân, định vị GPS, tải ảnh sân, cấu hình số lượng sân con và giá theo giờ.
 * **Lịch đặt sân & Đặt tại quầy (Walk-in Booking)**: Tạo đơn trực tiếp tại quầy lễ tân cho khách vãng lai hoặc khách cố định tháng.
 * **Phân quyền nhân viên**: Tạo tài khoản thu ngân/lễ tân và gán vào cụm sân phụ trách cụ thể.

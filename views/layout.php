@@ -181,6 +181,12 @@ if (isset($_SESSION['user_id'])) {
                 <span class="rounded bg-[#d8ff3e]/20 text-[#d8ff3e] px-1.5 py-0.5 text-[8px] font-black uppercase">HOT</span>
             </a>
 
+            <!-- Câu Lạc Bộ & Hội Nhóm -->
+            <a href="index.php?action=clubs" class="group flex items-center gap-3 rounded-xl px-3 py-3 text-[13px] font-bold transition <?php echo (strpos($current_action, 'club') !== false) ? 'bg-[#d8ff3e] text-[#0d1715] shadow-[0_0_22px_rgba(216,255,62,.15)]' : 'text-[#84939b] hover:bg-[#0b1116]/5 hover:text-white'; ?>">
+                <svg class="w-[18px] h-[18px] flex-shrink-0 text-cyan-400 group-hover:text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <span class="flex-1">Câu Lạc Bộ</span>
+                <span class="rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-1.5 py-0.5 text-[8px] font-black uppercase">CLB</span>
+            </a>
 
             <?php endif; ?>
 

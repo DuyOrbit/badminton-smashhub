@@ -89,6 +89,46 @@ switch ($action) {
         $controller = new HomeController();
         $controller->apiPitchesMap();
         break;
+
+    // Community Clubs Routes
+    case 'clubs':
+        $controller = new ClubController();
+        $controller->index();
+        break;
+    case 'club_create':
+        requireAuth();
+        $controller = new ClubController();
+        $controller->create();
+        break;
+    case 'club_store':
+        requireAuth();
+        $controller = new ClubController();
+        $controller->store();
+        break;
+    case 'club_detail':
+        $controller = new ClubController();
+        $controller->detail();
+        break;
+    case 'club_join':
+        requireAuth();
+        $controller = new ClubController();
+        $controller->join();
+        break;
+    case 'club_leave':
+        requireAuth();
+        $controller = new ClubController();
+        $controller->leave();
+        break;
+    case 'club_post':
+        requireAuth();
+        $controller = new ClubController();
+        $controller->storePost();
+        break;
+    case 'club_toggle_recruitment':
+        requireAuth();
+        $controller = new ClubController();
+        $controller->toggleRecruitment();
+        break;
         
     // User Profile Routes
     case 'user_profile':

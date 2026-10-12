@@ -408,3 +408,58 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+
+-- --------------------------------------------------------
+-- Cấu trúc bảng cho 'clubs' (Cộng Đồng Câu Lạc Bộ Cầu Lông)
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `clubs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(150) NOT NULL,
+  `description` text DEFAULT NULL,
+  `leader_id` int(11) NOT NULL,
+  `pitch_id` int(11) DEFAULT NULL,
+  `schedule_info` varchar(255) DEFAULT NULL,
+  `district` varchar(100) DEFAULT NULL,
+  `level_requirement` varchar(100) DEFAULT 'Mọi trình độ (Giao lưu học hỏi)',
+  `avatar_url` varchar(255) DEFAULT NULL,
+  `banner_url` varchar(255) DEFAULT NULL,
+  `member_count` int(11) DEFAULT 1,
+  `is_recruiting` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Cấu trúc bảng cho 'club_members' (Thành viên CLB)
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `club_members` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `club_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `role` enum('leader','admin','member') DEFAULT 'member',
+  `status` enum('approved','pending','rejected') DEFAULT 'approved',
+  `joined_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_club_user` (`club_id`,`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Cấu trúc bảng cho 'club_posts' (Bảng tin & Tuyển vãng lai CLB)
+-- --------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `club_posts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `club_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `post_type` enum('general','recruitment','announcement') DEFAULT 'general',
+  `title` varchar(255) DEFAULT NULL,
+  `content` text NOT NULL,
+  `slot_needed` int(11) DEFAULT 0,
+  `fee_per_slot` int(11) DEFAULT 0,
+  `likes_count` int(11) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
