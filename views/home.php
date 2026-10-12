@@ -305,26 +305,49 @@ $accents = [
                         if ($i % 3 == 1) $rating = '4.8';
                         if ($i % 3 == 2) $rating = '4.7';
                     ?>
-                        <article class="group relative overflow-hidden rounded-2xl border border-white/8 bg-[#121b21] transition hover:-translate-y-1.5 hover:border-[#d8ff3e]/40 flex flex-col">
-                            <!-- Card Header Image & Overlay -->
-                            <div class="relative h-36 bg-gradient-to-br <?php echo $accent; ?> overflow-hidden">
-                                <?php if(!empty($court['image_url'])): ?>
-                                    <img src="<?php echo htmlspecialchars($court['image_url']); ?>" alt="<?php echo htmlspecialchars($court['name']); ?>" class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 transition-transform duration-500 group-hover:scale-110">
-                                <?php endif; ?>
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#121b21] via-transparent to-transparent"></div>
-                                <div class="relative p-3.5 flex justify-between items-start">
-                                    <span class="rounded bg-black/50 backdrop-blur-md px-2 py-1 text-[9px] font-black uppercase text-white border border-white/10">
+                        <article class="group relative overflow-hidden rounded-2xl border border-white/8 bg-[#121b21] transition hover:-translate-y-1.5 hover:border-[#d8ff3e]/40 flex flex-col shadow-lg">
+                            <!-- Card Header Image (Sáng, Rõ Nét, Chuẩn Thực Tế) -->
+                            <?php 
+                                $court_img = !empty($court['image_url']) ? $court['image_url'] : 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80';
+                            ?>
+                            <div class="relative h-44 bg-[#0b1116] overflow-hidden">
+                                <img src="<?php echo htmlspecialchars($court_img); ?>" 
+                                     alt="<?php echo htmlspecialchars($court['name']); ?>" 
+                                     class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 brightness-[0.95] group-hover:brightness-105">
+                                
+                                <!-- Gradient nhẹ chân ảnh để text và badge nổi bật -->
+                                <div class="absolute inset-0 bg-gradient-to-t from-[#121b21] via-black/15 to-black/25 pointer-events-none"></div>
+                                
+                                <!-- Top Badges -->
+                                <div class="relative p-3.5 flex justify-between items-start z-10">
+                                    <span class="rounded-lg bg-black/75 backdrop-blur-md px-2.5 py-1 text-[9px] font-black uppercase text-white border border-white/10 shadow-sm">
                                         <?php echo htmlspecialchars($court['type']); ?>
                                     </span>
-                                    <span class="rounded bg-[#d8ff3e] text-[#0b1116] px-2 py-0.5 text-[9px] font-black uppercase shadow-sm">
-                                        <?php echo ($court['quantity'] ?? 6); ?> sân
+                                    <span class="rounded-lg bg-[#d8ff3e] text-[#0b1116] px-2.5 py-1 text-[9px] font-black uppercase shadow-sm">
+                                        <?php echo ($court['quantity'] ?? 6); ?> sân con
                                     </span>
                                 </div>
-                                <div class="absolute bottom-2.5 left-3.5 flex items-center gap-2">
-                                    <span class="rounded bg-black/60 backdrop-blur-md px-2 py-0.5 text-[10px] font-black text-white flex items-center border border-white/10">
+
+                                <!-- Bottom Image Row: Rating & Nút Xem Ảnh Thực Tế -->
+                                <div class="absolute bottom-2.5 left-3.5 right-3.5 flex items-center justify-between z-10">
+                                    <span class="rounded-lg bg-black/75 backdrop-blur-md px-2 py-0.5 text-[10px] font-black text-white flex items-center border border-white/15 shadow-sm">
                                         <svg class="w-3 h-3 text-[#ffd45b] fill-current mr-1" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
                                         <?php echo $rating; ?>
                                     </span>
+
+                                    <!-- Nút Mở Album Ảnh Thực Tế -->
+                                    <button type="button" onclick="openCourtGallery(<?php echo htmlspecialchars(json_encode([
+                                        'id' => $court['id'],
+                                        'name' => $court['name'],
+                                        'location' => $court['location'],
+                                        'type' => $court['type'],
+                                        'price' => number_format($court['price_per_hour'], 0, ',', '.') . 'đ/h',
+                                        'image_url' => $court_img,
+                                        'description' => !empty($court['description']) ? $court['description'] : 'Cụm sân cầu lông đạt chuẩn thi đấu BWF, trang bị thảm PVC chuyên dụng chống trượt và hệ thống đèn LED chống lóa.',
+                                    ])); ?>)" class="rounded-lg bg-black/80 hover:bg-[#d8ff3e] hover:text-[#0b1116] text-white/95 backdrop-blur-md px-2.5 py-1 text-[10px] font-black uppercase tracking-wider border border-white/20 transition flex items-center gap-1 shadow-md hover:scale-105 active:scale-95 cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                        <span>Ảnh thực tế</span>
+                                    </button>
                                 </div>
                             </div>
 
@@ -487,3 +510,142 @@ $accents = [
         </div>
     </div>
 </div>
+
+<!-- POPUP ALBUM ẢNH THỰC TẾ (COURT PHOTO GALLERY MODAL) -->
+<div id="courtGalleryModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-4 transition-all">
+    <div class="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white/15 bg-[#121b21] shadow-2xl animate-fade-in flex flex-col max-h-[92vh]">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between border-b border-white/10 p-5 bg-[#0b1116]">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span id="modalPitchType" class="rounded bg-[#d8ff3e]/20 border border-[#d8ff3e]/30 text-[#d8ff3e] px-2 py-0.5 text-[10px] font-black uppercase">
+                        THẢM BWF
+                    </span>
+                    <h3 id="modalPitchName" class="text-lg font-black text-white">Tên Sân Cầu Lông</h3>
+                </div>
+                <p id="modalPitchLocation" class="text-xs text-white/60 mt-1 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                    <span>Địa chỉ</span>
+                </p>
+            </div>
+            <button type="button" onclick="closeCourtGallery()" class="rounded-full bg-white/10 hover:bg-white/20 p-2 text-white/70 hover:text-white transition cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <!-- Modal Body (Photo Showcase) -->
+        <div class="overflow-y-auto p-5 space-y-4">
+            <!-- Big Hero Image View -->
+            <div class="relative h-64 sm:h-80 w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
+                <img id="modalMainImg" src="" alt="Sân thực tế" class="w-full h-full object-cover transition-all duration-300">
+                <div id="modalImgTag" class="absolute bottom-3 left-3 rounded-lg bg-black/75 backdrop-blur-md px-3 py-1 text-xs font-black text-[#d8ff3e] border border-white/10 shadow">
+                    🏟️ Toàn cảnh hàng sân thi đấu & độ cao trần
+                </div>
+            </div>
+
+            <!-- 4 Thumbnail Angle Selector -->
+            <div>
+                <p class="text-[11px] font-black uppercase tracking-wider text-white/50 mb-2">Chọn góc xem thực tế:</p>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <button type="button" onclick="selectGalleryAngle(0)" class="gallery-thumb group border-2 border-[#d8ff3e] rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
+                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">1. Toàn Cảnh Sân</span>
+                        <span class="text-[9px] text-white/40">Trần cao, không gian</span>
+                    </button>
+                    <button type="button" onclick="selectGalleryAngle(1)" class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
+                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">2. Mặt Thảm BWF</span>
+                        <span class="text-[9px] text-white/40">Chống trơn trượt</span>
+                    </button>
+                    <button type="button" onclick="selectGalleryAngle(2)" class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
+                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">3. Dàn Đèn LED</span>
+                        <span class="text-[9px] text-white/40">Chống chói, dịu mắt</span>
+                    </button>
+                    <button type="button" onclick="selectGalleryAngle(3)" class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
+                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">4. Quầy Nước & Bãi Xe</span>
+                        <span class="text-[9px] text-white/40">Tiện ích đi kèm</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="p-3.5 rounded-xl bg-[#0b1116] border border-white/5 text-xs text-white/70 leading-relaxed">
+                <span class="font-bold text-white">Mô tả thực tế:</span> <span id="modalPitchDesc"></span>
+            </div>
+        </div>
+
+        <!-- Modal Footer CTA -->
+        <div class="flex items-center justify-between border-t border-white/10 p-4 bg-[#0b1116]">
+            <div>
+                <span class="text-[10px] text-white/50 uppercase font-bold block">Giá thuê chính thức</span>
+                <span id="modalPitchPrice" class="text-base font-black text-[#d8ff3e]"></span>
+            </div>
+            <a id="modalBookLink" href="#" class="inline-flex items-center gap-2 rounded-xl bg-[#d8ff3e] hover:bg-[#c2ea2d] text-slate-950 font-black px-6 py-3 text-xs uppercase tracking-wider shadow-lg transition transform hover:-translate-y-0.5">
+                <span>⚡ Đặt Sân Này Ngay</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentGalleryAngles = [];
+
+function openCourtGallery(court) {
+    document.getElementById('modalPitchName').innerText = court.name || '';
+    document.getElementById('modalPitchLocation').querySelector('span').innerText = court.location || '';
+    document.getElementById('modalPitchType').innerText = court.type || 'SÂN CHUẨN';
+    document.getElementById('modalPitchPrice').innerText = court.price || '';
+    document.getElementById('modalPitchDesc').innerText = court.description || 'Sân đạt chuẩn chất lượng thi đấu BWF.';
+    document.getElementById('modalBookLink').href = 'index.php?action=book&id=' + court.id;
+
+    // Angle 1: Primary court image
+    const img1 = court.image_url || 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=1000&q=85';
+    // Angle 2: Close-up floor / tournament net
+    const img2 = 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=1000&q=85';
+    // Angle 3: Badminton court hall with lighting
+    const img3 = 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=1000&q=85';
+    // Angle 4: Facility lobby / refreshment lounge
+    const img4 = 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1000&q=85';
+
+    currentGalleryAngles = [
+        { url: img1, label: '🏟️ Toàn cảnh hàng sân thi đấu & độ cao trần' },
+        { url: img2, label: '🏸 Cận cảnh thảm PVC Yonex / BWF chống trơn trượt' },
+        { url: img3, label: '💡 Hệ thống đèn LED quang thông cao chống chói mắt' },
+        { url: img4, label: '🥤 Quầy nước giải khát, ghế chờ & bãi giữ xe rộng rãi' }
+    ];
+
+    selectGalleryAngle(0);
+
+    const modal = document.getElementById('courtGalleryModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function selectGalleryAngle(index) {
+    if (!currentGalleryAngles[index]) return;
+    document.getElementById('modalMainImg').src = currentGalleryAngles[index].url;
+    document.getElementById('modalImgTag').innerText = currentGalleryAngles[index].label;
+
+    const thumbs = document.querySelectorAll('.gallery-thumb');
+    thumbs.forEach((t, i) => {
+        if (i === index) {
+            t.classList.add('border-2', 'border-[#d8ff3e]');
+            t.classList.remove('border-white/10');
+        } else {
+            t.classList.remove('border-2', 'border-[#d8ff3e]');
+            t.classList.add('border-white/10');
+        }
+    });
+}
+
+function closeCourtGallery() {
+    const modal = document.getElementById('courtGalleryModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+document.getElementById('courtGalleryModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeCourtGallery();
+    }
+});
+</script>
+

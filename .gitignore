@@ -17,3 +17,10 @@ ehthumbs.db
 .vscode/
 *.sublime-project
 *.sublime-workspace
+
+# Node & Automated Testing
+node_modules/
+package.json
+package-lock.json
+/tests/screenshots/
+/tests/screenshots_deep/
