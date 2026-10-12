@@ -1,0 +1,112 @@
+﻿<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+ </w:WordDocument>
+</xml><![endif]-->
+<title>Usecase Tổng Quát Trọng Tâm - BadmintonConnect</title>
+<style>
+    body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.5; color: #000; }
+    h1 { text-align: center; font-size: 18pt; font-weight: bold; margin-bottom: 25px; text-transform: uppercase; color: #17365d; }
+    h2 { font-size: 15pt; font-weight: bold; margin-top: 25px; color: #17365d; border-bottom: 2px solid #17365d; padding-bottom: 4px; text-transform: uppercase; }
+    h3 { font-size: 13pt; font-weight: bold; margin-left: 10px; color: #365f91; margin-top: 18px; }
+    ul { margin-bottom: 15px; }
+    li { margin-bottom: 6px; text-align: justify; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 20px; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+    th { background-color: #d9e2f3; font-weight: bold; text-align: center; color: #000; }
+</style>
+</head>
+<body>
+
+<h1>TÀI LIỆU USE CASE TỔNG QUÁT BẬC CAO<br>DỰ ÁN: HỆ THỐNG QUẢN LÝ ĐẶT SÂN CẦU LÔNG VÀ GHÉP KÈO GIAO LƯU (BADMINTONCONNECT)</h1>
+
+<h2>1. PHẠM VI HỆ THỐNG</h2>
+<p>Hệ thống <b>BadmintonConnect</b> là nền tảng ứng dụng Web chuyên biệt cho phong trào thể thao cầu lông, tích hợp toàn diện 4 trụ cột nghiệp vụ cốt lõi:</p>
+<ul>
+    <li><b>Đặt sân trực tuyến (Badminton Pitch Booking):</b> Cho phép người dùng tìm kiếm sân, chọn khung giờ linh hoạt, tích hợp các dịch vụ tiện ích bổ sung (nước giải khát, ống cầu lông thi đấu, đan cước lấy liền).</li>
+    <li><b>Mạng lưới ghép kèo & giao lưu thi đấu (Matchmaking Network):</b> Kết nối các câu lạc bộ và người chơi tương đồng trình độ (Level 1 - 5) theo nhiều thể thức (Đánh Đơn, Đánh Đôi, Giao lưu nhóm).</li>
+    <li><b>Quy trình thanh toán chia đôi (Split Bill 50/50):</b> Tự động chia đều chi phí thuê sân cho hai bên thi đấu và hỗ trợ chủ sân duyệt thu tiền mặt minh bạch cho từng đội.</li>
+    <li><b>Bàn trực quầy & Điểm danh Check-in (Front Desk Check-in):</b> Cung cấp giao diện chuyên dụng cho nhân viên trực sân (Staff) xác thực mã nhận sân khi khách đến cơ sở.</li>
+</ul>
+
+<h2>2. DANH SÁCH TÁC NHÂN (ACTORS)</h2>
+<table>
+    <tr>
+        <th style='width: 25%;'>Tác Nhân (Actor)</th>
+        <th>Mô Tả Vai Trò & Quyền Hạn Trong Hệ Thống</th>
+    </tr>
+    <tr>
+        <td><b>Khách Hàng<br>(Customer / User)</b></td>
+        <td>Vận động viên hoặc đại diện đội nhóm. Tra cứu sân, đặt lịch kèm dịch vụ tiện ích, đăng tin ghép kèo, tham gia kèo của người khác, trao đổi qua chat nội bộ, đánh giá sân và tích lũy điểm xếp hạng Elo.</td>
+    </tr>
+    <tr>
+        <td><b>Chủ Sân<br>(Pitch Owner)</b></td>
+        <td>Chủ cơ sở hoặc người quản lý cụm sân cầu lông. Quản lý danh mục sân, thiết lập bảng giá theo giờ, quản lý danh mục dịch vụ tiện ích, theo dõi lịch sân, duyệt khóa giờ trận ghép kèo, duyệt thu tiền mặt từng đội và ghi nhận kết quả thi đấu.</td>
+    </tr>
+    <tr>
+        <td><b>Nhân Viên Quầy<br>(Staff)</b></td>
+        <td>Nhân sự trực tại cơ sở sân bãi. Sử dụng Dashboard bàn trực để theo dõi khách đến trong ngày, tra cứu thông tin đặt chỗ và xác thực mã Check-in khi khách nhận sân.</td>
+    </tr>
+    <tr>
+        <td><b>Quản Trị Viên<br>(Admin)</b></td>
+        <td>Quản trị viên cấp cao của hệ thống. Kiểm duyệt danh sách sân bãi, quản lý hồ sơ người dùng, phân bổ vai trò (Customer, Staff, Owner, Admin), xử lý tài khoản vi phạm và theo dõi báo cáo biểu đồ tài chính sàn.</td>
+    </tr>
+    <tr>
+        <td><b>Khối Động Cơ Tự Động<br>(System Engine)</b></td>
+        <td>Chuỗi thuật toán nền tảng chạy tự động: Kiểm tra phòng chống trùng lịch thời gian thực (Overlap Prevention), thuật toán phân hạng tính điểm Elo và cơ chế tự động áp voucher giảm giá tiền sân theo cấp bậc Rank.</td>
+    </tr>
+</table>
+
+<h2>3. QUY HOẠCH GÓI USE CASE TỔNG QUÁT THEO MODULE</h2>
+
+<h3>3.1. Phân Hệ Xác Thực & Tài Khoản Cơ Sở</h3>
+<ul>
+    <li><b>UC-01: Đăng Ký Tài Khoản</b> - Khởi tạo tài khoản thành viên mới với các thông tin định danh, email và số điện thoại liên hệ.</li>
+    <li><b>UC-02: Đăng Nhập & Phân Rẽ Quyền Hạn</b> - Xác thực mật khẩu đã băm bảo mật (Bcrypt), tự động điều hướng người dùng về đúng trang quản trị tương ứng vai trò (Admin, Owner, Staff, Customer).</li>
+    <li><b>UC-03: Quản Lý Hồ Sơ Cá Nhân (Profile)</b> - Cập nhật thông tin họ tên, số điện thoại, ảnh đại diện, trình độ chuyên môn (Level 1 - 5), thể thức sở trường và khu vực thường chơi.</li>
+</ul>
+
+<h3>3.2. Phân Hệ Nghiệp Vụ Khách Hàng (Customer)</h3>
+<ul>
+    <li><b>UC-04: Tra Cứu & Khám Phá Sân Cầu Lông</b> - Tìm kiếm sân theo quận/huyện, loại mặt sàn (sân thảm PVC thi đấu, sân sàn gỗ cao cấp), khoảng giá thuê và đánh giá từ cộng đồng.</li>
+    <li><b>UC-05: Đặt Sân Trực Tuyến Kèm Dịch Vụ Tiện Ích</b> - Chọn ngày, giờ bắt đầu và giờ kết thúc; chọn mua kèm nước uống, ống cầu lông, dịch vụ đan cước lấy liền với nút tăng giảm Stepper; hệ thống kiểm tra tình trạng trống và tính tổng tiền tức thì.</li>
+    <li><b>UC-06: Đăng Bài Tìm Bạn Chơi / Ghép Kèo (Host)</b> - Phát động bài đăng mời giao lưu trên bảng tin công cộng, nêu rõ khung giờ, trình độ yêu cầu và địa điểm sân nhằm kết nối đối thủ phù hợp.</li>
+    <li><b>UC-07: Tiếp Nhận & Chốt Kèo Giao Lưu (Guest)</b> - Nhận lời tham gia kèo đấu; hệ thống tự động khóa trạng thái mở, kích hoạt hóa đơn chia đôi 50/50 (Split Bill) và chuyển giao kèo sang trạng thái chờ duyệt.</li>
+    <li><b>UC-08: Nhắn Tin Trao Đổi Trực Tuyến (Chat 1-1)</b> - Hỗ trợ kênh hội thoại trực tiếp giữa hai đội để trao đổi chi tiết về thể thức, đồng phục và thống nhất giờ giấc trước trận đấu.</li>
+    <li><b>UC-09: Quản Lý Lịch Sử Đặt Sân & Hủy Đơn</b> - Theo dõi danh sách đơn đặt sân cá nhân, kiểm tra mã Check-in và cho phép hủy đơn hoặc kèo đấu đang mở khi có phát sinh đột xuất.</li>
+    <li><b>UC-10: Đánh Giá Chất Lượng Sân (Reviews)</b> - Chấm điểm từ 1 đến 5 sao kèm nhận xét phản hồi sau khi hoàn tất lượt trải nghiệm thực tế tại sân.</li>
+</ul>
+
+<h3>3.3. Phân Hệ Quản Lý Cơ Sở Dành Cho Chủ Sân (Owner)</h3>
+<ul>
+    <li><b>UC-11: Quản Lý Cụm Sân Cầu Lông</b> - Thêm mới cụm sân, cập nhật giá thuê theo khung giờ, số lượng sân con, hình ảnh giới thiệu và địa chỉ định vị.</li>
+    <li><b>UC-12: Quản Lý Dịch Vụ Tiện Ích Sân</b> - Thiết lập và quản lý các danh mục hàng hóa phục vụ tại sân (nước giải khát, ống cầu thi đấu, phụ kiện, đan vợt) gồm đơn giá và đơn vị tính.</li>
+    <li><b>UC-13: Quản Lý Lịch Sân & Nghiệm Thu Booking</b> - Theo dõi lịch trình hoạt động của toàn cụm sân, phê duyệt (Confirm) hoặc từ chối hủy bỏ (Cancel) các đơn đặt chỗ của khách.</li>
+    <li><b>UC-14: Phê Duyệt Lịch Trận Cáp Kèo & Khóa Sân</b> - Kiểm tra trận ghép đôi giữa hai người chơi, thực hiện thao tác duyệt để chính thức khóa khung giờ trên lịch chung, ngăn chặn xung đột lịch.</li>
+    <li><b>UC-15: Quản Lý Thu Tiền Mặt Trận Đấu (Split Bill)</b> - Theo dõi trạng thái nộp tiền mặt của từng bên (Chủ Nhà / Đội Khách), ấn nút duyệt xác nhận đã thu tiền độc lập cho từng đội.</li>
+    <li><b>UC-16: Ghi Nhận Kết Quả Trận Đấu & Chấm Điểm</b> - Nhập kết quả thi đấu (Chủ nhà thắng / Đội khách thắng / Hòa) để kích hoạt thuật toán xếp hạng cập nhật điểm Elo cho các bên tham gia.</li>
+</ul>
+
+<h3>3.4. Phân Hệ Vận Hành Bàn Trực Dành Cho Nhân Viên (Staff)</h3>
+<ul>
+    <li><b>UC-17: Tra Cứu Danh Sách Đặt Chỗ Trong Ngày</b> - Theo dõi lưu lượng khách đến trong ca trực, thông tin giờ giấc và danh sách dịch vụ đi kèm.</li>
+    <li><b>UC-18: Soát Vé & Xác Nhận Check-in Tại Quầy</b> - Nhập mã Check-in của khách hàng để đối soát thông tin, kích hoạt trạng thái khách đã nhận sân thực tế.</li>
+</ul>
+
+<h3>3.5. Phân Hệ Quản Trị Hệ Thống (Admin) & Động Cơ Tự Động (Engine)</h3>
+<ul>
+    <li><b>UC-19: Báo Cáo Thống Kê Tổng Quan (Admin Dashboard)</b> - Theo dõi các chỉ số vận hành toàn sàn: tổng số người dùng, tổng số cụm sân, lưu lượng đơn đặt sân và biểu đồ doanh thu theo thời gian.</li>
+    <li><b>UC-20: Quản Lý Người Dùng & Phân Quyền Vai Trò</b> - Xem danh sách thành viên, cập nhật vai trò (thăng cấp thành Owner hoặc Staff), khóa tài khoản vi phạm quy chế hoạt động.</li>
+    <li><b>UC-21: Thuật Toán Chống Trùng Lịch Thời Gian Thực (Overlap Shield)</b> - Kiểm tra giao thoa khoảng thời gian [Start_Time, End_Time] giữa các đơn đặt lẻ và trận ghép kèo trên cùng một sân, bảo đảm không xảy ra tình trạng trùng sân.</li>
+    <li><b>UC-22: Động Cơ Tính Điểm Xếp Hạng Elo (Elo Rating Engine)</b> - Tự động cộng/trừ điểm tích lũy sau mỗi trận đấu chính thức, phân định cấp bậc Rank (Đồng, Bạc, Vàng, Kim Cương, Cao Thủ).</li>
+    <li><b>UC-23: Cơ Chế Tự Động Áp Dụng Voucher Giảm Giá Theo Hạng</b> - Tự động trích xuất cấp bậc thành viên để áp dụng mức chiết khấu giảm giá % trực tiếp vào tổng tiền khi người chơi đặt sân.</li>
+</ul>
+
+</body></html>

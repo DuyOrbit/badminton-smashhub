@@ -1,0 +1,19 @@
+# Scratch / Test scripts
+/scratch/
+test_*.php
+
+# Logs & Temporary Files
+*.log
+error_log
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# IDE & Editor Settings
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace

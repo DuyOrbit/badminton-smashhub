@@ -1,0 +1,224 @@
+﻿<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
+<!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+ </w:WordDocument>
+</xml><![endif]-->
+<title>Đặc Tả Usecase Mẫu Chuẩn - BadmintonConnect</title>
+<style>
+    body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; line-height: 1.4; color: #000; }
+    h1 { text-align: center; font-size: 16pt; font-weight: bold; margin-bottom: 20px; text-transform: uppercase; color: #17365d; }
+    h2 { font-size: 13pt; font-weight: bold; margin-top: 25px; margin-bottom: 10px; color: #2e74b5; text-transform: uppercase; border-bottom: 1px solid #2e74b5; padding-bottom: 3px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 25px; page-break-inside: avoid; }
+    table, th, td { border: 1px solid #000; padding: 6px; vertical-align: top; }
+    .bg-header { background-color: #d9e2f3; }
+    .text-center { text-align: center; }
+    .font-bold { font-weight: bold; }
+    td { word-wrap: break-word; }
+</style>
+</head>
+<body>
+
+<h1>TÀI LIỆU ĐẶC TẢ USE CASE CHI TIẾT<br>HỆ THỐNG QUẢN LÝ ĐẶT SÂN CẦU LÔNG VÀ GHÉP KÈO GIAO LƯU (BADMINTONCONNECT)</h1>
+
+<h2>PHẦN 1: TÁC NHÂN KHÁCH HÀNG (CUSTOMER / USER)</h2>
+
+<!-- UC-01: Đặt Sân Cầu Lông & Dịch Vụ -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-01: Đặt Sân Cầu Lông Trực Tuyến & Dịch Vụ Tiện Ích</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Cho phép người chơi thể thao tìm kiếm, lựa chọn khung giờ và đặt sân cầu lông trực tuyến, kèm theo các dịch vụ tiện ích bổ sung (nước uống, ống cầu lông, đan cước lấy liền).</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Người dùng đã đăng nhập hệ thống với vai trò Khách hàng (User).</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Đơn đặt sân (Booking) được tạo thành công, tự động cấp Mã Check-in duy nhất và lưu vào cơ sở dữ liệu.</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Khách hàng (Customer / User)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Hệ thống kiểm tra trùng lịch (Overlap Engine)</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Xem trang chi tiết cụm sân cầu lông và nhấn 'Đặt Sân Ngay'.</td><td>2. Hiển thị biểu mẫu đặt lịch gồm: Ngày chơi, Giờ bắt đầu, Giờ kết thúc và Danh mục dịch vụ tiện ích sân.</td></tr>
+    <tr><td>3. Chọn ngày, giờ chơi và tùy chỉnh số lượng các dịch vụ tiện ích mong muốn (dùng bộ đếm Stepper tăng/giảm).</td><td>4. Hệ thống tự động gửi yêu cầu ngầm (AJAX) kiểm tra số lượng sân còn trống trong khung giờ chỉ định. Đồng thời tính toán tổng tiền tạm tính có trừ chiết khấu Rank Elo nếu khách hàng đạt hạng cao.</td></tr>
+    <tr><td>5. Chọn phương thức thanh toán (Tiền mặt / VietQR) và nhấn 'Xác Nhận & Nhận Mã Check-in'.</td><td>6. Ghi nhận đơn đặt sân vào CSDL, khởi tạo Mã Check-in ngẫu nhiên (CKINxxxxx) và chuyển hướng khách hàng sang trang thông báo đặt sân thành công (Success).</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện thay thế (Alternative Flow)</td></tr>
+    <tr><td colspan='2'><b>4.1. Khách hàng thay đổi thời gian hoặc dịch vụ:</b><br>
+    - Khách hàng điều chỉnh lại Giờ bắt đầu, Giờ kết thúc hoặc tăng/giảm số lượng nước uống, ống cầu lông.<br>
+    - Hệ thống tự động kích hoạt hàm JavaScript tính toán lại tổng viện phí hiển thị tức thời mà không cần tải lại trang.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện ngoại lệ (Exception Flow)</td></tr>
+    <tr><td colspan='2'><b>4.2. Khung giờ không hợp lệ:</b><br>
+    - Khách hàng nhập Giờ kết thúc sớm hơn hoặc bằng Giờ bắt đầu.<br>
+    - Hệ thống hiển thị cảnh báo đỏ 'Giờ không hợp lệ' và vô hiệu hóa nút Xác nhận.<br><br>
+    <b>4.3. Sân đã kín lịch trong khung giờ chọn:</b><br>
+    - Số lượng đơn đặt xác nhận trong khung giờ đó đã đạt giới hạn tối đa số sân con của cơ sở.<br>
+    - Hệ thống hiển thị nhãn 'Sân Đã Kín Lịch' và khóa thao tác gửi đơn.</td></tr>
+</table>
+
+<!-- UC-02: Tạo Kèo Tìm Đối Cầu Lông -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-02: Đăng Tin Ghép Kèo & Tìm Bạn Chơi Cầu Lông (Host)</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Người chơi hoặc câu lạc bộ thiếu thành viên tạo bài đăng mời giao lưu thi đấu lên Bảng tin Cáp Kèo công khai.</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Người dùng đã đăng nhập tài khoản Khách hàng.</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Bài đăng ghép kèo được lưu vào CSDL ở trạng thái 'Open', hiển thị công khai trên Bảng tin Cáp Kèo.</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Khách hàng phát động kèo (Host)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Không có</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Tại trang chi tiết sân, nhấn 'Đăng Tin Tìm Đối Thủ / Ghép Đôi'.</td><td>2. Mở cửa sổ nhập thông tin kèo gồm: Ngày chơi, Khung giờ, Thể thức (Đơn, Đôi, Giao lưu nhóm), Trình độ yêu cầu (Level 1 - 5) và Lời nhắn.</td></tr>
+    <tr><td>3. Điền thông tin giao lưu và nhấn 'Đăng Bài Cáp Kèo'.</td><td>4. Kiểm tra tính hợp lệ của dữ liệu và kiểm tra trùng lịch sân.<br><br>5. Lưu bài đăng vào bảng matchmaking với trạng thái 'Open'.<br><br>6. Tự động đồng bộ lịch hẹn tạm thời để sẵn sàng cho quá trình ghép đôi.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện thay thế (Alternative Flow)</td></tr>
+    <tr><td colspan='2'><b>6.1. Chủ nhà chủ động hủy bài đăng:</b><br>
+    - Chủ nhà truy cập mục 'Kèo Của Tôi', bấm nút 'Gỡ Bài Đăng Kèo'.<br>
+    - Hệ thống cập nhật trạng thái trận đấu thành 'cancelled' và gỡ khỏi Bảng tin chung.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện ngoại lệ (Exception Flow)</td></tr>
+    <tr><td colspan='2'><b>4.1. Không đủ điều kiện sân bãi:</b><br>
+    - Khoảng thời gian yêu cầu đã bị kín sân hoặc cơ sở ngừng nhận khách.<br>
+    - Hệ thống thông báo lỗi và yêu cầu chọn thời gian hoặc địa điểm khác.</td></tr>
+</table>
+
+<!-- UC-03: Nhận Kèo Giao Hữu (Guest) -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-03: Tiếp Nhận Lời Mời Giao Lưu & Chốt Kèo (Guest)</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Người chơi hoặc đội khách tra cứu bảng tin, lựa chọn một bài đăng phù hợp và xác nhận nhận kèo giao lưu.</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Người dùng đã đăng nhập, không phải là người tạo kèo (Host) và bài đăng đang ở trạng thái 'Open'.</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Kèo đấu chuyển sang trạng thái 'Closed' (Đã ghép đôi thành công), tạo hóa đơn chia tiền 50/50 (Split Bill) chuyển sang chờ Chủ sân phê duyệt.</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Khách hàng nhận kèo (Đội khách - Guest)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Chủ nhà (Host), Chủ sân (Owner)</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Truy cập trang 'Bảng Tin Ghép Sân & Cáp Kèo Cầu Lông'.</td><td>2. Hiển thị danh sách các bài đăng đang mở kèm theo thông tin chi tiết: sân, giờ, thể thức, trình độ và người đăng.</td></tr>
+    <tr><td>3. Lựa chọn một bài đăng phù hợp và nhấn 'Chốt Kèo Giao Lưu'. Xác nhận hộp thoại cam kết tham gia.</td><td>4. Hệ thống ghi nhận ID của Đội khách vào trường opponent_id, cập nhật trạng thái kèo sang 'Closed'.<br><br>5. Kích hoạt thuật toán tính hóa đơn chia đôi (Split Bill 50/50), tính toán phần chiết khấu giảm giá Rank của riêng từng đội.<br><br>6. Chuyển thông tin trận đấu sang trang quản trị của Chủ sân để sẵn sàng phê duyệt lịch và thu tiền.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện thay thế (Alternative Flow)</td></tr>
+    <tr><td colspan='2'><b>2.1. Đội khách muốn liên hệ trao đổi trước khi chốt:</b><br>
+    - Đội khách nhấn vào nút biểu tượng 'Nhắn tin' trên thẻ bài đăng.<br>
+    - Hệ thống chuyển hướng mở hộp thoại Chat 1-1 với Host để hai bên trao đổi trước.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện ngoại lệ (Exception Flow)</td></tr>
+    <tr><td colspan='2'><b>4.1. Kèo vừa có người khác nhận trước:</b><br>
+    - Bài đăng đã chuyển trạng thái Closed trong lúc người dùng đang thao tác.<br>
+    - Hệ thống thông báo 'Kèo đấu này đã có người nhận' và tự động làm mới danh sách.</td></tr>
+</table>
+
+<!-- UC-04: Nhắn Tin Chat -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-04: Nhắn Tin Trao Đổi Trực Tuyến (Chat 1-1)</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Cho phép hai người dùng trao đổi tin nhắn trực tiếp với nhau về trận đấu hoặc thông tin giao lưu.</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Người dùng đã đăng nhập hệ thống.</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Tin nhắn được gửi, lưu trữ trong bảng messages và hiển thị trong khung chat của cả hai người.</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Khách hàng (User)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Người nhận tin nhắn</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Truy cập mục 'Chat' trên thanh điều hướng hoặc nhấn nhắn tin từ hồ sơ người chơi.</td><td>2. Hiển thị danh sách cuộc trò chuyện và cửa sổ chat tương ứng.</td></tr>
+    <tr><td>3. Nhập nội dung tin nhắn vào ô soạn thảo và nhấn 'Gửi' (hoặc phím Enter).</td><td>4. Kiểm tra nội dung, lưu tin nhắn vào CSDL qua API api_send_message và lập tức hiển thị trên luồng chat.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện thay thế (Alternative Flow)</td></tr>
+    <tr><td colspan='2'>Hệ thống định kỳ quét các tin nhắn mới thông qua API api_get_messages để cập nhật phản hồi của đối phương theo thời gian thực mà không cần tải lại toàn trang.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện ngoại lệ (Exception Flow)</td></tr>
+    <tr><td colspan='2'>Nội dung tin nhắn rỗng: Hệ thống tự động vô hiệu hóa lệnh gửi và nhắc nhở người dùng nhập văn bản.</td></tr>
+</table>
+
+<h2>PHẦN 2: TÁC NHÂN CHỦ SÂN (PITCH OWNER)</h2>
+
+<!-- UC-05: Duyệt Lịch & Thu Tiền Mặt Split Bill -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-05: Duyệt Khóa Lịch Thi Đấu & Thu Tiền Mặt Trận Đấu (Split Bill 50/50)</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Chủ sân phê duyệt trận ghép đôi giữa hai đội để chính thức khóa khung giờ trên lịch chung, đồng thời theo dõi và ấn duyệt thu tiền mặt độc lập cho từng bên (Chủ Nhà và Đội Khách).</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Chủ sân đã đăng nhập với vai trò 'owner'. Trận ghép đôi đã có đủ 2 đội tham gia (Closed).</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Lịch sân được khóa cố định, trạng thái thu tiền của từng đội được chuyển thành 'Đã Thu Tiền (50%)'.</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Chủ Sân (Pitch Owner)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Hệ thống cơ sở dữ liệu</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Truy cập trang 'Dashboard Tổng Quản' hoặc 'Quản Lý Cáp Kèo'.</td><td>2. Hiển thị danh sách các trận giao lưu tại cụm sân của mình cùng hộp 'Hóa Đơn Thu Tiền Mặt' chia tách rõ hai bên: Chủ Nhà và Đội Khách.</td></tr>
+    <tr><td>3. Nhấn 'Duyệt Chốt Lịch Sân Trận Này' để chính thức khóa giờ cho trận đấu.</td><td>4. Cập nhật trạng thái booking gắn liền sang 'confirmed', ngăn chặn các khách khác đặt đè lên khung giờ này.</td></tr>
+    <tr><td>5. Khi khách thanh toán tại quầy, Chủ sân ấn nút '[✓ Duyệt Thu Tiền]' tại mục tương ứng của Chủ Nhà hoặc Đội Khách. Xác nhận hộp thoại kiểm tra số tiền thực tế.</td><td>6. Cập nhật trường host_paid = 1 hoặc guest_paid = 1. Đổi nhãn trạng thái sang 'Đã Thu Tiền (50%) - Hoàn tất' với nền xanh lá trực quan và tự động ẩn nút duyệt để tránh thao tác trùng lặp.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện thay thế (Alternative Flow)</td></tr>
+    <tr><td colspan='2'>Hai bên có thể thanh toán vào các thời điểm khác nhau (trước trận hoặc sau trận); hệ thống lưu trữ trạng thái độc lập giúp chủ sân quản lý tài chính chặt chẽ mà không bị nhầm lẫn.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện ngoại lệ (Exception Flow)</td></tr>
+    <tr><td colspan='2'>Một trong hai bên bỏ kèo không đến: Chủ sân sử dụng nút 'Hủy Trận Đấu' để giải phóng khung giờ sân và mở lại lịch cho khách vãng lai.</td></tr>
+</table>
+
+<!-- UC-06: Chấm Điểm Kết Quả Elo -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-06: Xác Nhận Kết Quả Trận Đấu & Cập Nhật Điểm Elo Xếp Hạng</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Chủ sân đóng vai trò trọng tài xác nhận tỉ số sau trận đấu, kích hoạt thuật toán tính toán tăng/giảm điểm Elo và cập nhật cấp bậc Rank cho hai người chơi.</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Trận đấu đã diễn ra xong, trạng thái kết quả đang là 'pending'.</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Điểm số Elo của hai người chơi được cập nhật vào bảng ranking, trận đấu hoàn tất chu kỳ.</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Chủ Sân (Pitch Owner)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Động cơ xếp hạng Elo (Ranking Engine)</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Tại mục Báo Cáo Tỉ Số của trận đấu, Chủ sân chọn 1 trong 3 kết quả: 'Chủ Nhà Thắng', 'Hòa Nhau', hoặc 'Đội Khách Thắng'.</td><td>2. Hệ thống tiếp nhận lựa chọn và hiển thị hộp thoại xác nhận.</td></tr>
+    <tr><td>3. Chủ sân xác nhận gửi kết quả thi đấu.</td><td>4. Gọi thuật toán Ranking::processMatchResult(): Đội thắng được cộng điểm Elo (+30 điểm), đội thua bị trừ điểm (-15 điểm).<br><br>5. Kiểm tra nâng bậc Rank (Đồng → Bạc → Vàng → Kim Cương → Cao Thủ) và tự động tính toán mức Voucher giảm giá ưu đãi mới cho người dùng.<br><br>6. Hiển thị thông báo thành công xanh lá và chuyển trạng thái trận đấu thành 'Đã Hoàn Tất'.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện thay thế (Alternative Flow)</td></tr>
+    <tr><td colspan='2'>Kết quả hòa (Draw): Cả hai đội đều được cộng điểm khuyến khích phong trào (+10 điểm).</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện ngoại lệ (Exception Flow)</td></tr>
+    <tr><td colspan='2'>Trận đấu chưa có đủ 2 bên tham gia: Hệ thống từ chối chấm điểm và yêu cầu chờ đối thủ tham gia đầy đủ.</td></tr>
+</table>
+
+<h2>PHẦN 3: TÁC NHÂN NHÂN VIÊN QUẦY (STAFF)</h2>
+
+<!-- UC-07: Check-in Tại Quầy -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-07: Soát Vé & Xác Nhận Check-in Tại Quầy Tiếp Đón</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Nhân viên quầy sử dụng giao diện Bàn Trực để tra cứu danh sách khách đến trong ngày và đối soát mã Check-in khi người chơi đến nhận sân.</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Nhân viên đã đăng nhập hệ thống với vai trò 'staff' (hoặc 'owner', 'admin').</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Lượt đặt sân chuyển sang trạng thái đã nhận sân (Checked-in).</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Nhân viên quầy (Staff)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Khách hàng xuất trình mã</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Truy cập mục 'Bàn Trực & Check-in' (staff_dashboard).</td><td>2. Hiển thị bảng tổng hợp các lượt đặt sân trong ngày gồm tên khách, số điện thoại, khung giờ và các dịch vụ nước/cầu đã đăng ký.</td></tr>
+    <tr><td>3. Nhập mã Check-in do khách hàng xuất trình (ví dụ: CKINA3F82) vào ô tìm kiếm và nhấn 'Xác Nhận Check-in'.</td><td>4. Hệ thống kiểm tra tính hợp lệ của mã, đối soát đúng sân và khung giờ.<br><br>5. Đánh dấu lượt chơi đã nhận sân thành công và hiển thị thẻ thông báo màu xanh lá.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện ngoại lệ (Exception Flow)</td></tr>
+    <tr><td colspan='2'>Mã Check-in không tồn tại hoặc sai ngày: Hệ thống xuất thông báo cảnh báo đỏ 'Mã check-in không hợp lệ hoặc đã quá hạn', không cho phép nhận sân.</td></tr>
+</table>
+
+<h2>PHẦN 4: TÁC NHÂN QUẢN TRỊ VIÊN (ADMIN) VÀ HỆ THỐNG</h2>
+
+<!-- UC-08: Quản Trị Người Dùng & Phân Quyền -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-08: Quản Trị Người Dùng & Bổ Nhiệm Vai Trò Phân Quyền (Admin)</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Quản trị viên quản lý danh sách toàn bộ người dùng, thực hiện bổ nhiệm vai trò (User, Staff, Owner, Admin) và xử lý khóa/xóa tài khoản vi phạm.</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Tài khoản đã đăng nhập với vai trò Quản trị viên ('admin').</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Cơ sở dữ liệu được cập nhật quyền hạn hoặc xóa bỏ tài khoản theo yêu cầu.</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Quản trị viên (Admin)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Hệ thống cơ sở dữ liệu</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Truy cập mục 'Quản Lý Người Dùng' (admin_users).</td><td>2. Hiển thị bảng danh sách toàn bộ tài khoản kèm họ tên, số điện thoại, vai trò và ngày tham gia.</td></tr>
+    <tr><td>3. Để thăng cấp tài khoản (ví dụ: chuyển từ User lên Owner hoặc Staff), Admin chọn vai trò mới từ danh sách thả xuống và xác nhận.</td><td>4. Cập nhật trường role trong CSDL, xuất thông báo cập nhật phân quyền thành công.</td></tr>
+    <tr><td>5. Để loại bỏ tài khoản vi phạm, Admin nhấn nút 'Xóa Tài Khoản' và xác nhận cảnh báo.</td><td>6. Tiến hành xóa dữ liệu an toàn và làm mới lại bảng hiển thị.</td></tr>
+    
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện ngoại lệ (Exception Flow)</td></tr>
+    <tr><td colspan='2'>Admin tự thao tác xóa chính tài khoản đang đăng nhập: Hệ thống ngăn chặn để bảo đảm an toàn dữ liệu quản trị tối cao.</td></tr>
+</table>
+
+<!-- UC-09: Đánh Giá Sân -->
+<table border='1' cellpadding='5' cellspacing='0'>
+    <tr><td style='width: 30%;' class='font-bold bg-header'>Tên Use Case</td><td style='width: 70%;'><b>UC-09: Đánh Giá & Phản Hồi Chất Lượng Sân Cầu Lông</b></td></tr>
+    <tr><td class='font-bold bg-header'>Mô tả</td><td>Khách hàng gửi nhận xét, phản hồi và chấm điểm chất lượng sân bãi (từ 1 đến 5 sao) sau khi đã trải nghiệm thực tế.</td></tr>
+    <tr><td class='font-bold bg-header'>Tiền điều kiện</td><td>Người dùng đã đăng nhập và đã hoàn thành lượt chơi tại sân.</td></tr>
+    <tr><td class='font-bold bg-header'>Hậu điều kiện</td><td>Bài đánh giá được ghi nhận vào bảng reviews, điểm sao trung bình của sân được tính toán lại.</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân chính</td><td>Khách hàng (User)</td></tr>
+    <tr><td class='font-bold bg-header'>Tác nhân phụ</td><td>Cộng đồng người chơi</td></tr>
+    <tr><td colspan='2' class='font-bold text-center bg-header'>Luồng sự kiện chính (Basic Flow)</td></tr>
+    <tr><td class='font-bold text-center' style='width: 50%;'>Hành động của Tác nhân</td><td class='font-bold text-center' style='width: 50%;'>Phản hồi của Hệ thống</td></tr>
+    <tr><td>1. Truy cập mục 'Lịch Sử Đặt' (my_bookings), tại đơn đặt sân đã hoàn tất nhấn 'Đánh Giá'.</td><td>2. Hiển thị biểu mẫu đánh giá gồm: Thang điểm 1 - 5 sao và ô nhập nhận xét chi tiết.</td></tr>
+    <tr><td>3. Chọn số sao, viết bình luận và nhấn 'Gửi Đánh Giá'.</td><td>4. Lưu phản hồi vào CSDL, tự động cập nhật lại số sao trung bình trên trang thông tin của sân.</td></tr>
+</table>
+
+</body></html>
