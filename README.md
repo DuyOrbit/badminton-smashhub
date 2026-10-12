@@ -31,19 +31,28 @@
 
 ### 4. 🏟️ Phân Hệ Dành Cho Chủ Sân (Court Owner)
 * **Quản lý cụm sân**: Thêm/Sửa/Xóa sân, định vị GPS, tải ảnh sân, cấu hình số lượng sân con và giá theo giờ.
+* **Biểu Đồ Trực Quan Doanh Thu & Công Suất (Chart.js Analytics)**: 
+  * 📈 Biểu đồ Doanh thu 7 ngày gần nhất (Line Chart Gradient) cập nhật tự động theo thời gian thực.
+  * ⏰ Biểu đồ Doughnut phân tích tỷ lệ đặt sân theo các khung giờ (Sáng, Trưa, Chiều, Giờ Vàng cao điểm 18h-22h).
 * **Lịch đặt sân & Đặt tại quầy (Walk-in Booking)**: Tạo đơn trực tiếp tại quầy lễ tân cho khách vãng lai hoặc khách cố định tháng.
 * **Phân quyền nhân viên**: Tạo tài khoản thu ngân/lễ tân và gán vào cụm sân phụ trách cụ thể.
 * **Quản lý dịch vụ đi kèm**: Nước giải khát, phụ kiện cầu lông, thuê vợt.
 * **Xuất báo cáo doanh thu**: Xuất file CSV thống kê chi tiết theo đơn đặt.
 
-### 4. 🎟️ Phân Hệ Bàn Trực Tiếp Đón (Staff / Receptionist)
+### 5. 💳 Thanh Toán VietQR & Mô Phỏng Sandbox (Payment Simulation)
+* **Tự động sinh mã VietQR**: Mã QR ngân hàng động kèm mã đơn `CKIN...` và số tiền chính xác sau khi áp dụng giảm giá Rank Elo.
+* **Nút Mô Phỏng Thanh Toán (Sandbox Demo Mode)**: Cho phép chuyển trạng thái đơn đặt từ `unpaid` sang `paid` và xác nhận lịch tức thì trên giao diện mà không cần chờ tài khoản ngân hàng thật, tối ưu cho buổi demo bảo vệ đồ án.
+* **Bảo đảm toàn vẹn giao dịch (ACID & Concurrency Safe)**: Bọc toàn bộ quá trình kiểm tra trùng lịch và tạo đơn vào **Database Transaction**, giải quyết triệt để lỗi tranh chấp đặt sân cùng thời điểm (Race Condition).
+
+### 6. 🎟️ Phân Hệ Bàn Trực Tiếp Đón (Staff / Receptionist)
 * Giao diện tối ưu hóa cho màn hình cảm ứng / máy tính bảng lễ tân.
 * **Check-in 1-Click**: Tìm kiếm theo Mã Check-in (ví dụ: `CKIN...`), SĐT hoặc tên khách.
 * Ràng buộc bảo mật: Nhân viên chỉ được phép check-in các đơn thuộc Cụm sân mình phụ trách.
 
-### 5. 👑 Phân Hệ Quản Trị Hệ Thống (Super Admin)
+### 7. 👑 Phân Hệ Quản Trị Hệ Thống (Super Admin)
 * Thống kê toàn cảnh doanh thu, số lượng sân, người dùng trên toàn hệ thống.
 * Quản lý & khóa/mở cụm sân, phân quyền vai trò người dùng (Admin, Owner, Staff, User).
+* Cấp tài khoản Thu ngân trực tiếp cho các cụm sân trong hệ thống.
 
 ---
 

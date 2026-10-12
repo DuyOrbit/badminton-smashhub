@@ -1,4 +1,4 @@
-﻿<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto">
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-extrabold text-white">Dashboard Chủ Sân</h1>
@@ -62,6 +62,45 @@
         <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl p-6 shadow-none text-white">
             <p class="text-green-100 font-medium mb-1">Doanh Thu Ước Tính</p>
             <p class="text-3xl font-black mb-4"><?php echo number_format($total_revenue, 0, ',', '.'); ?>đ</p>
+        </div>
+    </div>
+
+    <!-- BIỂU ĐỒ THỐNG KÊ DOANH THU & PHÂN BỔ KHUNG GIỜ (CHART.JS ANALYTICS) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <!-- Chart 1: Doanh Thu 7 Ngày Gần Nhất (2/3 chiều rộng) -->
+        <div class="lg:col-span-2 bg-[#121b21] rounded-2xl p-6 border border-white/5 shadow-none flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <span class="text-emerald-400">📈</span> Biểu Đồ Doanh Thu 7 Ngày Gần Nhất
+                    </h3>
+                    <p class="text-xs text-white/50 mt-0.5">Theo dõi dòng tiền đặt sân thực tế qua từng ngày</p>
+                </div>
+                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Dữ liệu thời gian thực
+                </span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="weeklyRevenueChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 2: Tần Suất Đặt Sân Theo Khung Giờ (1/3 chiều rộng) -->
+        <div class="bg-[#121b21] rounded-2xl p-6 border border-white/5 shadow-none flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-4 border-b border-white/5 pb-3">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <span class="text-amber-400">⏰</span> Tần Suất Giờ Đặt Sân
+                    </h3>
+                    <p class="text-xs text-white/50 mt-0.5">Tỷ lệ khách chơi Giờ Vàng vs Giờ Thường</p>
+                </div>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    Công suất sân
+                </span>
+            </div>
+            <div class="h-64 relative flex items-center justify-center">
+                <canvas id="occupancyHourChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -347,6 +386,130 @@
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Chart.js Visualization Library & Initialization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const revData = <?php echo json_encode($revenue_stats ?? ['labels' => [], 'data' => []]); ?>;
+    const occData = <?php echo json_encode($occupancy_stats ?? ['labels' => [], 'data' => []]); ?>;
+
+    // Chart 1: Weekly Revenue Trend (Line Chart)
+    const ctxRev = document.getElementById('weeklyRevenueChart');
+    if (ctxRev) {
+        new Chart(ctxRev.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: revData.labels,
+                datasets: [{
+                    label: 'Doanh thu (VNĐ)',
+                    data: revData.data,
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0b1116',
+                        titleColor: '#d8ff3e',
+                        bodyColor: '#ffffff',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        callbacks: {
+                            label: function(context) {
+                                return ' Doanh thu: ' + new Intl.NumberFormat('vi-VN').format(context.parsed.y) + ' đ';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: 'rgba(255, 255, 255, 0.6)', font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.6)',
+                            font: { size: 11 },
+                            callback: function(val) {
+                                if (val >= 1000000) return (val / 1000000) + ' Tr';
+                                if (val >= 1000) return (val / 1000) + ' k';
+                                return val;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Chart 2: Occupancy by Hour Brackets (Doughnut Chart)
+    const ctxOcc = document.getElementById('occupancyHourChart');
+    if (ctxOcc) {
+        new Chart(ctxOcc.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: occData.labels,
+                datasets: [{
+                    data: occData.data,
+                    backgroundColor: [
+                        '#38bdf8', // Sáng
+                        '#a78bfa', // Trưa
+                        '#fb923c', // Chiều
+                        '#10b981'  // Giờ Vàng
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#121b21',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: { size: 11 },
+                            boxWidth: 12,
+                            padding: 10
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#0b1116',
+                        titleColor: '#d8ff3e',
+                        bodyColor: '#ffffff',
+                        borderColor: 'rgba(255, 255, 255, 0.1)',
+                        borderWidth: 1,
+                        padding: 10,
+                        callbacks: {
+                            label: function(context) {
+                                return ' ' + context.label + ': ' + context.parsed + ' lượt';
+                            }
+                        }
+                    }
+                },
+                cutout: '65%'
+            }
+        });
+    }
+});
+</script>
 
 
 

@@ -266,6 +266,10 @@ switch ($action) {
         $controller = new BookingController();
         $controller->apiCheckAvailability();
         break;
+    case 'api_simulate_payment':
+        $controller = new BookingController();
+        $controller->simulatePayment();
+        break;
     case 'book':
         requireAuth();
         $controller = new BookingController();

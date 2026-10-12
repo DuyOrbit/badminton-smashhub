@@ -96,33 +96,82 @@ class BookingController {
             $booking->checkin_code = 'CKIN' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 5));
             $booking->total_price = ($base_price * ((100 - $discount) / 100)) + $service_total;
 
-            // Check if full
-            $overlapping = $booking->getConfirmedOverlappingCount($_POST['pitch_id'], $_POST['booking_date'], $_POST['start_time'], $_POST['end_time']);
-            
-            if ($overlapping >= $pitchData['quantity']) {
-                die("<h3 style='color:red;'>Rất tiếc! Sân đã kín lịch đã được xác nhận vào khung giờ này. Vui lòng chọn khung giờ khác.</h3><br><a href='javascript:history.back()'>Quay lại</a>");
-            }
+            // Transaction-safe booking creation to prevent race conditions / double booking
+            $db->beginTransaction();
+            try {
+                // Check if full
+                $overlapping = $booking->getConfirmedOverlappingCount($_POST['pitch_id'], $_POST['booking_date'], $_POST['start_time'], $_POST['end_time']);
+                
+                if ($overlapping >= $pitchData['quantity']) {
+                    $db->rollBack();
+                    die("<h3 style='color:red;'>Rất tiếc! Sân đã kín lịch đã được xác nhận vào khung giờ này. Vui lòng chọn khung giờ khác.</h3><br><a href='javascript:history.back()'>Quay lại</a>");
+                }
 
-            $newBookingId = $booking->create();
-            if($newBookingId) {
-                // Store in session for success display
-                $_SESSION['last_booking'] = [
-                    'booking_id' => $newBookingId,
-                    'name' => $_POST['customer_name'],
-                    'pitch_name' => $pitchData['name'],
-                    'date' => $_POST['booking_date'],
-                    'time' => $_POST['start_time'] . ' - ' . $_POST['end_time'],
-                    'total_price' => $booking->total_price,
-                    'payment_method' => $payment_method,
-                    'services_note' => $booking->services_note,
-                    'checkin_code' => $booking->checkin_code
-                ];
-                header("Location: index.php?action=success");
-                exit;
-            } else {
-                echo "Lỗi: Không thể lưu thông tin đặt sân.";
+                $newBookingId = $booking->create();
+                if($newBookingId) {
+                    $db->commit();
+                    // Store in session for success display
+                    $_SESSION['last_booking'] = [
+                        'booking_id' => $newBookingId,
+                        'name' => $_POST['customer_name'],
+                        'pitch_name' => $pitchData['name'],
+                        'date' => $_POST['booking_date'],
+                        'time' => $_POST['start_time'] . ' - ' . $_POST['end_time'],
+                        'total_price' => $booking->total_price,
+                        'payment_method' => $payment_method,
+                        'payment_status' => 'unpaid',
+                        'services_note' => $booking->services_note,
+                        'checkin_code' => $booking->checkin_code
+                    ];
+                    header("Location: index.php?action=success");
+                    exit;
+                } else {
+                    $db->rollBack();
+                    echo "Lỗi: Không thể lưu thông tin đặt sân.";
+                }
+            } catch (Exception $e) {
+                if ($db->inTransaction()) {
+                    $db->rollBack();
+                }
+                die("Lỗi giao dịch CSDL: " . $e->getMessage());
             }
         }
+    }
+
+    public function simulatePayment() {
+        header('Content-Type: application/json; charset=utf-8');
+        $booking_id = $_POST['booking_id'] ?? $_GET['booking_id'] ?? null;
+        if (!$booking_id) {
+            echo json_encode(['success' => false, 'message' => 'Vui lòng cung cấp mã đơn đặt sân (booking_id).']);
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+        $booking = new Booking($db);
+        $bData = $booking->readOneWithPitchInfo($booking_id);
+
+        if (!$bData) {
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy đơn đặt sân trên hệ thống.']);
+            exit;
+        }
+
+        $updated = $booking->updatePaymentStatus($booking_id, 'paid', 'confirmed');
+        if ($updated) {
+            if (isset($_SESSION['last_booking']) && $_SESSION['last_booking']['booking_id'] == $booking_id) {
+                $_SESSION['last_booking']['payment_status'] = 'paid';
+            }
+            echo json_encode([
+                'success' => true,
+                'message' => 'Mô phỏng thanh toán VietQR thành công! Đơn đặt sân đã được xác nhận thanh toán trực tuyến.',
+                'payment_status' => 'paid',
+                'booking_id' => $booking_id,
+                'paid_at' => date('H:i:s d/m/Y')
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Lỗi khi cập nhật trạng thái đơn đặt.']);
+        }
+        exit;
     }
 
     public function myBookings() {

@@ -239,5 +239,88 @@ class Booking {
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function updatePaymentStatus($id, $payment_status, $status = null) {
+        $query = "UPDATE " . $this->table_name . " SET payment_status = :payment_status";
+        $params = [':payment_status' => $payment_status, ':id' => $id];
+        if ($status !== null) {
+            $query .= ", status = :status";
+            $params[':status'] = $status;
+        }
+        $query .= " WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute($params);
+    }
+
+    public function getWeeklyRevenueStats($owner_id) {
+        $labels = [];
+        $days = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $d = date('Y-m-d', strtotime("-$i days"));
+            $days[$d] = 0;
+            $labels[] = date('d/m', strtotime("-$i days"));
+        }
+
+        $query = "SELECT b.booking_date, SUM(b.total_price) as daily_total
+                  FROM " . $this->table_name . " b
+                  INNER JOIN pitches p ON b.pitch_id = p.id
+                  WHERE p.owner_id = :owner_id 
+                    AND b.status IN ('confirmed', 'completed')
+                    AND b.booking_date >= :start_date
+                  GROUP BY b.booking_date";
+        $stmt = $this->conn->prepare($query);
+        $start_date = date('Y-m-d', strtotime("-6 days"));
+        $stmt->bindParam(':owner_id', $owner_id);
+        $stmt->bindParam(':start_date', $start_date);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($rows as $r) {
+            if (isset($days[$r['booking_date']])) {
+                $days[$r['booking_date']] = (float)$r['daily_total'];
+            }
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => array_values($days)
+        ];
+    }
+
+    public function getHourlyOccupancyStats($owner_id) {
+        $query = "SELECT b.start_time
+                  FROM " . $this->table_name . " b
+                  INNER JOIN pitches p ON b.pitch_id = p.id
+                  WHERE p.owner_id = :owner_id AND b.status IN ('confirmed', 'completed', 'pending')";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':owner_id', $owner_id);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $brackets = [
+            'Sáng (06h - 09h)' => 0,
+            'Trưa (09h - 15h)' => 0,
+            'Chiều (15h - 18h)' => 0,
+            'Giờ Vàng (18h - 22h)' => 0
+        ];
+
+        foreach ($rows as $r) {
+            $hour = (int)substr($r['start_time'], 0, 2);
+            if ($hour >= 6 && $hour < 9) {
+                $brackets['Sáng (06h - 09h)']++;
+            } elseif ($hour >= 9 && $hour < 15) {
+                $brackets['Trưa (09h - 15h)']++;
+            } elseif ($hour >= 15 && $hour < 18) {
+                $brackets['Chiều (15h - 18h)']++;
+            } else {
+                $brackets['Giờ Vàng (18h - 22h)']++;
+            }
+        }
+
+        return [
+            'labels' => array_keys($brackets),
+            'data' => array_values($brackets)
+        ];
+    }
 }
 ?>

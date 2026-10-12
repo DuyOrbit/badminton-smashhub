@@ -74,6 +74,10 @@ class OwnerController {
         require_once 'models/Ranking.php';
         $ranking = new Ranking($db);
 
+        // Thống kê Doanh thu 7 ngày và Phân bổ khung giờ cho Chart.js
+        $revenue_stats = $booking->getWeeklyRevenueStats($owner_id);
+        $occupancy_stats = $booking->getHourlyOccupancyStats($owner_id);
+
         $page_title = "Dashboard Chủ Sân";
         $content = 'owner/dashboard.php';
         require_once 'views/layout.php';
