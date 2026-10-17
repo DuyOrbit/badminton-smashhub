@@ -405,7 +405,7 @@ $accents = [
                     </div>
                     <h3 class="mt-2 text-[14px] font-black text-white">Đánh Kèo Đôi Cùng Trình Độ</h3>
                     <p class="text-[11px] text-[#82918d] mt-1 leading-relaxed">
-                        Thuật toán tự động tìm đối thủ có chênh lệch $\Delta Elo \le 100$, hỗ trợ cưa đôi 50/50 tiền sân.
+                        Thuật toán tự động tìm đối thủ có chênh lệch ΔElo ≤ 100, hỗ trợ cưa đôi 50/50 tiền sân.
                     </p>
                     <div class="mt-3.5 flex items-center justify-between">
                         <div class="flex items-center gap-2">

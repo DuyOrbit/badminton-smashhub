@@ -56,6 +56,44 @@
 
 ---
 
+## 📸 Hình Ảnh Giao Diện Hệ Thống (Báo Cáo Đồ Án)
+
+> Toàn bộ ảnh chụp màn hình độ phân giải cao (Full HD, 1.5x Retina) phục vụ báo cáo đồ án được lưu trữ tại thư mục [`docs/screenshots/`](docs/screenshots/).
+
+### 1. Trang Chủ & Hệ Thống Nhận Diện Thương Hiệu
+![Trang chủ hệ thống](docs/screenshots/01_trang_chu_he_thong.png)
+
+### 2. Danh Sách Cụm Sân Tiêu Chuẩn BWF & Bộ Lọc Bán Kính GPS
+![Danh sách cụm sân BWF](docs/screenshots/03_danh_sach_cum_san_bwf.png)
+
+### 3. Album Ảnh Thực Tế Sân Đấu Đa Góc Nhìn (Interactive Court Gallery)
+![Album ảnh thực tế sân](docs/screenshots/02_album_anh_thuc_te_san.png)
+
+### 4. Ghép Trận Thông Minh AI (Smart Matchmaking) & Điểm Uy Tín Fair-Play
+![Ghép trận thông minh Smart Match AI](docs/screenshots/04_ghep_tran_smart_match_ai.png)
+
+### 5. Thanh Toán Trực Tuyến VietQR & Mô Phỏng Giao Dịch Tức Thì (Sandbox Mode)
+![Thanh toán VietQR Sandbox](docs/screenshots/05_thanh_toan_vietqr_sandbox.png)
+
+### 6. Cộng Đồng Câu Lạc Bộ & Bảng Tin Tuyển Giao Lưu Vãng Lai
+![Cộng đồng Câu Lạc Bộ](docs/screenshots/06_cong_dong_cau_lac_bo.png)
+
+### 7. Bàn Trực Lễ Tân & Check-in 1-Click (Phân Hệ Nhân Viên Sân)
+![Bàn trực tiếp đón Staff](docs/screenshots/07_ban_truc_tiep_don_staff.png)
+
+### 8. Dashboard Chủ Sân & Biểu Đồ Phân Tích Doanh Thu / Khung Giờ (Chart.js)
+![Dashboard Chủ sân Chart.js](docs/screenshots/08_dashboard_chu_san_chartjs.png)
+
+### 9. Phân Hệ Quản Trị Hệ Thống Toàn Diện (Super Admin Panel)
+![Quản trị hệ thống Admin](docs/screenshots/09_quan_tri_he_thong_admin.png)
+
+### 10. Giao Diện Tương Thích Thiết Bị Di Động (Mobile Responsive)
+<p align="center">
+  <img src="docs/screenshots/10_giao_dien_mobile_responsive.png" alt="Giao diện Mobile Responsive" width="380" />
+</p>
+
+---
+
 ## 🛠️ Yêu Cầu Hệ Thống & Cài Đặt
 
 ### 1. Yêu Cầu Môi Trường
