@@ -107,6 +107,18 @@ class BookingController {
                     die("<h3 style='color:red;'>Rất tiếc! Sân đã kín lịch đã được xác nhận vào khung giờ này. Vui lòng chọn khung giờ khác.</h3><br><a href='javascript:history.back()'>Quay lại</a>");
                 }
 
+                $occupiedCourts = $booking->getOccupiedCourts($_POST['pitch_id'], $_POST['booking_date'], $_POST['start_time'], $_POST['end_time'], (int)$pitchData['quantity']);
+                $requestedCourt = isset($_POST['court_number']) ? (int)$_POST['court_number'] : 1;
+                if ($requestedCourt < 1 || $requestedCourt > (int)$pitchData['quantity'] || in_array($requestedCourt, $occupiedCourts)) {
+                    for ($c = 1; $c <= (int)$pitchData['quantity']; $c++) {
+                        if (!in_array($c, $occupiedCourts)) {
+                            $requestedCourt = $c;
+                            break;
+                        }
+                    }
+                }
+                $booking->court_number = $requestedCourt;
+
                 $newBookingId = $booking->create();
                 if($newBookingId) {
                     $db->commit();
@@ -115,6 +127,7 @@ class BookingController {
                         'booking_id' => $newBookingId,
                         'name' => $_POST['customer_name'],
                         'pitch_name' => $pitchData['name'],
+                        'court_number' => $booking->court_number,
                         'date' => $_POST['booking_date'],
                         'time' => $_POST['start_time'] . ' - ' . $_POST['end_time'],
                         'total_price' => $booking->total_price,
@@ -268,8 +281,8 @@ class BookingController {
     }
 
     public function apiCheckAvailability() {
-        header('Content-Type: application/json');
-        if(!isset($_GET['pitch_id']) || !isset($_GET['date']) || !isset($_GET['start']) || !isset($_GET['end'])) {
+        header('Content-Type: application/json; charset=utf-8');
+        if(!isset($_GET['pitch_id']) || !isset($_GET['date'])) {
             echo json_encode(['error' => 'Missing parameters']);
             exit;
         }
@@ -284,15 +297,27 @@ class BookingController {
             exit;
         }
 
+        $totalCourts = (int)$pitchData['quantity'];
         $booking = new Booking($db);
-        $overlapping = $booking->getConfirmedOverlappingCount($_GET['pitch_id'], $_GET['date'], $_GET['start'], $_GET['end']);
+        $slots = $booking->getDailyHourlyMatrix($_GET['pitch_id'], $_GET['date'], $totalCourts);
 
-        $available = max(0, $pitchData['quantity'] - $overlapping);
-        
+        if (isset($_GET['start']) && isset($_GET['end']) && $_GET['start'] !== '' && $_GET['end'] !== '') {
+            $overlapping = $booking->getConfirmedOverlappingCount($_GET['pitch_id'], $_GET['date'], $_GET['start'], $_GET['end']);
+            $occupiedCourts = $booking->getOccupiedCourts($_GET['pitch_id'], $_GET['date'], $_GET['start'], $_GET['end'], $totalCourts);
+            $available = max(0, $totalCourts - $overlapping);
+            echo json_encode([
+                'booked' => $overlapping,
+                'total' => $totalCourts,
+                'available' => $available,
+                'occupied_courts' => $occupiedCourts,
+                'slots' => $slots
+            ]);
+            exit;
+        }
+
         echo json_encode([
-            'booked' => $overlapping,
-            'total' => $pitchData['quantity'],
-            'available' => $available
+            'total' => $totalCourts,
+            'slots' => $slots
         ]);
         exit;
     }

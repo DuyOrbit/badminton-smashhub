@@ -69,10 +69,13 @@
 ### 3. Album Ảnh Thực Tế Sân Đấu Đa Góc Nhìn (Interactive Court Gallery)
 ![Album ảnh thực tế sân](docs/screenshots/02_album_anh_thuc_te_san.png)
 
-### 4. Ghép Trận Thông Minh AI (Smart Matchmaking) & Điểm Uy Tín Fair-Play
+### 4. Sơ Đồ Lưới Khung Giờ Trống (06:00–22:00) & Chọn Vị Trí Sân Con BWF
+![Sơ đồ lưới khung giờ và chọn sân con BWF](docs/screenshots/11_luoi_gio_va_so_do_san_con.png)
+
+### 5. Ghép Trận Thông Minh AI (Smart Matchmaking) & Điểm Uy Tín Fair-Play
 ![Ghép trận thông minh Smart Match AI](docs/screenshots/04_ghep_tran_smart_match_ai.png)
 
-### 5. Thanh Toán Trực Tuyến VietQR & Mô Phỏng Giao Dịch Tức Thì (Sandbox Mode)
+### 6. Thanh Toán Trực Tuyến VietQR & Mô Phỏng Giao Dịch Tức Thì (Sandbox Mode)
 ![Thanh toán VietQR Sandbox](docs/screenshots/05_thanh_toan_vietqr_sandbox.png)
 
 ### 6. Cộng Đồng Câu Lạc Bộ & Bảng Tin Tuyển Giao Lưu Vãng Lai

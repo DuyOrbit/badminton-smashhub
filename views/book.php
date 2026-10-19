@@ -28,6 +28,10 @@
                     </div>
                     <span class="font-black text-[#84939b] text-xs" id="availabilityDisplay">Chờ chọn giờ</span>
                 </div>
+                <div class="flex items-center justify-between py-3 border-t border-white/10">
+                    <span class="text-[#84939b] text-xs font-medium">Vị trí sân chọn</span>
+                    <span class="font-black text-xs text-[#d8ff3e] bg-[#d8ff3e]/10 border border-[#d8ff3e]/30 px-2.5 py-1 rounded-lg" id="selectedCourtBadge">🏸 Sân số 01</span>
+                </div>
                 <div class="flex items-center justify-between py-4 border-t border-white/10 bg-[#d8ff3e]/10 rounded-xl px-4 mt-2 border border-[#d8ff3e]/20 relative overflow-hidden">
                     <span class="text-white text-xs font-black uppercase tracking-wider relative z-10">Tổng Dự Kiến</span>
                     <span class="font-black text-[#d8ff3e] text-2xl relative z-10" id="totalPriceDisplay">0đ</span>
@@ -50,6 +54,7 @@
 
             <form action="index.php?action=store_booking" method="POST" id="bookingForm" class="space-y-6">
                 <input type="hidden" name="pitch_id" value="<?php echo $pitchData['id']; ?>">
+                <input type="hidden" name="court_number" id="court_number_input" value="1">
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div class="md:col-span-2">
@@ -64,7 +69,29 @@
 
                     <div class="md:col-span-2">
                         <label for="booking_date" class="block text-[11px] font-black uppercase tracking-wider text-[#84939b] mb-1.5 ml-1">Ngày Đặt Sân</label>
-                        <input type="date" name="booking_date" id="booking_date" required min="<?php echo date('Y-m-d'); ?>" class="block w-full border border-white/10 rounded-xl focus:border-[#d8ff3e] focus:outline-none text-sm py-3 px-4 bg-[#0b1116] text-white transition">
+                        <input type="date" name="booking_date" id="booking_date" required value="<?php echo date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" class="block w-full border border-white/10 rounded-xl focus:border-[#d8ff3e] focus:outline-none text-sm py-3 px-4 bg-[#0b1116] text-white transition">
+                    </div>
+
+                    <!-- FEATURE 1: INTERACTIVE TIME-SLOT GRID (06:00 - 22:00) -->
+                    <div class="md:col-span-2 bg-[#0b1116] border border-white/10 rounded-2xl p-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <div>
+                                <span class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+                                    <span class="text-[#d8ff3e]">⏰</span> Sơ Đồ Lưới Khung Giờ Trống (06:00 – 22:00)
+                                </span>
+                                <p class="text-[10px] text-[#71818a] mt-0.5">Bấm chọn 1 ô (1 tiếng) hoặc bấm ô đầu & ô cuối để chọn nhiều tiếng liên tiếp</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2.5 text-[10px] font-bold">
+                                <span class="inline-flex items-center gap-1 text-emerald-400"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500/30 border border-emerald-500"></span> Trống</span>
+                                <span class="inline-flex items-center gap-1 text-amber-400"><span class="w-2.5 h-2.5 rounded-sm bg-amber-500/30 border border-amber-500"></span> 🔥 Giờ Vàng</span>
+                                <span class="inline-flex items-center gap-1 text-[#d8ff3e]"><span class="w-2.5 h-2.5 rounded-sm bg-[#d8ff3e]"></span> Đang chọn</span>
+                                <span class="inline-flex items-center gap-1 text-red-400"><span class="w-2.5 h-2.5 rounded-sm bg-red-500/30 border border-red-500/50"></span> Kín sân</span>
+                            </div>
+                        </div>
+
+                        <div id="timeSlotGrid" class="grid grid-cols-4 sm:grid-cols-4 gap-2">
+                            <!-- Rendered dynamically by JS -->
+                        </div>
                     </div>
 
                     <div>
@@ -75,6 +102,59 @@
                     <div>
                         <label for="end_time" class="block text-[11px] font-black uppercase tracking-wider text-[#84939b] mb-1.5 ml-1">Giờ Kết Thúc</label>
                         <input type="time" name="end_time" id="end_time" required class="block w-full border border-white/10 rounded-xl focus:border-[#d8ff3e] focus:outline-none text-sm py-3 px-4 bg-[#0b1116] text-white transition">
+                    </div>
+
+                    <!-- FEATURE 2: VISUAL BWF SUB-COURT MAP PICKER (SÂN 1 -> SÂN N) -->
+                    <div class="md:col-span-2 bg-[#0b1116] border border-white/10 rounded-2xl p-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <div>
+                                <span class="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
+                                    <span class="text-[#d8ff3e]">🏟️</span> Sơ Đồ Chọn Vị Trí Sân Con (<?php echo (int)$pitchData['quantity']; ?> Sân Tiêu Chuẩn BWF)
+                                </span>
+                                <p class="text-[10px] text-[#71818a] mt-0.5">Chọn mặt sân thảm bạn muốn thi đấu (tự động khóa các sân đã có người đặt)</p>
+                            </div>
+                            <span id="courtMapStatusHint" class="text-[10px] font-bold text-[#d8ff3e] bg-[#d8ff3e]/10 px-2.5 py-1 rounded-full border border-[#d8ff3e]/20">
+                                Đang chọn: Sân số 01
+                            </span>
+                        </div>
+
+                        <div id="visualCourtMap" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5" data-total-courts="<?php echo (int)$pitchData['quantity']; ?>">
+                            <?php 
+                            $totalSubCourts = max(1, (int)$pitchData['quantity']);
+                            $courtZones = [
+                                1 => 'Gần quầy lễ tân',
+                                2 => 'Trung tâm nhà thi đấu',
+                                3 => 'Trung tâm nhà thi đấu',
+                                4 => 'Trung tâm • Trần cao',
+                                5 => 'Khu vực yên tĩnh',
+                                6 => 'Gần khu ghế chờ VIP'
+                            ];
+                            for ($c = 1; $c <= $totalSubCourts; $c++): 
+                                $zoneLabel = $courtZones[$c] ?? 'Tiêu chuẩn BWF';
+                            ?>
+                            <button type="button" 
+                                    data-court="<?php echo $c; ?>" 
+                                    onclick="selectSubCourt(<?php echo $c; ?>)"
+                                    class="court-map-item group relative rounded-xl p-2.5 border transition-all duration-200 text-left overflow-hidden <?php echo $c === 1 ? 'border-[#d8ff3e] bg-emerald-950/60 ring-2 ring-[#d8ff3e]/40' : 'border-emerald-500/30 bg-emerald-950/25 hover:border-emerald-400'; ?>">
+                                <!-- Realistic BWF Court markings background -->
+                                <div class="relative rounded-lg border border-white/25 bg-[#0e4f36]/80 p-2">
+                                    <!-- Net line -->
+                                    <div class="absolute inset-x-0 top-1/2 border-t border-dashed border-white/40 pointer-events-none"></div>
+                                    <!-- Center service line -->
+                                    <div class="absolute inset-y-0 left-1/2 border-l border-white/20 pointer-events-none"></div>
+                                    <div class="relative z-10 flex items-center justify-between">
+                                        <span class="text-xs font-black tracking-wider text-white">SÂN <?php echo str_pad($c, 2, '0', STR_PAD_LEFT); ?></span>
+                                        <span class="court-status-pill text-[9px] font-black uppercase px-1.5 py-0.5 rounded <?php echo $c === 1 ? 'bg-[#d8ff3e] text-[#0b1116]' : 'bg-emerald-500/20 text-emerald-300'; ?>">
+                                            <?php echo $c === 1 ? '✓ ĐANG CHỌN' : 'TRỐNG'; ?>
+                                        </span>
+                                    </div>
+                                    <div class="relative z-10 mt-2 text-[9px] text-emerald-100/80 font-medium truncate">
+                                        <?php echo htmlspecialchars($zoneLabel); ?>
+                                    </div>
+                                </div>
+                            </button>
+                            <?php endfor; ?>
+                        </div>
                     </div>
 
                     <!-- Services Selection -->
@@ -372,6 +452,165 @@
         const pitchId = document.querySelector('input[name="pitch_id"]').value;
         const availabilityDisplay = document.getElementById('availabilityDisplay');
         const submitBtn = document.querySelector('button[type="submit"]');
+        const timeSlotGrid = document.getElementById('timeSlotGrid');
+        const courtNumberInput = document.getElementById('court_number_input');
+        const selectedCourtBadge = document.getElementById('selectedCourtBadge');
+        const courtMapStatusHint = document.getElementById('courtMapStatusHint');
+
+        let dailySlotsData = [];
+        let currentOccupiedCourts = [];
+        let slotAnchorHour = null;
+
+        window.selectSubCourt = function(courtNum) {
+            if (currentOccupiedCourts.includes(courtNum)) {
+                return; // Court is already booked in this time range
+            }
+            courtNumberInput.value = courtNum;
+            const padded = String(courtNum).padStart(2, '0');
+            if (selectedCourtBadge) selectedCourtBadge.textContent = `🏸 Sân số ${padded}`;
+            if (courtMapStatusHint) courtMapStatusHint.textContent = `Đang chọn: Sân số ${padded}`;
+            updateCourtMapUI(currentOccupiedCourts);
+        };
+
+        function updateCourtMapUI(occupiedCourts) {
+            currentOccupiedCourts = occupiedCourts || [];
+            const selectedCourt = parseInt(courtNumberInput.value) || 1;
+            const totalCourts = parseInt(document.getElementById('visualCourtMap')?.getAttribute('data-total-courts')) || 1;
+
+            // If currently selected court becomes occupied, auto-switch to first available court
+            if (currentOccupiedCourts.includes(selectedCourt)) {
+                for (let c = 1; c <= totalCourts; c++) {
+                    if (!currentOccupiedCourts.includes(c)) {
+                        courtNumberInput.value = c;
+                        const padded = String(c).padStart(2, '0');
+                        if (selectedCourtBadge) selectedCourtBadge.textContent = `🏸 Sân số ${padded}`;
+                        if (courtMapStatusHint) courtMapStatusHint.textContent = `Đang chọn: Sân số ${padded}`;
+                        break;
+                    }
+                }
+            }
+
+            const activeCourt = parseInt(courtNumberInput.value) || 1;
+            document.querySelectorAll('.court-map-item').forEach(btn => {
+                const c = parseInt(btn.getAttribute('data-court'));
+                const pill = btn.querySelector('.court-status-pill');
+                const isOccupied = currentOccupiedCourts.includes(c);
+                const isSelected = (c === activeCourt) && !isOccupied;
+
+                btn.disabled = isOccupied;
+                btn.className = 'court-map-item group relative rounded-xl p-2.5 border transition-all duration-200 text-left overflow-hidden ';
+
+                if (isOccupied) {
+                    btn.className += 'border-red-500/40 bg-red-950/30 opacity-60 cursor-not-allowed';
+                    if (pill) {
+                        pill.className = 'court-status-pill text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-red-500/30 text-red-300';
+                        pill.textContent = '🔒 ĐÃ ĐẶT';
+                    }
+                } else if (isSelected) {
+                    btn.className += 'border-[#d8ff3e] bg-emerald-950/70 ring-2 ring-[#d8ff3e]/40 shadow-lg';
+                    if (pill) {
+                        pill.className = 'court-status-pill text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-[#d8ff3e] text-[#0b1116]';
+                        pill.textContent = '✓ ĐANG CHỌN';
+                    }
+                } else {
+                    btn.className += 'border-emerald-500/30 bg-emerald-950/25 hover:border-emerald-400 cursor-pointer';
+                    if (pill) {
+                        pill.className = 'court-status-pill text-[9px] font-black uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300';
+                        pill.textContent = 'TRỐNG';
+                    }
+                }
+            });
+        }
+
+        function renderTimeSlotGrid() {
+            if (!timeSlotGrid) return;
+            const startVal = startTimeInput.value;
+            const endVal = endTimeInput.value;
+            const startHr = startVal ? parseInt(startVal.split(':')[0], 10) : -1;
+            const endHr = endVal ? parseInt(endVal.split(':')[0], 10) : -1;
+
+            timeSlotGrid.innerHTML = '';
+            dailySlotsData.forEach(slot => {
+                const isFull = slot.available <= 0;
+                const isSelected = (startHr >= 0 && endHr > startHr && slot.hour >= startHr && slot.hour < endHr);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.disabled = isFull;
+                btn.setAttribute('data-hour', slot.hour);
+
+                let cls = 'slot-cell relative flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all duration-150 select-none ';
+                if (isFull) {
+                    cls += 'border-red-500/30 bg-red-950/20 text-red-400/60 cursor-not-allowed opacity-60';
+                } else if (isSelected) {
+                    cls += 'border-[#d8ff3e] bg-[#d8ff3e] text-[#0b1116] font-black shadow-[0_0_12px_rgba(216,255,62,0.35)] scale-[1.02]';
+                } else if (slot.is_peak) {
+                    cls += 'border-amber-500/40 bg-amber-500/10 hover:border-[#d8ff3e] text-white cursor-pointer';
+                } else {
+                    cls += 'border-emerald-500/30 bg-emerald-500/10 hover:border-[#d8ff3e] text-white cursor-pointer';
+                }
+                btn.className = cls;
+
+                const subBadge = isFull
+                    ? `<span class="text-[9px] font-bold text-red-400">Hết sân (0/${slot.total})</span>`
+                    : `<span class="text-[9px] font-bold ${isSelected ? 'text-[#0b1116]/80' : (slot.is_peak ? 'text-amber-300' : 'text-emerald-300')}">${slot.is_peak ? '🔥 ' : ''}Còn ${slot.available}/${slot.total} sân</span>`;
+
+                btn.innerHTML = `
+                    <span class="text-[11px] font-black tracking-tight">${slot.start} - ${slot.end}</span>
+                    ${subBadge}
+                `;
+
+                if (!isFull) {
+                    btn.addEventListener('click', () => onSlotClick(slot.hour));
+                }
+                timeSlotGrid.appendChild(btn);
+            });
+        }
+
+        function onSlotClick(clickedHour) {
+            let newStartHr = clickedHour;
+            let newEndHr = clickedHour + 1;
+
+            if (slotAnchorHour !== null && clickedHour > slotAnchorHour) {
+                // Check if all slots between slotAnchorHour and clickedHour are available
+                let canRange = true;
+                for (let h = slotAnchorHour; h <= clickedHour; h++) {
+                    const s = dailySlotsData.find(x => x.hour === h);
+                    if (!s || s.available <= 0) {
+                        canRange = false;
+                        break;
+                    }
+                }
+                if (canRange && (clickedHour - slotAnchorHour) <= 4) {
+                    newStartHr = slotAnchorHour;
+                    newEndHr = clickedHour + 1;
+                    slotAnchorHour = null;
+                } else {
+                    slotAnchorHour = clickedHour;
+                }
+            } else {
+                slotAnchorHour = clickedHour;
+            }
+
+            startTimeInput.value = String(newStartHr).padStart(2, '0') + ':00';
+            endTimeInput.value = String(newEndHr).padStart(2, '0') + ':00';
+            calculatePrice();
+            renderTimeSlotGrid();
+            checkAvailability();
+        }
+
+        async function loadDailySlots() {
+            const dateVal = dateInput.value;
+            if (!dateVal) return;
+            try {
+                const res = await fetch(`index.php?action=api_check_availability&pitch_id=${pitchId}&date=${dateVal}`);
+                const data = await res.json();
+                if (data.slots) {
+                    dailySlotsData = data.slots;
+                    renderTimeSlotGrid();
+                }
+            } catch (e) {}
+        }
 
         async function checkAvailability() {
             const dateVal = dateInput.value;
@@ -398,6 +637,14 @@
                     const data = await response.json();
                     
                     availabilityDisplay.classList.remove('animate-pulse');
+
+                    if (data.slots) {
+                        dailySlotsData = data.slots;
+                        renderTimeSlotGrid();
+                    }
+                    if (data.occupied_courts) {
+                        updateCourtMapUI(data.occupied_courts);
+                    }
 
                     if (data.error) {
                         availabilityDisplay.textContent = 'Lỗi kiểm tra';
@@ -430,11 +677,25 @@
                 submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'from-gray-500', 'to-gray-600');
                 submitBtn.classList.add('from-green-600', 'to-green-500', 'hover:from-green-700', 'hover:to-green-600');
                 submitBtn.textContent = 'Xác Nhận & Tiến Hành Thanh Toán';
+                loadDailySlots();
             }
         }
         
-        dateInput.addEventListener('change', checkAvailability);
-        startTimeInput.addEventListener('change', checkAvailability);
-        endTimeInput.addEventListener('change', checkAvailability);
+        dateInput.addEventListener('change', () => {
+            slotAnchorHour = null;
+            loadDailySlots();
+            checkAvailability();
+        });
+        startTimeInput.addEventListener('change', () => {
+            renderTimeSlotGrid();
+            checkAvailability();
+        });
+        endTimeInput.addEventListener('change', () => {
+            renderTimeSlotGrid();
+            checkAvailability();
+        });
+
+        // Initial load of daily slot grid on page open
+        loadDailySlots();
     });
 </script>

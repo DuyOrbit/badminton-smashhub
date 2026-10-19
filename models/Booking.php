@@ -19,6 +19,7 @@ class Booking {
     public $checkin_code = '';
     public $booking_type = 'online_app';
     public $created_by_user_id = null;
+    public $court_number = 1;
 
     public function __construct($db) {
         $this->conn = $db;
@@ -35,12 +36,15 @@ class Booking {
             if (!in_array('created_by_user_id', $cols)) {
                 $this->conn->exec("ALTER TABLE " . $this->table_name . " ADD COLUMN created_by_user_id INT NULL");
             }
+            if (!in_array('court_number', $cols)) {
+                $this->conn->exec("ALTER TABLE " . $this->table_name . " ADD COLUMN court_number INT DEFAULT 1 AFTER pitch_id");
+            }
         } catch (Exception $e) {}
     }
 
     public function create() {
         $query = "INSERT INTO " . $this->table_name . " 
-                  SET pitch_id=:pitch_id, user_id=:user_id, customer_name=:customer_name, customer_phone=:customer_phone, 
+                  SET pitch_id=:pitch_id, court_number=:court_number, user_id=:user_id, customer_name=:customer_name, customer_phone=:customer_phone, 
                       booking_date=:booking_date, start_time=:start_time, end_time=:end_time, total_price=:total_price,
                       payment_method=:payment_method, payment_status=:payment_status, services_note=:services_note, 
                       checkin_code=:checkin_code, booking_type=:booking_type, created_by_user_id=:created_by_user_id";
@@ -50,12 +54,14 @@ class Booking {
         // sanitize
         $this->customer_name = htmlspecialchars(strip_tags($this->customer_name));
         $this->customer_phone = htmlspecialchars(strip_tags($this->customer_phone));
+        $this->court_number = max(1, (int)$this->court_number);
         if (empty($this->checkin_code)) {
             $this->checkin_code = 'CKIN' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 4));
         }
 
         // bind values
         $stmt->bindParam(":pitch_id", $this->pitch_id);
+        $stmt->bindParam(":court_number", $this->court_number);
         $stmt->bindParam(":user_id", $this->user_id);
         $stmt->bindParam(":customer_name", $this->customer_name);
         $stmt->bindParam(":customer_phone", $this->customer_phone);
@@ -149,6 +155,64 @@ class Booking {
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return (int)$row['total'];
+    }
+
+    public function getOccupiedCourts($pitch_id, $booking_date, $start_time, $end_time, $total_courts) {
+        $query = "SELECT court_number FROM " . $this->table_name . "
+                  WHERE pitch_id = :pitch_id
+                    AND booking_date = :booking_date
+                    AND status IN ('confirmed', 'pending', 'completed')
+                    AND (start_time < :end_time AND end_time > :start_time)
+                  ORDER BY id ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":pitch_id", $pitch_id);
+        $stmt->bindParam(":booking_date", $booking_date);
+        $stmt->bindParam(":start_time", $start_time);
+        $stmt->bindParam(":end_time", $end_time);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $occupied = [];
+        foreach ($rows as $cNum) {
+            $c = (int)$cNum;
+            if ($c < 1 || $c > $total_courts || in_array($c, $occupied)) {
+                // Auto-assign to next available court number if legacy booking had default court_number = 1
+                for ($try = 1; $try <= $total_courts; $try++) {
+                    if (!in_array($try, $occupied)) {
+                        $c = $try;
+                        break;
+                    }
+                }
+            }
+            if ($c >= 1 && $c <= $total_courts && !in_array($c, $occupied)) {
+                $occupied[] = $c;
+            }
+        }
+        sort($occupied);
+        return $occupied;
+    }
+
+    public function getDailyHourlyMatrix($pitch_id, $booking_date, $total_courts) {
+        $slots = [];
+        for ($h = 6; $h < 22; $h++) {
+            $start = sprintf('%02d:00', $h);
+            $end = sprintf('%02d:00', $h + 1);
+            $occupiedCourts = $this->getOccupiedCourts($pitch_id, $booking_date, $start . ':00', $end . ':00', $total_courts);
+            $bookedCount = count($occupiedCourts);
+            $availableCount = max(0, $total_courts - $bookedCount);
+            $slots[] = [
+                'hour' => $h,
+                'start' => $start,
+                'end' => $end,
+                'label' => "{$start} - {$end}",
+                'booked' => $bookedCount,
+                'available' => $availableCount,
+                'total' => (int)$total_courts,
+                'is_peak' => ($h >= 17 && $h < 21),
+                'occupied_courts' => $occupiedCourts
+            ];
+        }
+        return $slots;
     }
 
     public function readOneWithPitchInfo($id) {

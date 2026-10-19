@@ -43,6 +43,7 @@ $bookingData = isset($_SESSION['last_booking']) ? $_SESSION['last_booking'] : nu
                 <ul class="space-y-3">
                     <li class="flex justify-between items-center"><span class="text-white/60 text-sm">Họ và tên</span> <span class="font-bold text-white"><?php echo htmlspecialchars($bookingData['name']); ?></span></li>
                     <li class="flex justify-between items-center"><span class="text-white/60 text-sm">Tên sân</span> <span class="font-bold text-white"><?php echo htmlspecialchars($bookingData['pitch_name']); ?></span></li>
+                    <li class="flex justify-between items-center"><span class="text-white/60 text-sm">Vị trí sân con</span> <span class="font-black text-[#d8ff3e] bg-[#d8ff3e]/10 border border-[#d8ff3e]/30 px-2.5 py-0.5 rounded-lg text-xs">🏸 Sân số <?php echo str_pad((int)($bookingData['court_number'] ?? 1), 2, '0', STR_PAD_LEFT); ?></span></li>
                     <li class="flex justify-between items-center"><span class="text-white/60 text-sm">Ngày chơi cầu</span> <span class="font-bold text-white"><?php echo date('d/m/Y', strtotime($bookingData['date'])); ?></span></li>
                     <li class="flex justify-between items-center"><span class="text-white/60 text-sm">Khung giờ</span> <span class="font-bold text-white bg-[#0b1116]/10 px-2 py-1 rounded text-xs"><?php echo htmlspecialchars($bookingData['time']); ?></span></li>
                     
