@@ -20,6 +20,9 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `badminton_booking`
 --
+CREATE DATABASE IF NOT EXISTS `badminton_booking`;
+USE `badminton_booking`;
+
 
 -- --------------------------------------------------------
 
