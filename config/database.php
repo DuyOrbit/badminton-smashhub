@@ -75,6 +75,8 @@ class Database {
         // Create PDO instance
         try {
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
+            // Auto initialize database schema & tables if they do not exist yet
+            $this->autoInitializeIfMissing();
         } catch (PDOException $e) {
             $this->error = $e->getMessage();
             
@@ -146,6 +148,46 @@ class Database {
                     <p>Chi tiết: <code>" . htmlspecialchars($this->error) . "</code></p>
                 </div>");
             }
+        }
+    }
+
+    /**
+     * Automatically populate database tables and initial data if they do not exist
+     */
+    private function autoInitializeIfMissing() {
+        if (!$this->dbh) return;
+        try {
+            $stmt = $this->dbh->query("SHOW TABLES LIKE 'pitches'");
+            if ($stmt && $stmt->rowCount() === 0) {
+                $sqlFiles = [
+                    __DIR__ . '/../tidb_import.sql',
+                    __DIR__ . '/../badminton_booking.sql'
+                ];
+                $sqlContent = null;
+                foreach ($sqlFiles as $file) {
+                    if (file_exists($file)) {
+                        $sqlContent = file_get_contents($file);
+                        break;
+                    }
+                }
+                if ($sqlContent) {
+                    $cleaned = preg_replace('/^--.*$/m', '', $sqlContent);
+                    $statements = array_filter(array_map('trim', explode(';', $cleaned)));
+                    $this->dbh->exec("SET FOREIGN_KEY_CHECKS = 0;");
+                    foreach ($statements as $s) {
+                        if (!empty($s)) {
+                            try {
+                                $this->dbh->exec($s);
+                            } catch (\PDOException $ex) {
+                                // continue executing other statements
+                            }
+                        }
+                    }
+                    $this->dbh->exec("SET FOREIGN_KEY_CHECKS = 1;");
+                }
+            }
+        } catch (\Exception $e) {
+            // Silently continue
         }
     }
 
