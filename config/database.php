@@ -1,14 +1,24 @@
 <?php
 // Database Configuration
-// Support single DATABASE_URL or MYSQL_URL if provided by cloud platforms (Render, Railway, TiDB, etc.)
-$dbUrl = getenv('DATABASE_URL') ?: getenv('MYSQL_URL');
+$getEnvVal = function($names, $default = '') {
+    if (!is_array($names)) $names = [$names];
+    foreach ($names as $key) {
+        if (!empty($_ENV[$key])) return trim($_ENV[$key]);
+        if (!empty($_SERVER[$key])) return trim($_SERVER[$key]);
+        $val = getenv($key);
+        if ($val !== false && $val !== '') return trim($val);
+    }
+    return $default;
+};
+
+$dbUrl = $getEnvVal(['DATABASE_URL', 'MYSQL_URL']);
 $parsedUrl = $dbUrl ? parse_url($dbUrl) : [];
 
-$defaultHost = $parsedUrl['host'] ?? (getenv('DB_HOST') ?: '127.0.0.1');
-$defaultPort = $parsedUrl['port'] ?? (getenv('DB_PORT') ?: '3306');
-$defaultUser = $parsedUrl['user'] ?? (getenv('DB_USER') ?: 'root');
-$defaultPass = isset($parsedUrl['pass']) ? $parsedUrl['pass'] : (getenv('DB_PASS') !== false ? getenv('DB_PASS') : '');
-$defaultName = !empty($parsedUrl['path']) ? ltrim($parsedUrl['path'], '/') : (getenv('DB_NAME') ?: 'badminton_booking');
+$defaultHost = $parsedUrl['host'] ?? $getEnvVal(['DB_HOST', 'MYSQL_HOST'], '127.0.0.1');
+$defaultPort = $parsedUrl['port'] ?? $getEnvVal(['DB_PORT', 'MYSQL_PORT'], '3306');
+$defaultUser = $parsedUrl['user'] ?? $getEnvVal(['DB_USER', 'DB_USERNAME', 'MYSQL_USER'], 'root');
+$defaultPass = isset($parsedUrl['pass']) ? $parsedUrl['pass'] : $getEnvVal(['DB_PASS', 'DB_PASSWORD', 'MYSQL_PASSWORD', 'MYSQL_PWD'], '');
+$defaultName = !empty($parsedUrl['path']) ? ltrim($parsedUrl['path'], '/') : $getEnvVal(['DB_NAME', 'DB_DATABASE', 'MYSQL_DATABASE'], 'badminton_booking');
 
 define('DB_HOST', $defaultHost);
 define('DB_PORT', $defaultPort);
@@ -109,6 +119,25 @@ class Database {
                         </ol>
                     </div>
                     <p style='font-size:12px; color:#64748b; margin-top:20px;'>Chi tiết lỗi kỹ thuật: <code>" . htmlspecialchars($this->error) . "</code></p>
+                </div>");
+            } elseif (strpos($this->error, '1045') !== false || strpos($this->error, 'Access denied') !== false) {
+                $noPass = (strpos($this->error, 'using password: NO') !== false);
+                $passHelp = $noPass 
+                    ? "Biến <code>DB_PASS</code> (hoặc <code>DB_PASSWORD</code>) trên Render đang <strong>để trống hoặc chưa được lưu</strong>."
+                    : "Mật khẩu cho tài khoản <code>{$this->user}</code> không chính xác. Hãy kiểm tra lại mật khẩu trên TiDB Cloud.";
+                die("
+                <div style='max-width:650px; margin:50px auto; padding:30px; font-family:system-ui, sans-serif; background:#0b1116; color:#fff; border-radius:16px; border:1px solid #334155; line-height:1.6;'>
+                    <h2 style='color:#f43f5e; margin-top:0;'>🔑 Chưa có Mật khẩu CSDL (Code 1045)</h2>
+                    <p style='color:#cbd5e1;'>{$passHelp}</p>
+                    <div style='background:#1e293b; padding:18px; border-radius:12px; margin:18px 0; font-size:14px;'>
+                        <strong style='color:#38bdf8;'>🛠️ Cách khắc phục:</strong>
+                        <ol style='margin:8px 0 0 20px; line-height:1.7;'>
+                            <li>Vào <strong>Render &rarr; tab Environment</strong>.</li>
+                            <li>Kiểm tra xem đã có biến <strong>DB_PASS</strong> (hoặc <strong>DB_PASSWORD</strong>) chưa.</li>
+                            <li>Nhập mật khẩu TiDB Cloud vào ô <strong>Value</strong>.</li>
+                            <li>Bấm <strong>Save Changes</strong>.</li>
+                        </ol>
+                    </div>
                 </div>");
             } else {
                 die("
