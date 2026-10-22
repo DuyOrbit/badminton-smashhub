@@ -35,9 +35,31 @@ class Database {
             PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
         );
 
-        // If connecting to remote cloud host (not localhost), disable strict SSL cert verify to ensure cloud DB connects seamlessly
-        if ($this->host !== '127.0.0.1' && $this->host !== 'localhost' && defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')) {
-            $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+        // If connecting to remote cloud host (not localhost), configure SSL/TLS encryption
+        // (Mandatory for TiDB Cloud Serverless, AWS RDS, Aiven, etc.)
+        if ($this->host !== '127.0.0.1' && $this->host !== 'localhost') {
+            $caPaths = [
+                getenv('MYSQL_ATTR_SSL_CA'),
+                __DIR__ . '/isrgrootx1.pem',          // Bundled Let's Encrypt ISRG Root X1 (TiDB Cloud)
+                '/etc/ssl/certs/ca-certificates.crt', // Standard Debian / Ubuntu / Render
+                '/etc/pki/tls/certs/ca-bundle.crt',   // RedHat / CentOS
+                '/etc/ssl/ca-bundle.pem',
+                '/etc/ssl/cert.pem'
+            ];
+            $sslConfigured = false;
+            foreach ($caPaths as $path) {
+                if (!empty($path) && file_exists($path)) {
+                    $options[PDO::MYSQL_ATTR_SSL_CA] = $path;
+                    $sslConfigured = true;
+                    break;
+                }
+            }
+            if (!$sslConfigured && defined('PDO::MYSQL_ATTR_SSL_CA')) {
+                $options[PDO::MYSQL_ATTR_SSL_CA] = true;
+            }
+            if (defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')) {
+                $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+            }
         }
 
         // Create PDO instance
