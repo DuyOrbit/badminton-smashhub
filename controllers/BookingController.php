@@ -4,13 +4,18 @@ class BookingController {
         $database = new Database();
         $db = $database->getConnection();
 
-        $pitch_id = isset($_GET['id']) ? $_GET['id'] : die('Chưa chọn sân.');
+        $pitch_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if (!$pitch_id) {
+            header("Location: index.php?action=home&error=pitch_missing");
+            exit;
+        }
         
         $pitch = new Pitch($db);
         $pitchData = $pitch->readOne($pitch_id);
 
         if(!$pitchData) {
-            die('Sân không tồn tại.');
+            header("Location: index.php?action=home&error=pitch_not_found");
+            exit;
         }
 
         $currentUser = null;
@@ -56,7 +61,17 @@ class BookingController {
             $end = strtotime($_POST['end_time']);
             $hours = ($end - $start) / 3600;
             if($hours <= 0) {
-                 die("Thời gian kết thúc phải sau thời gian bắt đầu.");
+                 header("Location: index.php?action=book&id={$_POST['pitch_id']}&error=invalid_time");
+                 exit;
+            }
+
+            // Enforce operating hours 06:00 - 22:00
+            $start_hour = (int)date('H', $start);
+            $end_hour = (int)date('H', $end);
+            $end_min = (int)date('i', $end);
+            if ($start_hour < 6 || $end_hour > 23 || ($end_hour == 23 && $end_min > 0)) {
+                header("Location: index.php?action=book&id={$_POST['pitch_id']}&error=outside_operating_hours");
+                exit;
             }
 
             $pitch = new Pitch($db);
@@ -104,7 +119,8 @@ class BookingController {
                 
                 if ($overlapping >= $pitchData['quantity']) {
                     $db->rollBack();
-                    die("<h3 style='color:red;'>Rất tiếc! Sân đã kín lịch đã được xác nhận vào khung giờ này. Vui lòng chọn khung giờ khác.</h3><br><a href='javascript:history.back()'>Quay lại</a>");
+                    header("Location: index.php?action=book&id={$_POST['pitch_id']}&error=fully_booked");
+                    exit;
                 }
 
                 $occupiedCourts = $booking->getOccupiedCourts($_POST['pitch_id'], $_POST['booking_date'], $_POST['start_time'], $_POST['end_time'], (int)$pitchData['quantity']);
@@ -165,7 +181,21 @@ class BookingController {
         $bData = $booking->readOneWithPitchInfo($booking_id);
 
         if (!$bData) {
+            http_response_code(404);
             echo json_encode(['success' => false, 'message' => 'Không tìm thấy đơn đặt sân trên hệ thống.']);
+            exit;
+        }
+
+        // Security Check: Verify permission to pay for this booking (Anti-IDOR)
+        $currentUserId = $_SESSION['user_id'] ?? null;
+        $currentUserRole = $_SESSION['user_role'] ?? '';
+        $isOwnerOfBooking = ($currentUserId && !empty($bData['user_id']) && (int)$bData['user_id'] === (int)$currentUserId);
+        $isStaffOrOwner = in_array($currentUserRole, ['admin', 'staff', 'owner']);
+        $isRecentSessionBooking = (isset($_SESSION['last_booking']) && (int)$_SESSION['last_booking']['booking_id'] === (int)$booking_id);
+
+        if (!$isOwnerOfBooking && !$isStaffOrOwner && !$isRecentSessionBooking) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Lỗi bảo mật (403 Forbidden): Bạn không có quyền thao tác thanh toán trên đơn đặt sân này.']);
             exit;
         }
 
@@ -225,7 +255,13 @@ class BookingController {
             }
 
             if (!$bData) {
-                die("Bạn không có quyền đánh giá sân này.");
+                header("Location: index.php?action=my_bookings&error=unauthorized_review");
+                exit;
+            }
+
+            if ($bData['status'] !== 'completed') {
+                header("Location: index.php?action=my_bookings&error=must_complete_to_review");
+                exit;
             }
 
             $review = new Review($db);
@@ -266,6 +302,11 @@ class BookingController {
 
     public function deleteReview() {
         if (isset($_GET['id'])) {
+            if (!isset($_GET['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_GET['csrf_token'])) {
+                header("Location: index.php?action=my_bookings&error=csrf_invalid");
+                exit;
+            }
+
             $database = new Database();
             $db = $database->getConnection();
             

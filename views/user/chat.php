@@ -120,8 +120,19 @@
                 const currentUserId = <?php echo $_SESSION['user_id']; ?>;
                 const messagesArea = document.getElementById('messagesArea');
                 
-                // Scroll to bottom
-                messagesArea.scrollTop = messagesArea.scrollHeight;
+                function scrollToBottom(smooth = false) {
+                    if (!messagesArea) return;
+                    if (smooth) {
+                        messagesArea.scrollTo({ top: messagesArea.scrollHeight, behavior: 'smooth' });
+                    } else {
+                        messagesArea.scrollTop = messagesArea.scrollHeight;
+                    }
+                }
+
+                // Auto-scroll on initial render and window loaded
+                scrollToBottom();
+                window.addEventListener('load', () => scrollToBottom());
+                setTimeout(() => scrollToBottom(), 300);
 
                 // Handle sending msg
                 document.getElementById('chatForm').addEventListener('submit', function(e) {

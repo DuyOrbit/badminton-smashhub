@@ -127,7 +127,7 @@
                                         </select>
                                     </form>
 
-                                    <a href="index.php?action=owner_remove_staff&id=<?php echo $st['id']; ?>" 
+                                    <a href="index.php?action=owner_remove_staff&id=<?php echo $st['id']; ?>&csrf_token=<?php echo $_SESSION['csrf_token'] ?? ''; ?>" 
                                        onclick="return confirm('Bạn có chắc muốn thu hồi quyền nhân viên của tài khoản này?')"
                                        class="p-2 rounded-xl text-red-400/80 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition"
                                        title="Thu hồi quyền">

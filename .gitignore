@@ -24,3 +24,4 @@ package.json
 package-lock.json
 /tests/screenshots/
 /tests/screenshots_deep/
+/tests/screenshots_audit/

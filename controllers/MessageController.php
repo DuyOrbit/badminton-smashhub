@@ -80,8 +80,10 @@ class MessageController {
         if ($msg->send()) {
             require_once "models/Notification.php";
             $notif = new Notification($db);
-            $senderName = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : "Một người dùng";
-            $contentStr = mb_substr($_POST['content'], 0, 40) . (mb_strlen($_POST['content']) > 40 ? '...' : '');
+            $senderName = htmlspecialchars(strip_tags($_SESSION['user_name'] ?? 'Một người dùng'), ENT_QUOTES, 'UTF-8');
+            $cleanRaw = strip_tags($_POST['content'] ?? '');
+            $contentStr = mb_substr($cleanRaw, 0, 40) . (mb_strlen($cleanRaw) > 40 ? '...' : '');
+            $contentStr = htmlspecialchars($contentStr, ENT_QUOTES, 'UTF-8');
             $notif->create(
                 $_POST['receiver_id'], 
                 "💬 Tin nhắn mới từ " . $senderName, 

@@ -1,25 +1,37 @@
 <?php
 class AuthController {
-        public function forgotPassword() {
+    public function forgotPassword() {
+        $error = null;
         if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST['username'])) {
             $database = new Database();
             $db = $database->getConnection();
-            
-            // Mock password reset: immediately reset to '123456'
-            $stmt = $db->prepare("UPDATE users SET password = ? WHERE username = ?");
-            $hashed_password = password_hash('123456', PASSWORD_DEFAULT);
-            $stmt->execute([$hashed_password, $_POST['username']]);
-            
-            if ($stmt->rowCount() > 0) {
-                header("Location: index.php?action=login&msg=reset_success");
-                exit;
+            $username = trim($_POST['username']);
+            $phone = trim($_POST['phone'] ?? '');
+
+            if (empty($phone)) {
+                $error = "Vui lòng cung cấp số điện thoại đã đăng ký để xác minh quyền sở hữu tài khoản.";
             } else {
-                $error = "Không tìm thấy tên đăng nhập này trong hệ thống.";
+                $stmt = $db->prepare("SELECT id, username, phone FROM users WHERE username = ? AND phone = ? LIMIT 1");
+                $stmt->execute([$username, $phone]);
+                $userFound = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($userFound) {
+                    $newPass = !empty($_POST['new_password']) ? $_POST['new_password'] : '123456';
+                    $hashed_password = password_hash($newPass, PASSWORD_DEFAULT);
+                    $upd = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
+                    $upd->execute([$hashed_password, $userFound['id']]);
+
+                    header("Location: index.php?action=login&msg=reset_success");
+                    exit;
+                } else {
+                    $error = "Xác minh thất bại: Tên đăng nhập và Số điện thoại không khớp với hồ sơ người dùng.";
+                }
             }
         }
         
-        $page_title = "Quên mật khẩu";
-        require_once "views/auth/forgot_password.php";
+        $page_title = "Quên Mật Khẩu";
+        $content = "auth/forgot_password.php";
+        require_once "views/layout.php";
     }
     public function login() {
         if($_SERVER['REQUEST_METHOD'] == 'POST') {

@@ -308,6 +308,7 @@ switch ($action) {
         $controller->pitches();
         break;
     case 'admin_toggle_pitch':
+    case 'admin_toggle_pitch_status':
         requireRole(['admin']);
         $controller = new AdminController();
         $controller->togglePitchStatus();

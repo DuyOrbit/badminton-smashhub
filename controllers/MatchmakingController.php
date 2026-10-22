@@ -26,14 +26,16 @@ class MatchmakingController {
             $overlapping = $booking->getConfirmedOverlappingCount($_POST['pitch_id'], $_POST['play_date'], $_POST['start_time'], $_POST['end_time']);
             
             if ($overlapping >= $pitchData['quantity']) {
-                die("<h2 style='color:red;'>Khoảng thời gian này sân đã có khách đặt kít lịch! Vui lòng lùi lại, sang ngày hoặc chọn giờ khác.</h2>");
+                header("Location: index.php?action=matchmaking&error=fully_booked");
+                exit;
             }
 
             // Fix lỗi người dùng nhập giờ kết thúc trước giờ bắt đầu
             $start_test = strtotime($_POST['start_time']);
             $end_test = strtotime($_POST['end_time']);
             if ($end_test <= $start_test) {
-                die("<h2 style='color:red;'>Giờ kết thúc không hợp lệ! Vui lòng chọn giờ kết thúc sau giờ bắt đầu.</h2>");
+                header("Location: index.php?action=matchmaking&error=invalid_time");
+                exit;
             }
 
             // 2. Tự động mượn thông tin User để Đặt Sân (Auto Booking)
@@ -63,7 +65,8 @@ class MatchmakingController {
             $booking->total_price = $host_half + $guest_half;
             
             if (!$booking->create()) {
-                die("Lỗi hệ thống khi Khóa Lịch đặt sân.");
+                header("Location: index.php?action=matchmaking&error=booking_failed");
+                exit;
             }
 
             // 3. Đăng bài lên Bảng Cáp Kèo
@@ -119,6 +122,11 @@ class MatchmakingController {
             $stmt = $db->prepare($query);
             $stmt->execute([$_GET['id']]);
             $mData = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($mData && $mData['user_id'] == $_SESSION['user_id']) {
+                header("Location: index.php?action=matchmaking&error=cannot_accept_own_match");
+                exit;
+            }
             
             if ($matchModel->acceptMatch($_GET['id'], $_SESSION['user_id'])) {
                 $start = strtotime($mData['start_time']);
@@ -284,7 +292,8 @@ class MatchmakingController {
             $end_time = $_POST['end_time'];
 
             if (strtotime($end_time) <= strtotime($start_time)) {
-                die("<h3 style='color:red;'>Giờ kết thúc phải sau giờ bắt đầu!</h3><br><a href='javascript:history.back()'>Quay lại</a>");
+                header("Location: index.php?action=smart_match&error=" . urlencode("Giờ kết thúc phải sau giờ bắt đầu!"));
+                exit;
             }
 
             $has_pitch = (isset($_POST['pitch_mode']) && $_POST['pitch_mode'] === 'specified') ? 1 : 0;

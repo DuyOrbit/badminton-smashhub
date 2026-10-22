@@ -31,7 +31,7 @@
                         <div class="flex gap-2">
                             <a href="index.php?action=owner_edit_pitch&id=<?php echo $p['id']; ?>" class="flex-1 bg-[#0b1116]/10 hover:bg-[#0b1116]/20 text-white/90 font-bold py-2 px-3 rounded-xl text-xs transition-colors text-center">Sửa</a>
                             <a href="index.php?action=book&id=<?php echo $p['id']; ?>" target="_blank" class="flex-1 bg-[#121b21] border border-white/20 hover:bg-[#0b1116] text-white/90 font-bold py-2 px-3 rounded-xl text-xs transition-colors text-center">Xem Trang</a>
-                            <a href="index.php?action=owner_delete_pitch&id=<?php echo $p['id']; ?>" onclick="return confirm('Bạn có chắc chắn muốn xóa sân này? Hành động này không thể hoàn tác!')" class="bg-red-500/20 hover:bg-red-100 text-red-600 font-bold py-2 px-3 rounded-xl text-xs transition-colors text-center border border-red-200">Xóa</a>
+                            <a href="index.php?action=owner_delete_pitch&id=<?php echo $p['id']; ?>&csrf_token=<?php echo $_SESSION['csrf_token'] ?? ''; ?>" onclick="return confirm('Bạn có chắc chắn muốn xóa sân này? Hành động này không thể hoàn tác!')" class="bg-red-500/20 hover:bg-red-100 text-red-600 font-bold py-2 px-3 rounded-xl text-xs transition-colors text-center border border-red-200">Xóa</a>
                         </div>
                     </div>
                 </div>

@@ -15,6 +15,10 @@ class AdminController {
 
     public function togglePitchStatus() {
         if(isset($_GET["id"]) && isset($_GET["status"])) {
+            if (!isset($_GET['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_GET['csrf_token'])) {
+                header("Location: index.php?action=admin_pitches&error=csrf_invalid");
+                exit;
+            }
             $database = new Database();
             $db = $database->getConnection();
             $status = $_GET["status"] == "locked" ? "locked" : "active";
@@ -218,10 +222,6 @@ class AdminController {
 
     public function deleteUser() {
         if (isset($_GET['id'])) {
-            $database = new Database();
-            $db = $database->getConnection();
-            $userModel = new User($db);
-
             $targetId = (int)$_GET['id'];
 
             // Do not allow admin to delete their own account
@@ -229,6 +229,15 @@ class AdminController {
                 header("Location: index.php?action=admin_users&error=cannot_delete_self");
                 exit;
             }
+
+            if (!isset($_GET['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_GET['csrf_token'])) {
+                header("Location: index.php?action=admin_users&error=csrf_invalid");
+                exit;
+            }
+
+            $database = new Database();
+            $db = $database->getConnection();
+            $userModel = new User($db);
 
             if ($userModel->delete($targetId)) {
                 header("Location: index.php?action=admin_users&msg=deleted");

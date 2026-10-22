@@ -1,0 +1,663 @@
+{
+  "summary": {
+    "total": 81,
+    "pass": 81,
+    "fail": 0,
+    "bug": 0,
+    "warn": 0,
+    "consoleErrorsCount": 0,
+    "httpErrorsCount": 0
+  },
+  "results": [
+    {
+      "module": "GUEST",
+      "name": "Trang chủ tải thành công & có tiêu đề hợp lệ",
+      "status": "PASS",
+      "details": "Trang Chủ - SMASHHUB Badminton",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:33.413Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Trang Chủ (Guest Desktop) chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:33.419Z"
+    },
+    {
+      "module": "GUEST",
+      "name": "Bộ lọc tìm kiếm sân theo từ khóa",
+      "status": "PASS",
+      "details": "Tìm thấy sân Phương Đông",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:34.288Z"
+    },
+    {
+      "module": "GUEST",
+      "name": "Trang Bản đồ tương tác Leaflet GPS tải thành công",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:35.820Z"
+    },
+    {
+      "module": "GUEST",
+      "name": "API danh sách sân tọa độ GeoJSON/Array hợp lệ",
+      "status": "PASS",
+      "details": "Số sân: 6",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:35.976Z"
+    },
+    {
+      "module": "GUEST",
+      "name": "Danh sách CLB hiển thị công khai cho khách",
+      "status": "PASS",
+      "details": "3 CLB hiển thị",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:37.088Z"
+    },
+    {
+      "module": "GUEST",
+      "name": "Bảng tin Cáp Kèo hiển thị công khai",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:38.465Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Hồ sơ cá nhân (/user_profile)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:39.113Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Lịch sử đặt sân (/my_bookings)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:39.785Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Smart Match AI (/smart_match)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:40.390Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Tạo CLB mới (/club_create)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:41.003Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Tin nhắn nội bộ (/chat)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:41.586Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Bàn trực Staff (/staff_dashboard)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:42.185Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Dashboard Chủ sân (/owner_dashboard)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:42.775Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Super Admin Dashboard (/admin_dashboard)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:43.377Z"
+    },
+    {
+      "module": "GUEST_RBAC",
+      "name": "Chặn Guest truy cập Admin Quản lý người dùng (/admin_users)",
+      "status": "PASS",
+      "details": "Redirect: http://localhost/badminton/index.php?action=login",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:43.965Z"
+    },
+    {
+      "module": "AUTH",
+      "name": "Báo lỗi khi nhập sai mật khẩu",
+      "status": "PASS",
+      "details": "Hiển thị thông báo thân thiện",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:46.084Z"
+    },
+    {
+      "module": "AUTH",
+      "name": "Báo lỗi khi đăng ký username đã tồn tại",
+      "status": "PASS",
+      "details": "Chặn trùng lặp tài khoản",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:48.079Z"
+    },
+    {
+      "module": "AUTH_2FA",
+      "name": "Giao diện Quên mật khẩu bắt buộc 2 trường xác minh: Tên đăng nhập & Số điện thoại",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:49.181Z"
+    },
+    {
+      "module": "AUTH_SECURITY",
+      "name": "Chống chiếm quyền tài khoản: Chặn reset mật khẩu khi nhập sai số điện thoại",
+      "status": "PASS",
+      "details": "Bảo vệ tài khoản thành công",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:50.128Z"
+    },
+    {
+      "module": "AUTH_SECURITY",
+      "name": "Đặt lại mật khẩu thành công khi khớp chính xác cả Tên đăng nhập và SĐT",
+      "status": "PASS",
+      "details": "Đã reset về 123456 an toàn",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:51.088Z"
+    },
+    {
+      "module": "USER_AUTH",
+      "name": "Đăng nhập vai trò User thành công",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:54.546Z"
+    },
+    {
+      "module": "USER_PROFILE",
+      "name": "Xem hồ sơ cá nhân, Elo và Điểm uy tín",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:55.747Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Hồ Sơ Cá Nhân chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:55.752Z"
+    },
+    {
+      "module": "USER_PROFILE",
+      "name": "Cập nhật thông tin cá nhân",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:56.708Z"
+    },
+    {
+      "module": "VALIDATION",
+      "name": "Kiểm tra chặn giờ kết thúc <= giờ bắt đầu phía Client",
+      "status": "PASS",
+      "details": "Button disabled",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:58.634Z"
+    },
+    {
+      "module": "VALIDATION",
+      "name": "Form đặt sân ràng buộc ngày tối thiểu (min date) là ngày hiện tại",
+      "status": "PASS",
+      "details": "min=\"2026-10-22\"",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:16:58.638Z"
+    },
+    {
+      "module": "BOOKING",
+      "name": "Tạo đơn đặt sân thành công chuyển tới trang hóa đơn",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=success",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:00.422Z"
+    },
+    {
+      "module": "BOOKING",
+      "name": "Tạo mã Check-in định dạng chuẩn CKIN...",
+      "status": "PASS",
+      "details": "Mã: CKIN47A45",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:00.446Z"
+    },
+    {
+      "module": "PAYMENT",
+      "name": "Mô phỏng thanh toán VietQR Sandbox tức thì",
+      "status": "PASS",
+      "details": "✅ ĐÃ THANH TOÁN (PAID)",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:01.766Z"
+    },
+    {
+      "module": "USER_BOOKINGS",
+      "name": "Xem lịch sử đặt sân của cá nhân",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:02.928Z"
+    },
+    {
+      "module": "CLUBS",
+      "name": "Tạo Câu lạc bộ mới thành công",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=club_detail&id=4&msg=created",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:06.336Z"
+    },
+    {
+      "module": "CLUBS",
+      "name": "Đăng bài viết mới lên bảng tin nội bộ CLB",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:07.453Z"
+    },
+    {
+      "module": "SMART_MATCH",
+      "name": "Truy cập trang Smart Match AI & Hệ thống Rank Elo",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:08.796Z"
+    },
+    {
+      "module": "CHAT",
+      "name": "Truy cập giao diện Chat nội bộ",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:09.982Z"
+    },
+    {
+      "module": "USER_RBAC",
+      "name": "Chặn User thường truy cập Bàn trực Staff",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=home&error=no_permission",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:10.696Z"
+    },
+    {
+      "module": "USER_RBAC",
+      "name": "Chặn User thường truy cập Dashboard Chủ sân",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=home&error=no_permission",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:11.349Z"
+    },
+    {
+      "module": "USER_RBAC",
+      "name": "Chặn User thường truy cập Quản lý sân của Chủ sân",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=home&error=no_permission",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:12.049Z"
+    },
+    {
+      "module": "USER_RBAC",
+      "name": "Chặn User thường truy cập Super Admin Dashboard",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=home&error=no_permission",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:12.718Z"
+    },
+    {
+      "module": "USER_RBAC",
+      "name": "Chặn User thường truy cập Admin Quản lý người dùng",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=home&error=no_permission",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:13.482Z"
+    },
+    {
+      "module": "USER_RBAC",
+      "name": "Chặn User thường truy cập Admin Quản lý cụm sân",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=home&error=no_permission",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:14.163Z"
+    },
+    {
+      "module": "STAFF_AUTH",
+      "name": "Đăng nhập vai trò Nhân viên / Thu ngân thành công",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:17.655Z"
+    },
+    {
+      "module": "STAFF_DASHBOARD",
+      "name": "Bàn trực tiếp đón hiển thị đầy đủ thông số ca trực",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:18.862Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Bàn Trực Lễ Tân chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:18.866Z"
+    },
+    {
+      "module": "STAFF_CHECKIN",
+      "name": "Thực hiện Check-in 1-Click bằng mã CKIN47A45 thành công",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=staff_dashboard&msg=checkin_success",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:20.256Z"
+    },
+    {
+      "module": "STAFF_SECURITY",
+      "name": "Thu ngân bị chặn khi cố can thiệp đơn của Cụm sân khác",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=staff_dashboard&error=not_found",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:21.384Z"
+    },
+    {
+      "module": "STAFF_SECURITY",
+      "name": "Thu ngân bị chặn vào Super Admin Portal",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=staff_dashboard",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:22.495Z"
+    },
+    {
+      "module": "OWNER_AUTH",
+      "name": "Đăng nhập vai trò Chủ sân thành công",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:25.892Z"
+    },
+    {
+      "module": "OWNER_DASHBOARD",
+      "name": "Dashboard hiển thị Biểu đồ Doanh thu 7 ngày (Line Chart)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:27.066Z"
+    },
+    {
+      "module": "OWNER_DASHBOARD",
+      "name": "Dashboard hiển thị Biểu đồ Công suất Giờ Vàng (Doughnut Chart)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:27.066Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Dashboard Chủ Sân chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:27.069Z"
+    },
+    {
+      "module": "OWNER_PITCHES",
+      "name": "Danh sách cụm sân phụ trách của Chủ sân",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:28.245Z"
+    },
+    {
+      "module": "OWNER_SERVICES",
+      "name": "Quản lý Dịch vụ đi kèm & Bảng giá",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:29.477Z"
+    },
+    {
+      "module": "OWNER_SCHEDULE",
+      "name": "Xem Lịch đặt sân dạng Timeline / Ma trận giờ",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:30.713Z"
+    },
+    {
+      "module": "OWNER_STAFF",
+      "name": "Quản lý & Cấp tài khoản Thu ngân cụm sân",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:31.888Z"
+    },
+    {
+      "module": "OWNER_EXPORT",
+      "name": "Xuất file CSV báo cáo doanh thu cụm sân chuẩn UTF-8 BOM",
+      "status": "PASS",
+      "details": "text/csv; charset=utf-8",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:31.956Z"
+    },
+    {
+      "module": "OWNER_SECURITY",
+      "name": "Chủ sân bị chặn khi cố truy cập Super Admin Dashboard",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=owner_dashboard",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:33.162Z"
+    },
+    {
+      "module": "ADMIN_AUTH",
+      "name": "Đăng nhập Super Admin thành công",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:36.631Z"
+    },
+    {
+      "module": "ADMIN_DASHBOARD",
+      "name": "Bảng điều khiển toàn cảnh: Thống kê Người dùng, Sân, Đơn đặt",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:37.783Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Admin Dashboard chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:37.787Z"
+    },
+    {
+      "module": "ADMIN_USERS",
+      "name": "Danh sách người dùng toàn hệ thống & phân công cụm sân",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:39.040Z"
+    },
+    {
+      "module": "ADMIN_CREATE_USER",
+      "name": "Giao diện tạo tài khoản người dùng/nhân viên/chủ sân",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:40.276Z"
+    },
+    {
+      "module": "ADMIN_PITCHES",
+      "name": "Quản lý & Duyệt / Khóa cụm sân toàn hệ thống",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:41.383Z"
+    },
+    {
+      "module": "ADMIN_SAFETY",
+      "name": "Ngăn chặn Admin tự xóa tài khoản chính mình",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=admin_users&error=cannot_delete_self",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:42.597Z"
+    },
+    {
+      "module": "SECURITY_DEFENSE",
+      "name": "Phòng thủ IDOR Payment: Khách vãng lai gọi API simulate_payment bị trả về HTTP 403 Forbidden",
+      "status": "PASS",
+      "details": "Status Code: 403",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:43.807Z"
+    },
+    {
+      "module": "SECURITY_DEFENSE",
+      "name": "Phòng thủ XSS: escapeHtmlNotif mã hóa toàn bộ HTML Tags nguy hiểm trong thông báo",
+      "status": "PASS",
+      "details": "HTML entities escaped safely",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:45.015Z"
+    },
+    {
+      "module": "CSRF_DEFENSE",
+      "name": "Chặn xóa tài khoản người dùng khi không có CSRF Token",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=admin_users&error=csrf_invalid",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:48.161Z"
+    },
+    {
+      "module": "CSRF_DEFENSE",
+      "name": "Chặn đổi trạng thái cụm sân khi không có CSRF Token",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=admin_pitches&error=csrf_invalid",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:49.251Z"
+    },
+    {
+      "module": "CSRF_DEFENSE",
+      "name": "Chủ sân không thể xóa sân nếu thiếu CSRF Token",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=owner_pitches&error=csrf_invalid",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:53.561Z"
+    },
+    {
+      "module": "CSRF_DEFENSE",
+      "name": "User không thể xóa đánh giá nếu thiếu CSRF Token",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=my_bookings&error=csrf_invalid",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:57.982Z"
+    },
+    {
+      "module": "BUSINESS_RULE",
+      "name": "Chặn đặt sân ngoài giờ hoạt động (02:00-03:00) & hiển thị Flash Banner thay vì die()",
+      "status": "PASS",
+      "details": "Thông báo từ hệ thống\n                        Cụm sân chỉ mở cửa hoạt động từ 06:00 đến 22:00. Vui lòng chọn khung giờ hợp lệ.",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:17:59.147Z"
+    },
+    {
+      "module": "BUSINESS_RULE",
+      "name": "Xử lý lịch thi đấu nghịch lý (end <= start) với Flash Alert tinh tế",
+      "status": "PASS",
+      "details": "Thông báo từ hệ thống\n                        Thời gian kết thúc phải sau thời gian bắt đầu ít nhất 1 tiếng.",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:00.304Z"
+    },
+    {
+      "module": "BUSINESS_RULE",
+      "name": "Chặn người dùng review sân khi đơn chưa check-in thành công (completed)",
+      "status": "PASS",
+      "details": "Không hiển thị nút review cho đơn chưa check-in",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:01.423Z"
+    },
+    {
+      "module": "UI_UX_FIX",
+      "name": "Hiển thị chuẩn xác trạng thái \"Đã Check-in\" cho đơn hoàn tất (Đã sửa lỗi hiển thị nhầm \"Đã Hủy\")",
+      "status": "PASS",
+      "details": "Tìm thấy 4 đơn Đã Check-in",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:01.441Z"
+    },
+    {
+      "module": "UI_UX_FIX",
+      "name": "Hộp thoại Chat trang bị tính năng auto-scroll mượt mà xuống tin nhắn mới nhất",
+      "status": "PASS",
+      "details": "scrollToBottom container sẵn sàng",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:02.569Z"
+    },
+    {
+      "module": "RBAC_REGRESSION",
+      "name": "Tài khoản khach_alpha đã hạ về User chuẩn và bị chặn truy cập Owner Dashboard",
+      "status": "PASS",
+      "details": "http://localhost/badminton/index.php?action=home&error=no_permission",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:06.906Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Trang Chủ (Mobile) chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:08.062Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Đặt Sân (Mobile) chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:09.242Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Smart Match (Mobile) chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:10.519Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Bàn Trực Staff (Mobile) chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:11.704Z"
+    },
+    {
+      "module": "UI_UX",
+      "name": "Trang Dashboard Chủ Sân (Mobile) chuẩn responsive (Không vỡ thanh cuộn ngang)",
+      "status": "PASS",
+      "details": "",
+      "severity": "INFO",
+      "timestamp": "2026-10-22T09:18:12.879Z"
+    }
+  ],
+  "consoleErrors": [],
+  "httpErrors": []
+}

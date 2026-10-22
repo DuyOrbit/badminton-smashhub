@@ -48,9 +48,9 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                                 <?php if(isset($p["status"]) && $p["status"] == "locked"): ?>
-                                    <a href="index.php?action=admin_toggle_pitch&id=<?php echo $p["id"]; ?>&status=active" onclick="return confirm('Mở khóa sân này để khách có thể đặt lại?');" class="text-green-400 hover:text-green-300 font-bold bg-green-500/10 px-3 py-1.5 rounded-lg mr-2">Mở Khóa</a>
+                                    <a href="index.php?action=admin_toggle_pitch&id=<?php echo $p["id"]; ?>&status=active&csrf_token=<?php echo $_SESSION['csrf_token'] ?? ''; ?>" onclick="return confirm('Mở khóa sân này để khách có thể đặt lại?');" class="text-green-400 hover:text-green-300 font-bold bg-green-500/10 px-3 py-1.5 rounded-lg mr-2">Mở Khóa</a>
                                 <?php else: ?>
-                                    <a href="index.php?action=admin_toggle_pitch&id=<?php echo $p["id"]; ?>&status=locked" onclick="return confirm('Khóa sân này? Sân sẽ bị ẩn khỏi trang đặt sân.');" class="text-red-400 hover:text-red-300 font-bold bg-red-500/10 px-3 py-1.5 rounded-lg mr-2">Khóa Sân</a>
+                                    <a href="index.php?action=admin_toggle_pitch&id=<?php echo $p["id"]; ?>&status=locked&csrf_token=<?php echo $_SESSION['csrf_token'] ?? ''; ?>" onclick="return confirm('Khóa sân này? Sân sẽ bị ẩn khỏi trang đặt sân.');" class="text-red-400 hover:text-red-300 font-bold bg-red-500/10 px-3 py-1.5 rounded-lg mr-2">Khóa Sân</a>
                                 <?php endif; ?>
                                 <a href="index.php?action=book&id=<?php echo $p["id"]; ?>" target="_blank" class="text-blue-400 hover:text-blue-300 font-bold">Xem</a>
                             </td>

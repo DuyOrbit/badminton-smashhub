@@ -54,7 +54,9 @@
                                             <?php echo htmlspecialchars($b['checkin_code']); ?>
                                         </span>
                                     <?php endif; ?>
-                                    <?php if($b['status'] == 'confirmed'): ?>
+                                    <?php if($b['status'] == 'completed'): ?>
+                                        <span class="px-2.5 py-0.5 text-[10px] font-black uppercase rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">✅ Đã Check-in</span>
+                                    <?php elseif($b['status'] == 'confirmed'): ?>
                                         <span class="px-2.5 py-0.5 text-[10px] font-black uppercase rounded-full bg-[#d8ff3e]/10 text-[#d8ff3e] border border-[#d8ff3e]/20">Đã Xác Nhận</span>
                                     <?php elseif($b['status'] == 'pending'): ?>
                                         <span class="px-2.5 py-0.5 text-[10px] font-black uppercase rounded-full bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">Chờ Duyệt</span>
@@ -64,14 +66,14 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <?php if($b['status'] == 'confirmed'): ?>
+                                <?php if($b['status'] == 'completed' || $b['status'] == 'confirmed'): ?>
                                     <?php if(isset($userReviews[$b['id']])): ?>
                                         <?php $ur = $userReviews[$b['id']]; ?>
                                         <div class="flex flex-col gap-1.5 items-center">
                                             <span class="text-[#ffd45b] font-black text-xs"><?php echo $ur['rating']; ?> ★</span>
                                             <div class="flex gap-2 text-[10px]">
                                                 <button onclick="openEditModal(<?php echo $ur['id']; ?>, <?php echo $ur['rating']; ?>, '<?php echo htmlspecialchars(addslashes($ur['comment'])); ?>')" class="text-cyan-400 hover:underline font-bold">Sửa</button>
-                                                <a href="index.php?action=delete_review&id=<?php echo $ur['id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa đánh giá này?');" class="text-red-400 hover:underline font-bold">Xóa</a>
+                                                <a href="index.php?action=delete_review&id=<?php echo $ur['id']; ?>&csrf_token=<?php echo $_SESSION['csrf_token'] ?? ''; ?>" onclick="return confirm('Bạn có chắc muốn xóa đánh giá này?');" class="text-red-400 hover:underline font-bold">Xóa</a>
                                             </div>
                                         </div>
                                     <?php else: ?>

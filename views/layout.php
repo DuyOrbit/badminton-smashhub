@@ -367,6 +367,17 @@ if (isset($_SESSION['user_id'])) {
         }
     </script>
 <script>
+function escapeHtmlNotif(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+window.escapeHtmlNotif = escapeHtmlNotif;
+
 document.addEventListener("DOMContentLoaded", function() {
     const notifBtn = document.getElementById("notif-btn");
     const notifMenu = document.getElementById("notif-menu");
@@ -409,10 +420,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 notifBadge.classList.remove("hidden");
                 notifPing.classList.remove("hidden");
                 notifList.innerHTML = "";
+
                 data.forEach(item => {
                     let div = document.createElement("div");
                     div.className = "p-4 border-b border-white/5 hover:bg-[#0b1116]/5 cursor-pointer transition";
-                    div.innerHTML = '<h4 class="text-xs font-bold text-white mb-1">' + item.title + '</h4><p class="text-[10px] text-white/60 line-clamp-2">' + item.content + '</p>';
+                    div.innerHTML = '<h4 class="text-xs font-bold text-white mb-1">' + escapeHtmlNotif(item.title) + '</h4><p class="text-[10px] text-white/60 line-clamp-2">' + escapeHtmlNotif(item.content) + '</p>';
                     div.onclick = function() {
                         fetch("index.php?action=api_read_notification", {
                             method: "POST",

@@ -350,6 +350,10 @@ class OwnerController {
 
     public function deletePitch() {
         if (isset($_GET['id'])) {
+            if (!isset($_GET['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_GET['csrf_token'])) {
+                header("Location: index.php?action=owner_pitches&error=csrf_invalid");
+                exit;
+            }
             $database = new Database();
             $db = $database->getConnection();
             $pitch = new Pitch($db);
@@ -471,6 +475,10 @@ class OwnerController {
 
     public function deleteService() {
         if (isset($_GET['id'])) {
+            if (!isset($_GET['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_GET['csrf_token'])) {
+                header("Location: index.php?action=owner_services&error=csrf_invalid");
+                exit;
+            }
             $database = new Database();
             $db = $database->getConnection();
 
@@ -519,7 +527,8 @@ class OwnerController {
             $start_dt = new DateTime($booking_date . ' ' . $start_time);
             $end_dt = new DateTime($booking_date . ' ' . $end_time);
             $hours = max(0.5, ($end_dt->getTimestamp() - $start_dt->getTimestamp()) / 3600);
-            $total_price = $_POST['total_price'] ?? ($hours * $pitchData['price_per_hour']);
+            $calculated_price = $hours * $pitchData['price_per_hour'];
+            $total_price = (!empty($_POST['total_price']) && (float)$_POST['total_price'] > 0) ? (float)$_POST['total_price'] : $calculated_price;
 
             $booking->pitch_id = $pitch_id;
             $booking->user_id = null;
@@ -610,6 +619,10 @@ class OwnerController {
 
     public function removeStaff() {
         if (isset($_GET['id'])) {
+            if (!isset($_GET['csrf_token']) || !hash_equals($_SESSION['csrf_token'] ?? '', $_GET['csrf_token'])) {
+                header("Location: index.php?action=owner_staff&error=csrf_invalid");
+                exit;
+            }
             $database = new Database();
             $db = $database->getConnection();
 

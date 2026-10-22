@@ -52,6 +52,24 @@
                 </a>
             </div>
 
+            <?php if(isset($_GET['error'])): ?>
+                <?php
+                    $errorMsgs = [
+                        'invalid_time' => 'Thời gian kết thúc phải sau thời gian bắt đầu ít nhất 1 tiếng.',
+                        'outside_operating_hours' => 'Cụm sân chỉ mở cửa hoạt động từ 06:00 đến 22:00. Vui lòng chọn khung giờ hợp lệ.',
+                        'fully_booked' => 'Rất tiếc! Sân đã kín lịch vào khung giờ này. Vui lòng chọn khung giờ khác.',
+                    ];
+                    $displayErr = $errorMsgs[$_GET['error']] ?? 'Có lỗi xảy ra khi tạo đơn đặt sân. Vui lòng thử lại.';
+                ?>
+                <div class="alert alert-danger mb-6 p-4 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-start gap-3 text-red-300">
+                    <svg class="w-5 h-5 flex-shrink-0 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <div class="text-xs font-bold leading-relaxed">
+                        <span class="block font-black uppercase text-[11px] text-red-400">Thông báo từ hệ thống</span>
+                        <?php echo htmlspecialchars($displayErr); ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <form action="index.php?action=store_booking" method="POST" id="bookingForm" class="space-y-6">
                 <input type="hidden" name="pitch_id" value="<?php echo $pitchData['id']; ?>">
                 <input type="hidden" name="court_number" id="court_number_input" value="1">

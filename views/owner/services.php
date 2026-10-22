@@ -85,7 +85,7 @@
                                 <?php echo (int)$s['stock']; ?>
                             </td>
                             <td class="py-4 px-6 text-center">
-                                <a href="index.php?action=owner_delete_service&id=<?php echo $s['id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa dịch vụ này không?')" class="text-red-500 hover:text-red-700 font-bold text-xs">
+                                <a href="index.php?action=owner_delete_service&id=<?php echo $s['id']; ?>&csrf_token=<?php echo $_SESSION['csrf_token'] ?? ''; ?>" onclick="return confirm('Bạn có chắc muốn xóa dịch vụ này không?')" class="text-red-500 hover:text-red-700 font-bold text-xs">
                                     Xóa
                                 </a>
                             </td>
