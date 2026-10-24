@@ -105,9 +105,19 @@ class Booking {
     }
 
     public function readScheduleByOwner($owner_id, $date) {
-        $query = "SELECT b.*, p.name as pitch_name, p.quantity 
+        $query = "SELECT b.*, p.name as pitch_name, p.quantity,
+                         m.id as match_id, m.user_id as match_host_id, m.opponent_id as match_guest_id,
+                         u_host.name as match_host_name, u_host.phone as match_host_phone,
+                         u_guest.name as match_guest_name, u_guest.phone as match_guest_phone,
+                         m.host_paid, m.guest_paid, m.host_checkin, m.guest_checkin,
+                         m.host_checkin_time, m.guest_checkin_time,
+                         m.noshow_status as match_noshow_status, m.noshow_reported_by as match_noshow_reported_by,
+                         m.noshow_target_user_id as match_noshow_target_user_id, m.noshow_reason as match_noshow_reason
                   FROM " . $this->table_name . " b
                   INNER JOIN pitches p ON b.pitch_id = p.id
+                  LEFT JOIN matchmaking m ON b.pitch_id = m.pitch_id AND b.booking_date = m.play_date AND b.start_time = m.start_time
+                  LEFT JOIN users u_host ON m.user_id = u_host.id
+                  LEFT JOIN users u_guest ON m.opponent_id = u_guest.id
                   WHERE p.owner_id = :owner_id AND b.booking_date = :booking_date
                   AND b.status IN ('confirmed', 'pending')
                   ORDER BY b.start_time ASC";
@@ -115,7 +125,26 @@ class Booking {
         $stmt->bindParam(':owner_id', $owner_id);
         $stmt->bindParam(':booking_date', $date);
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($bookings as &$b) {
+            $b['host_checkin_code'] = '';
+            $b['guest_checkin_code'] = '';
+            $b['is_match'] = (!empty($b['match_id']) || strpos($b['services_note'] ?? '', 'Kèo Ghép') !== false || strpos($b['services_note'] ?? '', 'Smart Match') !== false);
+            if ($b['is_match']) {
+                $tStmt = $this->conn->prepare("SELECT user_id, checkin_code, is_checked_in, payment_status, split_price FROM match_tickets WHERE booking_id = ?");
+                $tStmt->execute([$b['id']]);
+                $tRows = $tStmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($tRows as $tr) {
+                    if ($tr['user_id'] == ($b['match_host_id'] ?? 0)) {
+                        $b['host_checkin_code'] = $tr['checkin_code'];
+                    } elseif ($tr['user_id'] == ($b['match_guest_id'] ?? 0)) {
+                        $b['guest_checkin_code'] = $tr['checkin_code'];
+                    }
+                }
+            }
+        }
+        return $bookings;
     }
 
     public function readByUser($user_id) {
@@ -232,7 +261,8 @@ class Booking {
         $query = "SELECT b.*, p.name as pitch_name, p.location as pitch_location, p.type as pitch_type, p.owner_id 
                   FROM " . $this->table_name . " b
                   LEFT JOIN pitches p ON b.pitch_id = p.id
-                  WHERE (b.checkin_code = :keyword OR b.customer_phone = :keyword OR b.id = :keyword)";
+                  WHERE (b.checkin_code = :keyword OR b.customer_phone = :keyword OR b.id = :keyword
+                         OR b.id IN (SELECT booking_id FROM match_tickets WHERE checkin_code = :keyword))";
         $params = [':keyword' => $keyword];
 
         if (!empty($assigned_pitch_id)) {
@@ -258,6 +288,18 @@ class Booking {
         $res = $stmt->execute();
 
         if ($res) {
+            // Đồng bộ trạng thái vé Smart Match nếu có
+            try {
+                $tStmt = $this->conn->prepare("SELECT * FROM match_tickets WHERE booking_id = ?");
+                $tStmt->execute([$id]);
+                $tickets = $tStmt->fetchAll(PDO::FETCH_ASSOC);
+                if (!empty($tickets)) {
+                    $this->conn->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE booking_id = ?")->execute([$id]);
+                    $this->conn->prepare("UPDATE matchmaking SET host_checkin = 1, guest_checkin = 1, host_paid = 1, guest_paid = 1 WHERE pitch_id = ? AND play_date = ? AND start_time = ?")
+                               ->execute([$tickets[0]['matched_pitch_id'], $tickets[0]['play_date'], $tickets[0]['start_time']]);
+                }
+            } catch (\Exception $e) {}
+
             // Thưởng +2 điểm uy tín Fair-Play vì đã đến sân đúng hẹn
             $q = "SELECT user_id FROM " . $this->table_name . " WHERE id = ?";
             $s = $this->conn->prepare($q);
@@ -274,9 +316,18 @@ class Booking {
     }
 
     public function readAllForStaff($date = null, $keyword = null, $assigned_pitch_id = null, $owner_id = null) {
-        $query = "SELECT b.*, p.name as pitch_name, p.type as pitch_type
+        $query = "SELECT b.*, p.name as pitch_name, p.type as pitch_type,
+                         m.id as match_id, m.user_id as match_host_id, m.opponent_id as match_guest_id,
+                         u_host.name as match_host_name, u_host.phone as match_host_phone,
+                         u_guest.name as match_guest_name, u_guest.phone as match_guest_phone,
+                         m.host_paid, m.guest_paid, m.host_checkin, m.guest_checkin,
+                         m.host_checkin_time, m.guest_checkin_time,
+                         m.noshow_status as match_noshow_status, m.noshow_reason as match_noshow_reason
                   FROM " . $this->table_name . " b
                   LEFT JOIN pitches p ON b.pitch_id = p.id
+                  LEFT JOIN matchmaking m ON b.pitch_id = m.pitch_id AND b.booking_date = m.play_date AND b.start_time = m.start_time
+                  LEFT JOIN users u_host ON m.user_id = u_host.id
+                  LEFT JOIN users u_guest ON m.opponent_id = u_guest.id
                   WHERE 1=1";
         $params = [];
 
@@ -294,14 +345,43 @@ class Booking {
         }
 
         if (!empty($keyword)) {
-            $query .= " AND (b.checkin_code LIKE :kw OR b.customer_phone LIKE :kw OR b.customer_name LIKE :kw)";
+            $query .= " AND (b.checkin_code LIKE :kw OR b.customer_phone LIKE :kw OR b.customer_name LIKE :kw 
+                             OR b.id IN (SELECT booking_id FROM match_tickets WHERE checkin_code LIKE :kw_t))";
             $params[':kw'] = "%$keyword%";
+            $params[':kw_t'] = "%$keyword%";
         }
 
         $query .= " ORDER BY b.booking_date DESC, b.start_time ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute($params);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($bookings as &$b) {
+            $b['is_match'] = !empty($b['match_id']);
+            $b['host_checkin_code'] = '';
+            $b['guest_checkin_code'] = '';
+            $b['host_ticket_id'] = null;
+            $b['guest_ticket_id'] = null;
+            if ($b['is_match']) {
+                $tStmt = $this->conn->prepare("SELECT id, user_id, checkin_code, is_checked_in, payment_status FROM match_tickets WHERE play_date = ? AND start_time = ? AND matched_pitch_id = ?");
+                $tStmt->execute([$b['booking_date'], $b['start_time'], $b['pitch_id']]);
+                $tickets = $tStmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($tickets as $t) {
+                    if ($t['user_id'] == $b['match_host_id']) {
+                        $b['host_checkin_code'] = $t['checkin_code'] ?? '';
+                        $b['host_ticket_id'] = $t['id'];
+                        if (!empty($t['is_checked_in'])) $b['host_checkin'] = 1;
+                        if (($t['payment_status'] ?? '') === 'paid') $b['host_paid'] = 1;
+                    } elseif ($t['user_id'] == $b['match_guest_id']) {
+                        $b['guest_checkin_code'] = $t['checkin_code'] ?? '';
+                        $b['guest_ticket_id'] = $t['id'];
+                        if (!empty($t['is_checked_in'])) $b['guest_checkin'] = 1;
+                        if (($t['payment_status'] ?? '') === 'paid') $b['guest_paid'] = 1;
+                    }
+                }
+            }
+        }
+        return $bookings;
     }
 
     public function updatePaymentStatus($id, $payment_status, $status = null) {

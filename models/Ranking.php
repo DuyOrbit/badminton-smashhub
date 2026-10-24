@@ -50,6 +50,11 @@ class Ranking {
     public function updateScore($host_id, $guest_id, $result) {
         return $this->processMatchResult($host_id, $guest_id, $result);
     }
+
+    public function penalizeNoShow($user_id, $delta = -50) {
+        $season = self::getCurrentSeason();
+        $this->updatePoints($user_id, $season, $delta);
+    }
     
     private function updatePoints($user_id, $season, $delta) {
         $current = $this->getSeasonPoints($user_id, $season);

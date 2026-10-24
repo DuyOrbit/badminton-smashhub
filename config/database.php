@@ -186,6 +186,65 @@ class Database {
                     $this->dbh->exec("SET FOREIGN_KEY_CHECKS = 1;");
                 }
             }
+            // Auto-migrate split payment columns in match_tickets if missing
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN payment_method VARCHAR(50) DEFAULT 'cash'");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN payment_status ENUM('unpaid','paid') DEFAULT 'unpaid'");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN split_price DECIMAL(10,2) DEFAULT 0.00");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets MODIFY COLUMN district VARCHAR(100) DEFAULT 'Tất cả'");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN checkin_code VARCHAR(30) DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN is_checked_in TINYINT(1) DEFAULT 0");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN checked_in_at DATETIME DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN noshow_status ENUM('none','pending','confirmed_noshow','rejected') DEFAULT 'none'");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN noshow_reason VARCHAR(255) DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN proposed_pitch_id INT DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN proposed_by_user_id INT DEFAULT NULL");
+            } catch (\Exception $e) {}
+
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN host_checkin TINYINT(1) DEFAULT 0");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN guest_checkin TINYINT(1) DEFAULT 0");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN host_checkin_time DATETIME DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN guest_checkin_time DATETIME DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN noshow_reported_by INT DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN noshow_target_user_id INT DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN noshow_status ENUM('none','pending','confirmed_noshow','rejected') DEFAULT 'none'");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN noshow_reason VARCHAR(255) DEFAULT NULL");
+            } catch (\Exception $e) {}
         } catch (\Exception $e) {
             // Silently continue
         }

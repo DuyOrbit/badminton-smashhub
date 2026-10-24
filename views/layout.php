@@ -234,6 +234,9 @@ if (isset($_SESSION['user_id'])) {
                     <a href="index.php?action=owner_dashboard" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-bold bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/20 transition">
                         <span>📊 Dashboard Chủ Sân</span>
                     </a>
+                    <a href="index.php?action=staff_dashboard" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-bold bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border border-amber-500/20 transition">
+                        <span>🎟️ Bàn Trực & Check-in</span>
+                    </a>
                     <a href="index.php?action=owner_pitches" class="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-bold text-[#84939b] hover:bg-[#0b1116]/5 hover:text-white transition">
                         <span>🏸 Quản Lý Cụm Sân</span>
                     </a>
@@ -448,6 +451,38 @@ document.addEventListener("DOMContentLoaded", function() {
     fetchNotifications();
     setInterval(fetchNotifications, 30000);
 });
+
+// Global Zero-Reload Toast Notification
+window.showToast = function(message, type = 'success') {
+    let container = document.getElementById('global-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'global-toast-container';
+        container.className = 'fixed bottom-6 right-6 z-[99999] flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    const isSuccess = type === 'success';
+    const bgClass = isSuccess 
+        ? 'bg-[#0b1c14] border-emerald-500/50 text-emerald-200' 
+        : (type === 'warning' ? 'bg-[#261c0c] border-amber-500/50 text-amber-200' : 'bg-[#291316] border-rose-500/50 text-rose-200');
+    const icon = isSuccess ? '✅' : (type === 'warning' ? '⚡' : '⚠️');
+    
+    toast.className = `${bgClass} pointer-events-auto border rounded-2xl p-4 shadow-2xl flex items-center gap-3 transform translate-y-4 opacity-0 transition-all duration-300 backdrop-blur-md`;
+    toast.innerHTML = `
+        <span class="text-xl flex-shrink-0">${icon}</span>
+        <div class="text-xs font-bold leading-snug flex-1">${message}</div>
+        <button onclick="this.parentElement.remove()" class="text-white/40 hover:text-white text-base leading-none p-1 transition">&times;</button>
+    `;
+    container.appendChild(toast);
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+    });
+    setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+    }, 3800);
+};
 </script>
 </body>
 </html>

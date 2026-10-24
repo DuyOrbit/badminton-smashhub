@@ -470,7 +470,8 @@ if (isset($pitch_schedules) && is_array($pitch_schedules)) {
             </div>
         </div>
 
-        <div class="space-y-3 text-xs text-white/90">
+        <!-- REGULAR BOOKING VIEW -->
+        <div id="regularBookingView" class="space-y-3 text-xs text-white/90">
             <div class="flex justify-between py-1.5 border-b border-white/5">
                 <span class="text-[#71808a] font-bold uppercase">Khách Hàng:</span>
                 <span class="font-black text-white" id="det_customer">-</span>
@@ -495,12 +496,85 @@ if (isset($pitch_schedules) && is_array($pitch_schedules)) {
                 <span class="text-[#71808a] font-bold uppercase block mb-1">Ghi Chú Dịch Vụ:</span>
                 <div class="bg-[#0b1116] p-2.5 rounded-xl text-white/80 font-mono text-[11px]" id="det_note">-</div>
             </div>
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <a id="det_checkin_link" href="#" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition">
+                    ✅ Xác Nhận Check-in Sân
+                </a>
+            </div>
+        </div>
+
+        <!-- SMART MATCH BOOKING VIEW (SPLIT 50/50 & INDIVIDUAL CHECKIN) -->
+        <div id="smartMatchBookingView" class="space-y-4 text-xs text-white/90 hidden">
+            <div class="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between text-xs">
+                <span class="text-amber-400 font-black uppercase flex items-center gap-1.5">
+                    ⚡ Kèo Ghép Thông Minh AI (Split Bill 50/50)
+                </span>
+                <span class="text-white/60 font-mono" id="sm_det_time">-</span>
+            </div>
+
+            <!-- Arbitration Warning Box if Pending -->
+            <div id="sm_noshow_alert" class="p-3 bg-red-950/70 border-2 border-red-500/60 rounded-xl space-y-2 text-white hidden">
+                <div class="flex items-center gap-1.5 text-red-300 font-black text-xs uppercase">
+                    <span>⚖️</span> <span>Cảnh Báo Bùng Kèo Cần Phán Quyết</span>
+                </div>
+                <p class="text-[11px] text-white/90" id="sm_noshow_desc"></p>
+                <div class="flex gap-2 pt-1">
+                    <a id="sm_btn_confirm_noshow" href="#" onclick="return confirm('Xác nhận bùng kèo? Hệ thống sẽ phạt -30 Uy Tín, -50 Elo người vắng và giải phóng sân.');" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
+                        ⚖️ Xác Nhận Phạt Bùng Kèo
+                    </a>
+                    <a id="sm_btn_reject_noshow" href="#" onclick="return confirm('Bác bỏ báo cáo vắng mặt?');" class="bg-white/10 hover:bg-white/20 text-white font-medium px-3 py-1.5 rounded-lg text-xs">
+                        ✕ Bác Bỏ
+                    </a>
+                </div>
+            </div>
+
+            <!-- 2 Player Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Host Card -->
+                <div class="p-3.5 bg-[#0b1116] rounded-2xl border border-white/10 space-y-2.5">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                        <span class="text-blue-400 font-bold uppercase text-[10px]">Chủ Nhà (Đội 1)</span>
+                        <span class="font-mono text-[10px] text-white/50" id="sm_host_code">Mã: -</span>
+                    </div>
+                    <div>
+                        <div class="font-black text-white text-sm" id="sm_host_name">-</div>
+                        <div class="text-[11px] text-white/60 font-mono" id="sm_host_phone">-</div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs pt-1 border-t border-white/5">
+                        <span class="text-white/60">Tiền 50%:</span>
+                        <strong class="text-[#d8ff3e] font-black" id="sm_host_price">-</strong>
+                    </div>
+                    <div class="pt-1 space-y-1.5" id="sm_host_actions">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <!-- Guest Card -->
+                <div class="p-3.5 bg-[#0b1116] rounded-2xl border border-white/10 space-y-2.5">
+                    <div class="flex justify-between items-center border-b border-white/5 pb-1.5">
+                        <span class="text-rose-400 font-bold uppercase text-[10px]">Đội Khách (Đội 2)</span>
+                        <span class="font-mono text-[10px] text-white/50" id="sm_guest_code">Mã: -</span>
+                    </div>
+                    <div>
+                        <div class="font-black text-white text-sm" id="sm_guest_name">-</div>
+                        <div class="text-[11px] text-white/60 font-mono" id="sm_guest_phone">-</div>
+                    </div>
+                    <div class="flex justify-between items-center text-xs pt-1 border-t border-white/5">
+                        <span class="text-white/60">Tiền 50%:</span>
+                        <strong class="text-[#d8ff3e] font-black" id="sm_guest_price">-</strong>
+                    </div>
+                    <div class="pt-1 space-y-1.5" id="sm_guest_actions">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-2.5 bg-[#0b1116] rounded-xl border border-white/5 text-[11px] text-white/60">
+                <span>💡 Mỗi cơ thủ đóng 50% tiền mặt tại quầy hoặc VietQR. Chủ sân bấm duyệt độc lập cho từng người khi họ có mặt.</span>
+            </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-2">
-            <a id="det_checkin_link" href="#" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition">
-                ✅ Xác Nhận Check-in Sân
-            </a>
             <button onclick="closeDetailModal()" class="bg-[#0b1116] border border-white/10 text-white/80 hover:text-white px-4 py-2.5 rounded-xl text-xs font-bold">
                 Đóng
             </button>
@@ -534,16 +608,214 @@ function closePosModal() {
 
 function openDetailModal(b) {
     document.getElementById('detailModal').classList.remove('hidden');
-    document.getElementById('det_title').textContent = b.customer_name + ' (Đơn #' + b.id + ')';
-    document.getElementById('det_code').textContent = 'Mã Check-in: ' + (b.checkin_code || 'CKIN...');
-    document.getElementById('det_customer').textContent = b.customer_name;
-    document.getElementById('det_phone').textContent = b.customer_phone || 'N/A';
-    document.getElementById('det_time').textContent = b.booking_date + ' (' + b.start_time.substr(0,5) + ' - ' + b.end_time.substr(0,5) + ')';
-    document.getElementById('det_price').textContent = Number(b.total_price).toLocaleString('vi-VN') + 'đ';
-    document.getElementById('det_type').textContent = (b.booking_type === 'walk_in' ? '🎟️ ĐẶT TẠI QUẦY' : '📲 ĐẶT TRÊN APP ONLINE');
-    document.getElementById('det_note').textContent = b.services_note || 'Không có ghi chú';
+    
+    const isSmartMatch = (b.is_match || b.match_id || (b.services_note && (b.services_note.indexOf('Kèo Ghép') !== -1 || b.services_note.indexOf('Smart Match') !== -1)));
+    
+    if (isSmartMatch && (b.match_id || b.match_host_name || b.host_checkin_code)) {
+        document.getElementById('regularBookingView').classList.add('hidden');
+        document.getElementById('smartMatchBookingView').classList.remove('hidden');
+        
+        document.getElementById('det_title').textContent = 'Kèo Ghép Đôi: ' + (b.match_host_name || 'Đội 1') + ' vs ' + (b.match_guest_name || 'Đội 2');
+        document.getElementById('det_code').textContent = 'Đơn #' + b.id + ' • Ca: ' + b.start_time.substr(0,5) + ' - ' + b.end_time.substr(0,5);
+        document.getElementById('sm_det_time').textContent = b.booking_date + ' (' + b.start_time.substr(0,5) + ' - ' + b.end_time.substr(0,5) + ')';
+        
+        const halfPrice = Math.round(Number(b.total_price) / 2);
+        const halfPriceStr = halfPrice.toLocaleString('vi-VN') + 'đ';
+        
+        // Host data
+        document.getElementById('sm_host_name').textContent = b.match_host_name || b.customer_name || 'Chủ Nhà';
+        document.getElementById('sm_host_phone').textContent = b.match_host_phone || b.customer_phone || 'N/A';
+        document.getElementById('sm_host_code').textContent = b.host_checkin_code ? 'Mã: ' + b.host_checkin_code : 'Mã: ' + (b.checkin_code || 'N/A');
+        document.getElementById('sm_host_price').textContent = halfPriceStr;
+        
+        let hostHtml = '';
+        if (b.host_checkin == 1 || b.status === 'completed') {
+            hostHtml += '<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-1 rounded w-full justify-center border border-emerald-500/30">✓ Đã Check-in Sân</span>';
+        } else {
+            if (b.host_ticket_id) {
+                hostHtml += '<button type="button" onclick="ajaxOwnerCheckinPlayer(event, this, ' + b.host_ticket_id + ', \'host\', \'' + (b.match_host_name || 'Chủ Nhà').replace(/'/g, "\\'") + '\', ' + b.id + ')" class="inline-flex items-center gap-1 text-xs font-bold bg-green-600 hover:bg-green-700 text-white px-2 py-1.5 rounded-lg w-full justify-center shadow transition-all">🎯 Check-in Khách Này</button>';
+            } else {
+                hostHtml += '<span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-950/60 px-2 py-1 rounded w-full justify-center">⏳ Chưa Check-in</span>';
+            }
+        }
+        if (b.host_paid == 1) {
+            hostHtml += '<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-[#121b21] px-2 py-1 rounded border border-emerald-500/30 w-full justify-center">✓ Đã Thu 50%</span>';
+        } else if (b.match_id) {
+            hostHtml += '<button type="button" onclick="ajaxOwnerApprovePayment(event, this, ' + b.match_id + ', \'host\', \'' + halfPriceStr + '\', ' + b.id + ')" class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1.5 rounded-lg w-full justify-center shadow transition-all">💵 Duyệt Thu 50%</button>';
+        }
+        document.getElementById('sm_host_actions').innerHTML = hostHtml;
+        
+        // Guest data
+        document.getElementById('sm_guest_name').textContent = b.match_guest_name || 'Đội Khách';
+        document.getElementById('sm_guest_phone').textContent = b.match_guest_phone || 'N/A';
+        document.getElementById('sm_guest_code').textContent = b.guest_checkin_code ? 'Mã: ' + b.guest_checkin_code : 'Mã: -';
+        document.getElementById('sm_guest_price').textContent = halfPriceStr;
+        
+        let guestHtml = '';
+        if (b.guest_checkin == 1 || b.status === 'completed') {
+            guestHtml += '<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-1 rounded w-full justify-center border border-emerald-500/30">✓ Đã Check-in Sân</span>';
+        } else {
+            if (b.guest_ticket_id) {
+                guestHtml += '<button type="button" onclick="ajaxOwnerCheckinPlayer(event, this, ' + b.guest_ticket_id + ', \'guest\', \'' + (b.match_guest_name || 'Đội Khách').replace(/'/g, "\\'") + '\', ' + b.id + ')" class="inline-flex items-center gap-1 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-2 py-1.5 rounded-lg w-full justify-center shadow transition-all">🎯 Check-in Khách Này</button>';
+            } else {
+                guestHtml += '<span class="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-950/60 px-2 py-1 rounded w-full justify-center">⏳ Chưa Check-in</span>';
+            }
+        }
+        if (b.guest_paid == 1) {
+            guestHtml += '<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-[#121b21] px-2 py-1 rounded border border-emerald-500/30 w-full justify-center">✓ Đã Thu 50%</span>';
+        } else if (b.match_id) {
+            guestHtml += '<button type="button" onclick="ajaxOwnerApprovePayment(event, this, ' + b.match_id + ', \'guest\', \'' + halfPriceStr + '\', ' + b.id + ')" class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1.5 rounded-lg w-full justify-center shadow transition-all">💵 Duyệt Thu 50%</button>';
+        }
+        document.getElementById('sm_guest_actions').innerHTML = guestHtml;
+        
+        // No-show handling
+        const noShowAlert = document.getElementById('sm_noshow_alert');
+        if (b.match_noshow_status === 'pending' && b.match_id) {
+            noShowAlert.classList.remove('hidden');
+            const reporter = (b.match_noshow_reported_by == b.match_host_id) ? (b.match_host_name || 'Chủ Nhà') : (b.match_guest_name || 'Đội Khách');
+            const target = (b.match_noshow_target_user_id == b.match_host_id) ? (b.match_host_name || 'Chủ Nhà') : (b.match_guest_name || 'Đội Khách');
+            document.getElementById('sm_noshow_desc').innerHTML = '<strong>' + reporter + '</strong> báo đối thủ <strong class="text-red-300 underline">' + target + '</strong> vắng mặt.<br>Lý do: <em>"' + (b.match_noshow_reason || 'Không đến sân') + '"</em>';
+            document.getElementById('sm_btn_confirm_noshow').href = 'index.php?action=owner_confirm_noshow&match_id=' + b.match_id + '&decision=confirm';
+            document.getElementById('sm_btn_reject_noshow').href = 'index.php?action=owner_confirm_noshow&match_id=' + b.match_id + '&decision=reject';
+        } else {
+            noShowAlert.classList.add('hidden');
+        }
+        
+    } else {
+        // Regular booking
+        document.getElementById('smartMatchBookingView').classList.add('hidden');
+        document.getElementById('regularBookingView').classList.remove('hidden');
+        
+        document.getElementById('det_title').textContent = b.customer_name + ' (Đơn #' + b.id + ')';
+        document.getElementById('det_code').textContent = 'Mã Check-in: ' + (b.checkin_code || 'CKIN...');
+        document.getElementById('det_customer').textContent = b.customer_name;
+        document.getElementById('det_phone').textContent = b.customer_phone || 'N/A';
+        document.getElementById('det_time').textContent = b.booking_date + ' (' + b.start_time.substr(0,5) + ' - ' + b.end_time.substr(0,5) + ')';
+        document.getElementById('det_price').textContent = Number(b.total_price).toLocaleString('vi-VN') + 'đ';
+        document.getElementById('det_type').textContent = (b.booking_type === 'walk_in' ? '🎟️ ĐẶT TẠI QUẦY' : '📲 ĐẶT TRÊN APP ONLINE');
+        document.getElementById('det_note').textContent = b.services_note || 'Không có ghi chú';
 
-    document.getElementById('det_checkin_link').href = 'index.php?action=staff_checkin&id=' + b.id;
+        const chkLink = document.getElementById('det_checkin_link');
+        chkLink.onclick = function(e) { return ajaxOwnerCheckinRegular(e, this, b.id); };
+        chkLink.textContent = (b.status === 'completed') ? '✓ Đã Check-in Vào Sân' : '✅ Xác Nhận Check-in Sân';
+        if (b.status === 'completed') {
+            chkLink.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
+            chkLink.classList.add('bg-emerald-900/60', 'pointer-events-none');
+        } else {
+            chkLink.classList.add('bg-emerald-500', 'hover:bg-emerald-600');
+            chkLink.classList.remove('bg-emerald-900/60', 'pointer-events-none');
+        }
+    }
+}
+
+function ajaxOwnerCheckinPlayer(event, btn, ticketId, party, name, bookingId) {
+    event.preventDefault();
+    if (!confirm('Xác nhận khách ' + name + ' đã đến nhận sân?')) return false;
+
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="inline-block animate-spin mr-1">⏳</span> Đang xử lý...';
+
+    fetch('index.php?action=staff_checkin&ticket_id=' + ticketId + '&is_ajax=1', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.showToast('🎯 ' + (data.message || 'Check-in thành công cho ' + name));
+            btn.outerHTML = '<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-1 rounded w-full justify-center border border-emerald-500/30">✓ Đã Check-in Sân</span>';
+            // update in-memory currentBooking
+            if (currentBooking && currentBooking.id == bookingId) {
+                if (party === 'host') currentBooking.host_checkin = 1;
+                else currentBooking.guest_checkin = 1;
+            }
+        } else {
+            window.showToast('⚠️ ' + (data.message || 'Có lỗi xảy ra.'), 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        window.showToast('⚠️ Lỗi kết nối khi gửi check-in.', 'error');
+    });
+
+    return false;
+}
+
+function ajaxOwnerApprovePayment(event, btn, matchId, party, priceStr, bookingId) {
+    event.preventDefault();
+    const partyName = (party === 'host') ? 'Chủ Nhà' : 'Đội Khách';
+    if (!confirm('Xác nhận đã nhận đủ ' + priceStr + ' từ ' + partyName + '?')) return false;
+
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="inline-block animate-spin mr-1">⏳</span> Đang duyệt...';
+
+    const action = (party === 'host') ? 'owner_approve_host_payment' : 'owner_approve_guest_payment';
+    fetch('index.php?action=' + action + '&id=' + matchId + '&is_ajax=1', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.showToast('💵 ' + (data.message || 'Duyệt thu tiền thành công!'));
+            btn.outerHTML = '<span class="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 bg-[#121b21] px-2 py-1 rounded border border-emerald-500/30 w-full justify-center">✓ Đã Thu 50%</span>';
+            if (currentBooking && currentBooking.id == bookingId) {
+                if (party === 'host') currentBooking.host_paid = 1;
+                else currentBooking.guest_paid = 1;
+            }
+        } else {
+            window.showToast('⚠️ ' + (data.message || 'Có lỗi xảy ra.'), 'error');
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        window.showToast('⚠️ Lỗi kết nối máy chủ.', 'error');
+    });
+
+    return false;
+}
+
+function ajaxOwnerCheckinRegular(event, link, bookingId) {
+    event.preventDefault();
+    if (!confirm('Xác nhận khách hàng đã đến nhận sân?')) return false;
+
+    const originalText = link.innerHTML;
+    link.innerHTML = '<span class="inline-block animate-spin mr-1">⏳</span> Đang xử lý...';
+
+    fetch('index.php?action=staff_checkin&id=' + bookingId + '&is_ajax=1', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            window.showToast('✅ ' + (data.message || 'Xác nhận khách vào sân thành công!'));
+            link.innerHTML = '✓ Đã Check-in Vào Sân';
+            link.classList.remove('bg-emerald-500', 'hover:bg-emerald-600');
+            link.classList.add('bg-emerald-900/60', 'pointer-events-none');
+            if (currentBooking && currentBooking.id == bookingId) {
+                currentBooking.status = 'completed';
+            }
+        } else {
+            window.showToast('⚠️ ' + (data.message || 'Có lỗi xảy ra.'), 'error');
+            link.innerHTML = originalText;
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        link.innerHTML = originalText;
+        window.showToast('⚠️ Lỗi kết nối mạng.', 'error');
+    });
+
+    return false;
+}
 }
 
 function closeDetailModal() {

@@ -4,10 +4,11 @@
             <h1 class="text-3xl font-extrabold text-white">Dashboard Chủ Sân</h1>
             <p class="mt-2 text-white/60">Quản lý sân cầu lông và doanh thu của bạn.</p>
         </div>
-        <div class="flex space-x-3">
-            <a href="index.php?action=owner_services" class="bg-[#121b21] border border-amber-300 text-amber-700 hover:bg-amber-50 px-4 py-2 rounded-xl text-sm font-bold shadow-none transition-colors">Dịch Vụ Sân</a>
+        <div class="flex flex-wrap gap-2.5">
+            <a href="index.php?action=staff_dashboard" class="bg-amber-500 hover:bg-amber-400 text-black px-4 py-2 rounded-xl text-sm font-bold shadow-none transition-colors flex items-center gap-1.5">🎟️ Bàn Trực & Check-in</a>
             <a href="index.php?action=owner_schedule" class="bg-blue-600 border border-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-xl text-sm font-bold shadow-none transition-colors">Lịch Đặt Sân</a>
             <a href="index.php?action=owner_pitches" class="bg-[#121b21] border border-white/20 text-white/80 hover:bg-[#0b1116] px-4 py-2 rounded-xl text-sm font-bold shadow-none transition-colors">Quản Lý Sân</a>
+            <a href="index.php?action=owner_services" class="bg-[#121b21] border border-amber-300 text-amber-700 hover:bg-amber-50 px-4 py-2 rounded-xl text-sm font-bold shadow-none transition-colors">Dịch Vụ Sân</a>
             <a href="index.php?action=owner_reviews" class="bg-[#121b21] border border-green-300 text-green-700 hover:bg-green-500/20 px-4 py-2 rounded-xl text-sm font-bold shadow-none transition-colors">Quản Lý Đánh Giá</a>
         </div>
     </div>
@@ -31,6 +32,20 @@
         <div class="mb-6 bg-green-500/20 border-l-4 border-green-500 p-4 rounded-r-xl shadow-none flex items-center">
             <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             <span class="text-green-800 font-bold text-sm">Đã duyệt và chốt khóa giờ sân thi đấu thành công!</span>
+        </div>
+    <?php endif; ?>
+
+    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'noshow_confirmed'): ?>
+        <div class="mb-6 bg-red-950/70 border-l-4 border-red-500 p-4 rounded-r-xl shadow-none flex items-center text-white">
+            <span class="text-2xl mr-3">🚫</span>
+            <span class="text-white font-bold text-sm">Đã xác nhận bùng kèo (No-Show)! Hệ thống đã phạt trừ 30 điểm uy tín, trừ 50 Elo và tạm khóa tìm trận của người vi phạm. Quyền lợi người không vi phạm đã được bảo vệ.</span>
+        </div>
+    <?php endif; ?>
+
+    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'noshow_rejected'): ?>
+        <div class="mb-6 bg-gray-800 border-l-4 border-gray-500 p-4 rounded-r-xl shadow-none flex items-center text-white">
+            <span class="text-2xl mr-3">ℹ️</span>
+            <span class="text-white font-bold text-sm">Đã bác bỏ báo cáo vắng mặt. Trận đấu vẫn duy trì bình thường.</span>
         </div>
     <?php endif; ?>
 
@@ -137,20 +152,23 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-black text-white">
                                 <?php echo number_format($b['total_price'], 0, ',', '.'); ?>đ
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-6 py-4 whitespace-nowrap text-center" id="dash_action_cell_<?php echo $b['id']; ?>">
                                 <?php if($b['status'] == 'confirmed'): ?>
                                     <div class="flex flex-col gap-1 items-center">
                                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-green-100 text-green-800">Đã Xác Nhận</span>
-                                        <a href="index.php?action=owner_update_booking&id=<?php echo $b['id']; ?>&status=cancelled" onclick="return confirm('Xác nhận HỦY lịch này và HOÀN TIỀN cho khách?');" class="text-[10px] text-red-500 hover:text-red-700 font-bold underline mt-1">Hủy & Hoàn Tiền</a>
+                                        <button type="button" onclick="return ajaxDashboardCheckin(event, this, <?php echo $b['id']; ?>);" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg shadow-sm mt-0.5">🎟️ Check-in</button>
+                                        <button type="button" onclick="return ajaxDashboardUpdateStatus(event, this, <?php echo $b['id']; ?>, 'cancelled');" class="text-[10px] text-red-500 hover:text-red-700 font-bold underline mt-0.5">Hủy & Hoàn Tiền</button>
                                     </div>
                                 <?php elseif($b['status'] == 'pending'): ?>
                                     <div class="flex flex-col gap-2 items-center">
                                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-yellow-100 text-yellow-800">Đang Chờ</span>
                                         <div class="flex gap-1 mt-1">
-                                            <a href="index.php?action=owner_update_booking&id=<?php echo $b['id']; ?>&status=confirmed" class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded shadow-none focus:outline-none focus:ring-2 focus:ring-green-400">Duyệt</a>
-                                            <a href="index.php?action=owner_update_booking&id=<?php echo $b['id']; ?>&status=cancelled" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded shadow-none focus:outline-none focus:ring-2 focus:ring-red-400" onclick="return confirm('Bạn chắc chắn muốn hủy đơn này?');">Hủy</a>
+                                            <button type="button" onclick="return ajaxDashboardUpdateStatus(event, this, <?php echo $b['id']; ?>, 'confirmed');" class="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded shadow-none focus:outline-none focus:ring-2 focus:ring-green-400">Duyệt</button>
+                                            <button type="button" onclick="return ajaxDashboardUpdateStatus(event, this, <?php echo $b['id']; ?>, 'cancelled');" class="text-xs bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded shadow-none focus:outline-none focus:ring-2 focus:ring-red-400">Hủy</button>
                                         </div>
                                     </div>
+                                <?php elseif($b['status'] == 'completed'): ?>
+                                    <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-green-500/20 text-green-300 border border-green-500/30">✓ Đã Vào Sân</span>
                                 <?php else: ?>
                                     <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-100 text-red-800">Đã Hủy</span>
                                 <?php endif; ?>
@@ -187,11 +205,17 @@
             ?>
             <div class="bg-[#121b21] rounded-2xl shadow-none border border-white/5 overflow-hidden w-full relative">
                 <!-- Status Badge -->
-                <div class="absolute top-4 right-4 z-10">
+                <div class="absolute top-4 right-4 z-10 flex items-center gap-1.5">
+                    <?php if(!empty($m['noshow_status']) && $m['noshow_status'] == 'pending'): ?>
+                        <span class="bg-red-600 text-white text-xs font-black uppercase px-3 py-1.5 rounded-md border border-red-400 shadow-md animate-pulse">⚠️ Khiếu Nại Bùng Kèo</span>
+                    <?php elseif(!empty($m['noshow_status']) && $m['noshow_status'] == 'confirmed_noshow'): ?>
+                        <span class="bg-red-950 text-red-400 text-xs font-black uppercase px-3 py-1.5 rounded-md border border-red-800">🚫 Đã Xử Phạt Bùng Kèo</span>
+                    <?php endif; ?>
+
                     <?php if($m['status'] == 'cancelled'): ?>
                         <span class="bg-red-100 text-red-800 text-xs font-black uppercase px-3 py-1.5 rounded-md border border-red-200 shadow-none">Đã Hủy Bỏ</span>
                     <?php elseif($m['match_result'] == 'pending'): ?>
-                        <span class="bg-yellow-100 text-yellow-800 text-xs font-black uppercase px-3 py-1.5 rounded-md border border-yellow-200 shadow-none animate-pulse">Chờ Chấm Điểm</span>
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-black uppercase px-3 py-1.5 rounded-md border border-yellow-200 shadow-none">Chờ Chấm Điểm</span>
                     <?php else: ?>
                         <span class="bg-[#0b1116]/10 text-white/70 text-xs font-bold px-3 py-1.5 rounded-md border border-white/10">Đã Hoàn Tất</span>
                     <?php endif; ?>
@@ -224,7 +248,20 @@
                                         </div>
                                         <span class="text-sm font-black text-white"><?php echo number_format($hostFinalPrice, 0, ',', '.'); ?>đ</span>
                                     </div>
-                                    <div class="flex items-center justify-between pt-1 border-t <?php echo $m['host_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>">
+                                    <div class="flex items-center justify-between text-[11px] pt-1 border-t <?php echo $m['host_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>" id="dash_host_checkin_status_<?php echo $m['id']; ?>">
+                                        <span class="text-white/60 font-medium">Điểm danh Check-in:</span>
+                                        <?php if(!empty($m['host_checkin'])): ?>
+                                            <span class="text-emerald-400 font-bold inline-flex items-center gap-1">
+                                                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                Đã Check-in <?php echo !empty($m['host_checkin_time']) ? '(' . date('H:i', strtotime($m['host_checkin_time'])) . ')' : ''; ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-amber-400 font-semibold inline-flex items-center gap-1">
+                                                ⏳ Chưa Check-in
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 border-t <?php echo $m['host_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>" id="dash_host_pay_action_<?php echo $m['id']; ?>">
                                         <?php if($m['host_paid']): ?>
                                             <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-[#121b21] px-2 py-0.5 rounded-md border border-emerald-200 shadow-xs">
                                                 <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
@@ -236,12 +273,12 @@
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
                                                 Chưa Thu Tiền
                                             </span>
-                                            <a href="index.php?action=owner_approve_host_payment&id=<?php echo $m['id']; ?>" 
-                                               onclick="return confirm('Xác nhận đã nhận đủ <?php echo number_format($hostFinalPrice, 0, ',', '.'); ?>đ tiền mặt từ Chủ Nhà?');"
+                                            <button type="button" 
+                                               onclick="return ajaxOwnerDashboardPayment(event, this, 'host', <?php echo $m['id']; ?>, '<?php echo number_format($hostFinalPrice, 0, ',', '.'); ?>');"
                                                class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-2.5 py-1 rounded-lg shadow-none hover:shadow transition-all">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                                                 Duyệt Thu Tiền
-                                            </a>
+                                            </button>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -257,7 +294,20 @@
                                         </div>
                                         <span class="text-sm font-black text-white"><?php echo number_format($guestFinalPrice, 0, ',', '.'); ?>đ</span>
                                     </div>
-                                    <div class="flex items-center justify-between pt-1 border-t <?php echo $m['guest_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>">
+                                    <div class="flex items-center justify-between text-[11px] pt-1 border-t <?php echo $m['guest_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>" id="dash_guest_checkin_status_<?php echo $m['id']; ?>">
+                                        <span class="text-white/60 font-medium">Điểm danh Check-in:</span>
+                                        <?php if(!empty($m['guest_checkin'])): ?>
+                                            <span class="text-emerald-400 font-bold inline-flex items-center gap-1">
+                                                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                Đã Check-in <?php echo !empty($m['guest_checkin_time']) ? '(' . date('H:i', strtotime($m['guest_checkin_time'])) . ')' : ''; ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-amber-400 font-semibold inline-flex items-center gap-1">
+                                                ⏳ Chưa Check-in
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 border-t <?php echo $m['guest_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>" id="dash_guest_pay_action_<?php echo $m['id']; ?>">
                                         <?php if($m['guest_paid']): ?>
                                             <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-[#121b21] px-2 py-0.5 rounded-md border border-emerald-200 shadow-xs">
                                                 <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
@@ -269,12 +319,12 @@
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
                                                 Chưa Thu Tiền
                                             </span>
-                                            <a href="index.php?action=owner_approve_guest_payment&id=<?php echo $m['id']; ?>" 
-                                               onclick="return confirm('Xác nhận đã nhận đủ <?php echo number_format($guestFinalPrice, 0, ',', '.'); ?>đ tiền mặt từ Đội Khách?');"
+                                            <button type="button" 
+                                               onclick="return ajaxOwnerDashboardPayment(event, this, 'guest', <?php echo $m['id']; ?>, '<?php echo number_format($guestFinalPrice, 0, ',', '.'); ?>');"
                                                class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-2.5 py-1 rounded-lg shadow-none hover:shadow transition-all">
                                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                                                 Duyệt Thu Tiền
-                                            </a>
+                                            </button>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -292,6 +342,44 @@
 
                     <!-- Versus & Reporting -->
                     <div class="lg:w-2/3 p-6 flex flex-col justify-center">
+                        <?php if(!empty($m['noshow_status']) && $m['noshow_status'] == 'pending'): ?>
+                            <div class="mb-6 p-4 bg-red-950/70 border-2 border-red-500 rounded-2xl text-white shadow-lg">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-xl">⚖️</span>
+                                    <h4 class="font-black text-sm text-red-300 uppercase tracking-wide">Trọng Tài Chủ Sân: Có Báo Cáo Đối Thủ Bùng Kèo (No-Show)</h4>
+                                </div>
+                                <p class="text-xs text-white/90 mb-2">
+                                    Người báo: <strong class="text-white"><?php echo ($m['noshow_reported_by'] == $m['user_id']) ? htmlspecialchars($m['host_name']) : htmlspecialchars($m['guest_name']); ?></strong> 
+                                    tố giác đối thủ 
+                                    <strong class="text-red-300 underline font-black"><?php echo ($m['noshow_target_user_id'] == $m['user_id']) ? htmlspecialchars($m['host_name']) : htmlspecialchars($m['guest_name']); ?></strong> 
+                                    vắng mặt không đến sân thi đấu.
+                                </p>
+                                <?php if(!empty($m['noshow_reason'])): ?>
+                                    <div class="text-xs bg-black/50 p-2.5 rounded-lg border border-red-500/30 mb-3 text-red-200 italic">
+                                        "<?php echo htmlspecialchars($m['noshow_reason']); ?>"
+                                    </div>
+                                <?php endif; ?>
+                                <p class="text-[11px] text-white/60 mb-3">Vui lòng kiểm tra thực tế tại sân. Nếu đối phương thực sự không đến, bấm "Xác Nhận Bùng Kèo" để phạt -30 Điểm Uy Tín, -50 Elo và giải phóng sân.</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <a href="index.php?action=owner_confirm_noshow&match_id=<?php echo $m['id']; ?>&decision=confirm" 
+                                       onclick="return confirm('XÁC NHẬN BÙNG KÈO:\nBạn đã kiểm tra thực tế và xác nhận người này không đến sân?\nHệ thống sẽ:\n- Trừ 30 điểm Uy Tín người vi phạm\n- Trừ 50 điểm Elo xếp hạng\n- Tạm khóa tìm trận\n- Bảo lưu quyền lợi cho người có mặt\n- Hủy trận và giải phóng sân.');"
+                                       class="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all shadow-md">
+                                        ⚖️ Xác Nhận Bùng Kèo (Xử Phạt)
+                                    </a>
+                                    <a href="index.php?action=owner_confirm_noshow&match_id=<?php echo $m['id']; ?>&decision=reject"
+                                       onclick="return confirm('BÁC BỎ BÁO CÁO:\nBạn xác nhận người này có đến sân hoặc hai bên vẫn thi đấu bình thường?');"
+                                       class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all border border-white/10">
+                                        ✕ Bác Bỏ Báo Cáo
+                                    </a>
+                                </div>
+                            </div>
+                        <?php elseif(!empty($m['noshow_status']) && $m['noshow_status'] == 'confirmed_noshow'): ?>
+                            <div class="mb-6 p-3.5 bg-red-950/40 border border-red-500/40 rounded-xl text-xs text-red-300 flex items-center gap-2">
+                                <span class="text-lg">🚫</span>
+                                <span>Kèo đấu này đã được xác nhận bùng kèo (No-Show). Người vi phạm đã bị trừ 30 điểm uy tín, -50 Elo và bị xử phạt theo đúng quy định.</span>
+                            </div>
+                        <?php endif; ?>
+
                         <?php if($m['status'] != 'cancelled' && $m['booking_status'] == 'pending'): ?>
                             <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-xl relative overflow-hidden">
                                 <div class="absolute right-0 top-0 w-16 h-16 bg-orange-100 rounded-bl-full z-0"></div>
@@ -509,6 +597,171 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// === Zero-Reload Operations for Owner Dashboard ===
+async function ajaxDashboardUpdateStatus(event, btn, bookingId, newStatus) {
+    if (event) event.preventDefault();
+    const actionLabel = (newStatus === 'confirmed') ? 'Xác nhận duyệt đơn đặt sân này?' : 'Hủy đơn đặt sân này và hoàn tiền cho khách?';
+    if (!confirm(actionLabel)) return false;
+
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-spin inline-block">⏳</span>';
+
+    try {
+        const response = await fetch(`index.php?action=owner_update_booking&id=${bookingId}&status=${newStatus}&is_ajax=1`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (data.success) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Cập nhật thành công!', 'success');
+            }
+            const cell = document.getElementById(`dash_action_cell_${bookingId}`);
+            if (cell) {
+                if (newStatus === 'confirmed') {
+                    cell.innerHTML = `
+                        <div class="flex flex-col gap-1 items-center">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-green-100 text-green-800">Đã Xác Nhận</span>
+                            <button type="button" onclick="return ajaxDashboardCheckin(event, this, ${bookingId});" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-2.5 py-1 rounded-lg shadow-sm mt-0.5">🎟️ Check-in</button>
+                            <button type="button" onclick="return ajaxDashboardUpdateStatus(event, this, ${bookingId}, 'cancelled');" class="text-[10px] text-red-500 hover:text-red-700 font-bold underline mt-0.5">Hủy & Hoàn Tiền</button>
+                        </div>
+                    `;
+                } else if (newStatus === 'cancelled') {
+                    cell.innerHTML = `<span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-red-100 text-red-800">Đã Hủy</span>`;
+                }
+            }
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Thao tác không thành công', 'error');
+            } else {
+                alert(data.message || 'Thao tác không thành công');
+            }
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    } catch (err) {
+        console.error(err);
+        if (typeof window.showToast === 'function') {
+            window.showToast('Lỗi kết nối máy chủ', 'error');
+        } else {
+            alert('Lỗi kết nối máy chủ');
+        }
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+    return false;
+}
+
+async function ajaxDashboardCheckin(event, btn, bookingId) {
+    if (event) event.preventDefault();
+    if (!confirm('Xác nhận điểm danh check-in cho khách đơn #' + bookingId + '?')) return false;
+
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-spin inline-block">⏳</span> Đang xử lý...';
+
+    try {
+        const formData = new URLSearchParams();
+        formData.append('booking_id', bookingId);
+        formData.append('is_ajax', '1');
+
+        const response = await fetch('index.php?action=staff_checkin&is_ajax=1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData.toString()
+        });
+        const data = await response.json();
+        if (data.success) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Check-in thành công!', 'success');
+            }
+            const cell = document.getElementById(`dash_action_cell_${bookingId}`);
+            if (cell) {
+                cell.innerHTML = `<span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-green-500/20 text-green-300 border border-green-500/30">✓ Đã Vào Sân</span>`;
+            }
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Check-in không thành công', 'error');
+            } else {
+                alert(data.message || 'Check-in không thành công');
+            }
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    } catch (err) {
+        console.error(err);
+        if (typeof window.showToast === 'function') {
+            window.showToast('Lỗi kết nối máy chủ', 'error');
+        }
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+    return false;
+}
+
+async function ajaxOwnerDashboardPayment(event, btn, party, matchId, amountStr) {
+    if (event) event.preventDefault();
+    const partyName = party === 'host' ? 'Chủ Nhà (Đội 1)' : 'Đội Khách (Đội 2)';
+    if (!confirm(`Xác nhận đã nhận đủ ${amountStr}đ tiền mặt từ ${partyName}?`)) return false;
+
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="animate-spin inline-block">⏳</span>';
+
+    const action = party === 'host' ? 'owner_approve_host_payment' : 'owner_approve_guest_payment';
+    try {
+        const response = await fetch(`index.php?action=${action}&id=${matchId}&is_ajax=1`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (data.success) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Duyệt thu tiền thành công!', 'success');
+            }
+            const payCell = document.getElementById(`dash_${party}_pay_action_${matchId}`);
+            if (payCell) {
+                payCell.innerHTML = `
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-[#121b21] px-2 py-0.5 rounded-md border border-emerald-200 shadow-xs">
+                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        Đã Thu Tiền (50%)
+                    </span>
+                    <span class="text-[10px] text-emerald-600 font-semibold">Hoàn tất</span>
+                `;
+            }
+            const checkinCell = document.getElementById(`dash_${party}_checkin_status_${matchId}`);
+            if (checkinCell) {
+                checkinCell.innerHTML = `
+                    <span class="text-white/60 font-medium">Điểm danh Check-in:</span>
+                    <span class="text-emerald-400 font-bold inline-flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        Đã Check-in (Vừa xong)
+                    </span>
+                `;
+            }
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Xử lý thất bại', 'error');
+            } else {
+                alert(data.message || 'Xử lý thất bại');
+            }
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    } catch (err) {
+        console.error(err);
+        if (typeof window.showToast === 'function') {
+            window.showToast('Lỗi kết nối máy chủ', 'error');
+        }
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+    return false;
+}
 </script>
 
 

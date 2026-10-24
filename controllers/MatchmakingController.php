@@ -343,9 +343,23 @@ class MatchmakingController {
         }
     }
 
-    public function switchPitch() {
-        if (!isset($_SESSION['user_id']) || !isset($_POST['ticket_id']) || !isset($_POST['pitch_id'])) {
-            header("Location: index.php?action=smart_match");
+    public function confirmSplitPayment() {
+        if (!isset($_SESSION['user_id'])) {
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_POST['is_ajax']))) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+                exit;
+            }
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        $ticketId = $_POST['ticket_id'] ?? $_GET['id'] ?? null;
+        $paymentMethod = $_POST['payment_method'] ?? 'cash';
+        $paymentStatus = ($paymentMethod === 'vietqr') ? 'paid' : 'unpaid';
+
+        if (!$ticketId) {
+            header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu mã lệnh tìm trận."));
             exit;
         }
 
@@ -355,12 +369,25 @@ class MatchmakingController {
         require_once 'models/MatchTicket.php';
         $ticketModel = new MatchTicket($db);
 
-        $res = $ticketModel->switchMatchPitch($_POST['ticket_id'], $_POST['pitch_id'], $_SESSION['user_id']);
+        $res = $ticketModel->confirmMatch($ticketId, $_SESSION['user_id'], $paymentMethod, $paymentStatus);
+
+        $isAjax = (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') 
+                  || (isset($_POST['is_ajax']) && $_POST['is_ajax'] == '1');
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode($res);
+            exit;
+        }
 
         if ($res['success']) {
-            header("Location: index.php?action=smart_match&msg=pitch_switched");
+            if ($res['status'] == 'fully_confirmed') {
+                header("Location: index.php?action=smart_match&msg=fully_confirmed");
+            } else {
+                header("Location: index.php?action=smart_match&msg=waiting_opponent_payment");
+            }
         } else {
-            header("Location: index.php?action=smart_match&error=" . urlencode($res['message']));
+            header("Location: index.php?action=smart_match&error=" . urlencode($res['message'] ?? 'failed'));
         }
         exit;
     }
@@ -377,13 +404,16 @@ class MatchmakingController {
         require_once 'models/MatchTicket.php';
         $ticketModel = new MatchTicket($db);
 
-        $res = $ticketModel->confirmMatch($_GET['id'], $_SESSION['user_id']);
+        $paymentMethod = $_GET['payment_method'] ?? 'cash';
+        $paymentStatus = ($paymentMethod === 'vietqr') ? 'paid' : 'unpaid';
+
+        $res = $ticketModel->confirmMatch($_GET['id'], $_SESSION['user_id'], $paymentMethod, $paymentStatus);
 
         if ($res['success']) {
             if ($res['status'] == 'fully_confirmed') {
                 header("Location: index.php?action=smart_match&msg=fully_confirmed");
             } else {
-                header("Location: index.php?action=smart_match&msg=waiting_opponent");
+                header("Location: index.php?action=smart_match&msg=waiting_opponent_payment");
             }
         } else {
             header("Location: index.php?action=smart_match&error=" . urlencode($res['message'] ?? 'failed'));
@@ -456,6 +486,171 @@ class MatchmakingController {
 
         if ($res['success']) {
             header("Location: index.php?action=smart_match&msg=noshow_reported");
+        } else {
+            header("Location: index.php?action=smart_match&error=" . urlencode($res['message']));
+        }
+        exit;
+    }
+
+    public function reportAbsent() {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        $ticketId = $_POST['ticket_id'] ?? $_GET['ticket_id'] ?? null;
+        $reason = $_POST['reason'] ?? $_GET['reason'] ?? '';
+
+        if (!$ticketId) {
+            header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu mã vé thi đấu."));
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/MatchTicket.php';
+        $ticketModel = new MatchTicket($db);
+        $res = $ticketModel->reportAbsent($ticketId, $_SESSION['user_id'], $reason);
+
+        if ($res['success']) {
+            header("Location: index.php?action=smart_match&msg=noshow_pending_owner");
+        } else {
+            header("Location: index.php?action=smart_match&error=" . urlencode($res['message']));
+        }
+        exit;
+    }
+
+    public function switchPitch() {
+        if (!isset($_SESSION['user_id'])) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+                exit;
+            }
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        $ticketId = $_POST['ticket_id'] ?? $_GET['ticket_id'] ?? null;
+        $pitchId = $_POST['pitch_id'] ?? $_GET['pitch_id'] ?? null;
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax']);
+
+        if (!$ticketId || !$pitchId) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Thiếu thông tin sân hoặc vé.']);
+                exit;
+            }
+            header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu thông tin sân hoặc vé."));
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/MatchTicket.php';
+        $ticketModel = new MatchTicket($db);
+        $res = $ticketModel->proposeSwitchPitch($ticketId, $pitchId, $_SESSION['user_id']);
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        if ($res['success']) {
+            header("Location: index.php?action=smart_match&msg=pitch_proposed");
+        } else {
+            header("Location: index.php?action=smart_match&error=" . urlencode($res['message']));
+        }
+        exit;
+    }
+
+    public function acceptSwitchPitch() {
+        if (!isset($_SESSION['user_id'])) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+                exit;
+            }
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        $ticketId = $_POST['ticket_id'] ?? $_GET['ticket_id'] ?? null;
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax']);
+
+        if (!$ticketId) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Thiếu mã vé.']);
+                exit;
+            }
+            header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu mã vé."));
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/MatchTicket.php';
+        $ticketModel = new MatchTicket($db);
+        $res = $ticketModel->acceptSwitchPitch($ticketId, $_SESSION['user_id']);
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        if ($res['success']) {
+            header("Location: index.php?action=smart_match&msg=pitch_switch_accepted");
+        } else {
+            header("Location: index.php?action=smart_match&error=" . urlencode($res['message']));
+        }
+        exit;
+    }
+
+    public function rejectSwitchPitch() {
+        if (!isset($_SESSION['user_id'])) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+                exit;
+            }
+            header("Location: index.php?action=login");
+            exit;
+        }
+
+        $ticketId = $_POST['ticket_id'] ?? $_GET['ticket_id'] ?? null;
+        $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax']);
+
+        if (!$ticketId) {
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Thiếu mã vé.']);
+                exit;
+            }
+            header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu mã vé."));
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/MatchTicket.php';
+        $ticketModel = new MatchTicket($db);
+        $res = $ticketModel->rejectSwitchPitch($ticketId, $_SESSION['user_id']);
+
+        if ($isAjax) {
+            header('Content-Type: application/json');
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        if ($res['success']) {
+            header("Location: index.php?action=smart_match&msg=pitch_switch_rejected");
         } else {
             header("Location: index.php?action=smart_match&error=" . urlencode($res['message']));
         }

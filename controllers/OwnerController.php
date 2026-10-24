@@ -117,13 +117,45 @@ class OwnerController {
         }
     }
 
+    public function matches() {
+        if (!isset($_SESSION['user_id'])) {
+            header("Location: index.php?action=login");
+            exit;
+        }
+        $database = new Database();
+        $db = $database->getConnection();
+        require_once 'models/Matchmaking.php';
+        $matchModel = new Matchmaking($db);
+        $matches = $matchModel->getMatchesForOwner($_SESSION['user_id'])->fetchAll(PDO::FETCH_ASSOC);
+
+        $page_title = "Quản Lý Kèo Thi Đấu";
+        $content = 'owner/matches.php';
+        require_once 'views/layout.php';
+    }
+
     public function approveHostPayment() {
         if (isset($_GET['id'])) {
             $database = new Database();
             $db = $database->getConnection();
-            $query = "UPDATE matchmaking SET host_paid = 1 WHERE id = ?";
+            $query = "UPDATE matchmaking SET host_paid = 1, host_checkin = 1, host_checkin_time = NOW() WHERE id = ?";
             $stmt = $db->prepare($query);
             $stmt->execute([$_GET['id']]);
+
+            // Đồng bộ trạng thái vé match_tickets
+            $mStmt = $db->prepare("SELECT * FROM matchmaking WHERE id = ?");
+            $mStmt->execute([$_GET['id']]);
+            if ($m = $mStmt->fetch(PDO::FETCH_ASSOC)) {
+                $db->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE user_id = ? AND play_date = ? AND start_time = ?")
+                   ->execute([$m['user_id'], $m['play_date'], $m['start_time']]);
+            }
+
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => 'Xác nhận thu 50% tiền sân Chủ Nhà thành công!', 'party' => 'host'], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+
             $redirect = (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'owner_matches') !== false) 
                 ? "index.php?action=owner_matches&msg=payment_approved" 
                 : "index.php?action=owner_dashboard&msg=payment_approved";
@@ -136,15 +168,58 @@ class OwnerController {
         if (isset($_GET['id'])) {
             $database = new Database();
             $db = $database->getConnection();
-            $query = "UPDATE matchmaking SET guest_paid = 1 WHERE id = ?";
+            $query = "UPDATE matchmaking SET guest_paid = 1, guest_checkin = 1, guest_checkin_time = NOW() WHERE id = ?";
             $stmt = $db->prepare($query);
             $stmt->execute([$_GET['id']]);
+
+            // Đồng bộ trạng thái vé match_tickets
+            $mStmt = $db->prepare("SELECT * FROM matchmaking WHERE id = ?");
+            $mStmt->execute([$_GET['id']]);
+            if ($m = $mStmt->fetch(PDO::FETCH_ASSOC)) {
+                $db->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE user_id = ? AND play_date = ? AND start_time = ?")
+                   ->execute([$m['opponent_id'], $m['play_date'], $m['start_time']]);
+            }
+
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => true, 'message' => 'Xác nhận thu 50% tiền sân Đội Khách thành công!', 'party' => 'guest'], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+
             $redirect = (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'owner_matches') !== false) 
                 ? "index.php?action=owner_matches&msg=payment_approved" 
                 : "index.php?action=owner_dashboard&msg=payment_approved";
             header("Location: " . $redirect);
             exit;
         }
+    }
+
+    public function confirmNoShow() {
+        if (!isset($_SESSION['user_id']) || !isset($_GET['match_id'])) {
+            header("Location: index.php?action=owner_dashboard");
+            exit;
+        }
+        $matchId = (int)$_GET['match_id'];
+        $decision = $_GET['decision'] ?? 'confirm';
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/MatchTicket.php';
+        $ticketModel = new MatchTicket($db);
+        $res = $ticketModel->ownerHandleNoShow($matchId, $_SESSION['user_id'], $decision);
+
+        $redirect = (isset($_SERVER['HTTP_REFERER']) && strpos($_SERVER['HTTP_REFERER'], 'owner_matches') !== false) 
+            ? "index.php?action=owner_matches" 
+            : "index.php?action=owner_dashboard";
+
+        if ($res['success']) {
+            header("Location: " . $redirect . "&msg=" . urlencode($res['message_code']));
+        } else {
+            header("Location: " . $redirect . "&error=" . urlencode($res['message'] ?? 'failed'));
+        }
+        exit;
     }
 
     public function cancelMatch() {
@@ -395,7 +470,11 @@ class OwnerController {
                     $overlapping = $booking->getConfirmedOverlappingCount($bData['pitch_id'], $bData['booking_date'], $bData['start_time'], $bData['end_time'], false);
                     
                     if ($overlapping >= $pitchData['quantity']) {
-                        // Sân đã đầy, báo lỗi
+                        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax'])) {
+                            header('Content-Type: application/json');
+                            echo json_encode(['success' => false, 'message' => "Không thể xác nhận: Sân đã đạt tối đa số lượng (Tối đa: {$pitchData['quantity']}) vào khung giờ này."], JSON_UNESCAPED_UNICODE);
+                            exit;
+                        }
                         die("<h3 style='color:red;'>Không thể xác nhận: Sân đã đạt tối đa số lượng (Tối đa: {$pitchData['quantity']}) vào khung giờ này.</h3><br><a href='index.php?action=owner_dashboard'>Quay lại</a>");
                     }
                 }
@@ -415,6 +494,14 @@ class OwnerController {
                     $msg_s = $db->prepare($msg_q);
                     $msg_s->execute([$owner_id, $bData['user_id'], $content]);
                 }
+            }
+
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+            if ($isAjax) {
+                header('Content-Type: application/json');
+                $msg = ($newStatus === 'confirmed') ? 'Đã duyệt đơn đặt sân thành công!' : 'Đã hủy đơn đặt sân thành công!';
+                echo json_encode(['success' => true, 'booking_id' => $bookingId, 'new_status' => $newStatus, 'message' => $msg], JSON_UNESCAPED_UNICODE);
+                exit;
             }
         }
         header("Location: index.php?action=owner_dashboard");

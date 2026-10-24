@@ -63,6 +63,39 @@ $allDistrictsList = [
                 </div>
                 <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white font-bold">&times;</button>
             </div>
+        <?php elseif($_GET['msg'] == 'pitch_proposed'): ?>
+            <div class="bg-gradient-to-r from-amber-600 to-yellow-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between animate-fade-in">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">⏳</span>
+                    <div>
+                        <h4 class="font-bold text-lg">Đã gửi đề xuất đổi sân thi đấu!</h4>
+                        <p class="text-sm text-amber-100">Lời đề xuất đã được gửi tới đối thủ. Sân sẽ chính thức thay đổi ngay khi đối thủ bấm Đồng Ý.</p>
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white font-bold">&times;</button>
+            </div>
+        <?php elseif($_GET['msg'] == 'pitch_switch_accepted'): ?>
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between animate-fade-in">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🎉</span>
+                    <div>
+                        <h4 class="font-bold text-lg">Đồng thuận đổi sân thành công!</h4>
+                        <p class="text-sm text-emerald-100">Địa điểm thi đấu mới đã được cập nhật cho cả 2 bên. Vui lòng kiểm tra lại tiền sân và bấm xác nhận!</p>
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white font-bold">&times;</button>
+            </div>
+        <?php elseif($_GET['msg'] == 'pitch_switch_rejected'): ?>
+            <div class="bg-gradient-to-r from-gray-700 to-slate-800 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between animate-fade-in">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">ℹ️</span>
+                    <div>
+                        <h4 class="font-bold text-lg">Đã từ chối đề xuất đổi sân</h4>
+                        <p class="text-sm text-slate-300">Trận đấu vẫn giữ nguyên sân thi đấu ban đầu theo thỏa thuận trước đó.</p>
+                    </div>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white font-bold">&times;</button>
+            </div>
         <?php elseif($_GET['msg'] == 'pitch_switched'): ?>
             <div class="bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-4 rounded-2xl shadow-lg flex items-center justify-between animate-fade-in">
                 <div class="flex items-center gap-3">
@@ -86,11 +119,19 @@ $allDistrictsList = [
                 <button onclick="this.parentElement.remove()" class="text-white/80 hover:text-white font-bold">&times;</button>
             </div>
         <?php elseif($_GET['msg'] == 'waiting_opponent'): ?>
-            <div class="bg-blue-600 text-white p-4 rounded-2xl shadow-lg flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-4 rounded-2xl shadow-lg flex items-center gap-3 animate-fade-in">
                 <span class="text-2xl">⏳</span>
                 <div>
                     <h4 class="font-bold">Bạn đã xác nhận kèo thành công!</h4>
-                    <p class="text-sm text-blue-100">Hệ thống đang chờ đối thủ bấm xác nhận. Khi cả hai cùng đồng ý, sân sẽ được tự động khóa.</p>
+                    <p class="text-sm text-blue-100">Hệ thống đang chờ đối thủ bấm xác nhận & thanh toán. Khi cả hai cùng hoàn tất, sân sẽ được tự động khóa.</p>
+                </div>
+            </div>
+        <?php elseif($_GET['msg'] == 'waiting_opponent_payment'): ?>
+            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 text-white p-5 rounded-2xl shadow-lg flex items-center gap-4 animate-fade-in">
+                <span class="text-3xl">💳</span>
+                <div>
+                    <h4 class="font-black text-xl">BẠN ĐÃ HOÀN TẤT THANH TOÁN 50%!</h4>
+                    <p class="text-sm text-emerald-100">Hệ thống đang chờ đối thủ thanh toán phần còn lại. Khi đối thủ hoàn tất, sân sẽ được khóa tự động và cấp mã Check-in ngay lập tức!</p>
                 </div>
             </div>
         <?php elseif($_GET['msg'] == 'fully_confirmed'): ?>
@@ -337,36 +378,29 @@ $allDistrictsList = [
                             </div>
                         </div>
 
-                        <!-- BỘ ĐỊNH VỊ GPS CÁ NHÂN & BÁN KÍNH TOÀN QUỐC -->
-                        <div class="bg-[#0b1116] p-4 rounded-2xl border border-cyan-500/30 space-y-3 relative overflow-hidden">
-                            <!-- Priority Tag -->
-                            <div class="flex items-center justify-between">
-                                <span class="bg-cyan-500/20 text-cyan-300 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-cyan-500/40 uppercase tracking-wider flex items-center gap-1">
-                                    🥇 Ưu Tiên 1: Vị Trí GPS & Bán Kính
-                                </span>
-                                <span class="text-[10px] text-cyan-300/70" id="gpsStatusText">Chưa định vị</span>
-                            </div>
-
+                        <!-- BỘ ĐỊNH VỊ VỊ TRÍ & BÁN KÍNH GHÉP TRẬN (GPS & BÁN KÍNH THÔNG MINH) -->
+                        <div class="bg-[#0b1116] p-4 rounded-2xl border border-cyan-500/30 space-y-3.5 relative overflow-hidden">
                             <div class="flex items-center justify-between">
                                 <label class="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
-                                    <span>🧭</span> Định Vị Vị Trí Cá Nhân (GPS):
+                                    <span>🧭</span> Vị Trí Của Bạn & Bán Kính Tìm Sân:
                                 </label>
+                                <span class="text-[10px] text-cyan-300/80 font-semibold" id="gpsStatusText">Chưa định vị</span>
                             </div>
 
                             <div class="flex gap-2">
                                 <button type="button" id="btnGpsLocate" onclick="getLocationGPS()" 
-                                        class="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow">
-                                    <span>🧭</span> Dùng Vị Trí Hiện Tại (GPS)
+                                        class="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow cursor-pointer">
+                                    <span>📍</span> Dùng Vị Trí Hiện Tại (GPS)
                                 </button>
                             </div>
 
                             <!-- Ô nhập địa chỉ tự do toàn quốc -->
                             <div>
-                                <label class="block text-[11px] font-bold text-gray-400 mb-1">Hoặc Nhập Tỉnh/Thành/Địa Chỉ Bất Kỳ Toàn Quốc:</label>
+                                <label class="block text-[11px] font-bold text-gray-400 mb-1">Hoặc Nhập Khu Vực / Tỉnh Thành Bất Kỳ:</label>
                                 <div class="flex gap-1.5">
-                                    <input type="text" id="customLocationInput" name="location_name" placeholder="Ví dụ: Cầu Giấy, Hà Nội hoặc Hải Châu, Đà Nẵng..."
+                                    <input type="text" id="customLocationInput" name="location_name" placeholder="Ví dụ: Bình Thạnh, Cầu Giấy, Hải Châu..."
                                            class="flex-1 px-3 py-2 bg-[#121b21] border border-white/10 rounded-xl text-xs font-medium text-white focus:ring-2 focus:ring-cyan-500">
-                                    <button type="button" onclick="geocodeCustomAddress()" class="px-3 py-2 bg-cyan-700 hover:bg-cyan-600 text-white font-bold text-xs rounded-xl whitespace-nowrap">
+                                    <button type="button" onclick="geocodeCustomAddress()" class="px-3.5 py-2 bg-cyan-700 hover:bg-cyan-600 text-white font-bold text-xs rounded-xl whitespace-nowrap cursor-pointer">
                                         Tìm GPS
                                     </button>
                                 </div>
@@ -374,11 +408,12 @@ $allDistrictsList = [
 
                             <input type="hidden" name="user_lat" id="ticketUserLat" value="">
                             <input type="hidden" name="user_lng" id="ticketUserLng" value="">
+                            <input type="hidden" name="district" id="ticketDistrictInput" value="Tất cả">
 
                             <!-- Thanh Trượt Bán Kính Quét Tìm Kèo -->
                             <div class="pt-2 border-t border-white/10">
                                 <div class="flex items-center justify-between mb-1">
-                                    <span class="text-[11px] font-bold text-gray-300">📏 Bán Kính Tìm Đối Thuận Tiện:</span>
+                                    <span class="text-[11px] font-bold text-gray-300">📏 Bán Kính Quét Sân & Đối Thủ:</span>
                                     <span class="text-xs font-black text-cyan-400" id="radiusLabelVal">10 km</span>
                                 </div>
                                 <input type="range" name="radius_km" id="ticketRadiusSlider" min="2" max="30" step="1" value="10"
@@ -391,60 +426,6 @@ $allDistrictsList = [
                                     <span>30 km</span>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Tip Box giải thích cơ chế ưu tiên -->
-                        <div class="bg-indigo-950/40 border border-indigo-500/30 p-3 rounded-2xl text-[11px] text-indigo-200 flex items-start gap-2">
-                            <span class="text-base">💡</span>
-                            <div class="leading-relaxed">
-                                <strong class="text-indigo-300 block font-bold mb-0.5">Cơ chế ưu tiên vị trí ghép trận:</strong>
-                                • <strong class="text-cyan-300">Khi BẬT GPS:</strong> Hệ thống ưu tiên cao nhất cho vị trí tọa độ & bán kính (quét sân thực tế gần bạn trong X km, kể cả giáp ranh khác quận).<br>
-                                • <strong class="text-emerald-300">Khi KHÔNG CÓ GPS:</strong> Hệ thống sẽ tự động dùng <strong class="text-white">Quận Huyện</strong> chọn ở bên dưới làm tiêu chí lọc.
-                            </div>
-                        </div>
-
-                        <!-- Khu vực / Quận mong muốn -->
-                        <div>
-                            <div class="flex items-center justify-between mb-1.5">
-                                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider">
-                                    📍 Chọn Khu Vực Hoặc Quận Huyện Cụ Thể
-                                </label>
-                                <span class="bg-white/10 text-gray-300 text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/10">
-                                    🥈 Ưu Tiên 2 (Dự phòng)
-                                </span>
-                            </div>
-                            <select name="district" class="w-full px-4 py-3 bg-[#0b1116] border border-white/10 rounded-xl font-medium text-white focus:ring-2 focus:ring-green-500 transition-all text-sm">
-                                <option value="Tất cả" <?php echo ($currentUser['district'] ?? '') == 'Tất cả' ? 'selected' : ''; ?>>
-                                    🌐 Tất cả khu vực / Bất kỳ quận nào (Dễ ghép trận nhất)
-                                </option>
-                                
-                                <optgroup label="🟢 Các Quận ĐANG CÓ SÂN Cầu Lông Hoạt Động">
-                                    <?php foreach($allDistrictsList as $d): ?>
-                                        <?php if(isset($districtCounts[$d]) && $districtCounts[$d] > 0): ?>
-                                            <option value="<?php echo $d; ?>" <?php echo ($currentUser['district'] ?? '') == $d ? 'selected' : ''; ?>>
-                                                📍 <?php echo $d; ?> [🟢 <?php echo $districtCounts[$d]; ?> sân]
-                                            </option>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                    <?php foreach($districtCounts as $dName => $cnt): ?>
-                                        <?php if(!in_array($dName, $allDistrictsList)): ?>
-                                            <option value="<?php echo htmlspecialchars($dName); ?>" <?php echo ($currentUser['district'] ?? '') == $dName ? 'selected' : ''; ?>>
-                                                📍 <?php echo htmlspecialchars($dName); ?> [🟢 <?php echo $cnt; ?> sân]
-                                            </option>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </optgroup>
-
-                                <optgroup label="🏢 Tất Cả Các Quận / Huyện Khác (TP.HCM)">
-                                    <?php foreach($allDistrictsList as $d): ?>
-                                        <?php if(!isset($districtCounts[$d]) || $districtCounts[$d] == 0): ?>
-                                            <option value="<?php echo $d; ?>" <?php echo ($currentUser['district'] ?? '') == $d ? 'selected' : ''; ?>>
-                                                ⚪ <?php echo $d; ?> (Chưa có sân liên kết)
-                                            </option>
-                                        <?php endif; ?>
-                                    <?php endforeach; ?>
-                                </optgroup>
-                            </select>
                         </div>
 
                         <!-- Thể thức thi đấu -->
@@ -565,48 +546,83 @@ $allDistrictsList = [
                                     </div>
                                 </div>
 
-                                <div class="bg-emerald-50/70 p-3 rounded-xl flex items-center justify-between text-xs text-emerald-800">
+                                <div class="bg-emerald-500/10 p-3 rounded-xl flex items-center justify-between text-xs text-emerald-400 border border-emerald-500/20">
                                     <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        <span>Đang so khớp các vận động viên Rank <strong class="text-emerald-950 font-bold"><?php echo $t['rank_name']; ?> (~<?php echo $t['elo_points']; ?> Elo)</strong>...</span>
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        <span>Đang so khớp các vận động viên Rank <strong class="text-white font-bold"><?php echo $t['rank_name']; ?> (~<?php echo $t['elo_points']; ?> Elo)</strong>...</span>
                                     </div>
-                                    <span class="text-[11px] text-emerald-600 font-semibold hidden md:inline">Tự động báo khi có kết quả</span>
+                                    <span class="text-[11px] text-emerald-400 font-semibold hidden md:inline">Tự động báo khi có kết quả</span>
                                 </div>
                             </div>
 
-                        <!-- CARD TRƯỜNG HỢP 2: ĐÃ GHÉP CẶP - CHỜ XÁC NHẬN (MATCHED) -->
+                        <!-- CARD TRƯỜNG HỢP 2: ĐÃ GHÉP CẶP - CHỜ XÁC NHẬN & THANH TOÁN (MATCHED) -->
                         <?php elseif($t['status'] == 'matched'): ?>
-                            <div class="bg-gradient-to-br from-amber-500/10 via-white to-amber-500/5 rounded-3xl p-6 shadow-none border-2 border-amber-400 relative overflow-hidden">
+                            <?php 
+                                $hrs = max(1, (strtotime($t['end_time']) - strtotime($t['start_time'])) / 3600);
+                                $totalBase = $hrs * $t['price_per_hour'];
+                                $baseHalf = $totalBase / 2;
+                                $myPay = $baseHalf * ((100 - $discount) / 100);
                                 
+                                $myConfirmed = !empty($t['user_confirmed']);
+                                $oppConfirmed = !empty($t['opp_confirmed']);
+                                $myMethod = $t['payment_method'] ?? 'cash';
+                                $myPaid = ($t['payment_status'] ?? '') === 'paid';
+                                
+                                $oppMethod = $t['opp_payment_method'] ?? 'cash';
+                                $oppPaid = ($t['opp_payment_status'] ?? '') === 'paid';
+                            ?>
+                            <div class="bg-gradient-to-br from-[#121b21] via-[#0b1116] to-[#121b21] rounded-3xl p-6 shadow-2xl border-2 border-amber-500/60 relative overflow-hidden transition-all hover:border-amber-400" id="matched-card-<?php echo $t['id']; ?>" data-matched-id="<?php echo $t['id']; ?>">
+                                
+                                <!-- Glow decorative FX -->
+                                <div class="absolute -right-16 -top-16 w-44 h-44 bg-amber-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                                <div class="absolute -left-16 -bottom-16 w-44 h-44 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
                                 <!-- Top Status Bar -->
-                                <div class="flex items-center justify-between pb-4 border-b border-amber-500/20 mb-5">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xl">🔥</span>
-                                        <h4 class="font-black text-amber-900 text-lg uppercase tracking-wide">
-                                            ĐÃ TÌM THẤY ĐỐI THỦ PHÙ HỢP!
-                                        </h4>
+                                <div class="flex items-center justify-between pb-4 border-b border-white/10 mb-5 relative z-10">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="text-2xl animate-bounce">🔥</span>
+                                        <div>
+                                            <h4 class="font-black text-amber-400 text-lg uppercase tracking-wide">
+                                                ĐÃ TÌM THẤY ĐỐI THỦ PHÙ HỢP!
+                                            </h4>
+                                            <p class="text-xs text-white/60">Hai bên có thể Chat thỏa thuận trước khi bấm xác nhận & thanh toán chia đôi (50/50)</p>
+                                        </div>
                                     </div>
-                                    <span class="bg-amber-500 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider animate-pulse shadow">
-                                        Chờ Xác Nhận
-                                    </span>
+                                    <div>
+                                        <?php if($myConfirmed && !$oppConfirmed): ?>
+                                            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1.5 shadow">
+                                                <span>⏳</span> Đang Chờ Đối Thủ Trả
+                                            </span>
+                                        <?php elseif(!$myConfirmed && $oppConfirmed): ?>
+                                            <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1.5 shadow">
+                                                <span>⚡</span> Đối Thủ Đã Xác Nhận!
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="bg-amber-500 text-slate-950 text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider shadow">
+                                                Chờ Xác Nhận
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
 
                                 <!-- VS BATTLE CARD -->
-                                <div class="bg-[#0b1116] rounded-2xl p-4 shadow-none border border-amber-500/20 mb-5">
+                                <div class="bg-[#121b21] rounded-2xl p-4 border border-white/10 mb-5 relative z-10 shadow-inner">
                                     <div class="flex items-center justify-between">
                                         
                                         <!-- Bạn (Left) -->
                                         <div class="flex items-center gap-3 w-5/12">
                                             <img src="<?php echo htmlspecialchars($currentUser['avatar_url'] ?? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'); ?>" 
-                                                 class="w-12 h-12 rounded-xl object-cover border border-amber-300">
-                                            <div>
+                                                 class="w-12 h-12 rounded-xl object-cover border-2 border-emerald-400 shrink-0">
+                                            <div class="overflow-hidden">
                                                 <div class="font-bold text-white text-sm truncate"><?php echo htmlspecialchars($currentUser['name'] ?? ($_SESSION['user_name'] ?? 'Bạn')); ?> (Bạn)</div>
-                                                <div class="text-xs text-amber-600 font-extrabold"><?php echo $t['rank_name']; ?> • <?php echo $t['elo_points']; ?> Elo</div>
-                                                <div class="text-[11px] mt-0.5">
-                                                    <?php if($t['user_confirmed']): ?>
-                                                        <span class="text-green-400 font-bold flex items-center gap-0.5">✓ Bạn đã đồng ý</span>
+                                                <div class="text-xs text-amber-400 font-extrabold"><?php echo $t['rank_name']; ?> • <?php echo $t['elo_points']; ?> Elo</div>
+                                                <div class="text-[11px] mt-1">
+                                                    <?php if($myConfirmed): ?>
+                                                        <span class="text-emerald-400 font-bold inline-flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+                                                            ✓ Đã trả 50% (<?php echo $myMethod === 'vietqr' ? 'VietQR' : 'Tiền mặt'; ?>)
+                                                        </span>
                                                     <?php else: ?>
-                                                        <span class="text-amber-500 font-medium">Chờ bạn xác nhận...</span>
+                                                        <span class="text-amber-400 font-medium">Chưa thanh toán 50%</span>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
@@ -614,169 +630,358 @@ $allDistrictsList = [
 
                                         <!-- VS Icon (Center) -->
                                         <div class="w-2/12 text-center">
-                                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-red-600 to-amber-600 text-white font-black flex items-center justify-center mx-auto text-sm shadow-none">
+                                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-red-600 to-amber-600 text-white font-black flex items-center justify-center mx-auto text-sm shadow-lg ring-4 ring-amber-500/20">
                                                 VS
                                             </div>
                                         </div>
 
                                         <!-- Đối Thủ (Right) -->
                                         <div class="flex items-center justify-end gap-3 w-5/12 text-right">
-                                            <div>
+                                            <div class="overflow-hidden">
                                                 <div class="font-bold text-white text-sm truncate"><?php echo htmlspecialchars($t['opp_name']); ?></div>
-                                                <div class="text-xs text-amber-600 font-extrabold"><?php echo $t['opp_rank']; ?> • <?php echo $t['opp_elo']; ?> Elo</div>
-                                                <div class="text-[11px] mt-0.5">
-                                                    <?php if($t['opp_confirmed']): ?>
-                                                        <span class="text-green-400 font-bold flex items-center justify-end gap-0.5">✓ Đối thủ đã đồng ý</span>
+                                                <div class="text-xs text-amber-400 font-extrabold"><?php echo $t['opp_rank']; ?> • <?php echo $t['opp_elo']; ?> Elo</div>
+                                                <div class="text-[11px] mt-1">
+                                                    <?php if($oppConfirmed): ?>
+                                                        <span class="text-emerald-400 font-bold inline-flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-md">
+                                                            ✓ Đối thủ đã thanh toán 50%
+                                                        </span>
                                                     <?php else: ?>
-                                                        <span class="text-white/40 font-medium">Đối thủ chưa bấm...</span>
+                                                        <span class="text-white/40 font-medium">Đối thủ chưa xác nhận...</span>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
                                             <img src="<?php echo htmlspecialchars($t['opp_avatar'] ?? 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150'); ?>" 
-                                                 class="w-12 h-12 rounded-xl object-cover border border-amber-300">
+                                                 class="w-12 h-12 rounded-xl object-cover border-2 border-amber-400 shrink-0">
                                         </div>
 
                                     </div>
                                 </div>
 
                                 <!-- THÔNG TIN SÂN & GIÁ TIỀN CHIA ĐÔI -->
-                                <div class="bg-amber-50/60 rounded-2xl p-4 border border-amber-500/20 text-xs text-gray-700 space-y-2.5 mb-5">
+                                <div class="bg-[#121b21] rounded-2xl p-4 border border-white/10 text-xs text-white/80 space-y-3 mb-5 relative z-10">
+                                    <div id="pitch_proposal_banner_container_<?php echo $t['id']; ?>">
+                                    <?php if(!empty($t['proposed_pitch_id'])): ?>
+                                        <?php if($t['proposed_by_user_id'] == $_SESSION['user_id']): ?>
+                                            <div class="p-3.5 bg-amber-950/70 border border-amber-500/50 rounded-2xl text-xs text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md animate-pulse">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-xl shrink-0">⏳</span>
+                                                    <div>
+                                                        <strong>Bạn đã gửi đề xuất đổi sang sân: <span class="text-white underline"><?php echo htmlspecialchars($t['proposed_pitch_name']); ?></span> (<?php echo number_format($t['proposed_pitch_price'],0,',','.'); ?>đ/h).</strong>
+                                                        <span class="block text-[11px] text-amber-300/70">Đang chờ đối thủ <?php echo htmlspecialchars($t['opp_name']); ?> đồng ý...</span>
+                                                    </div>
+                                                </div>
+                                                <button type="button" 
+                                                   onclick="return ajaxRejectSwitchPitch(event, this, <?php echo $t['id']; ?>);"
+                                                   class="bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 rounded-lg text-xs whitespace-nowrap border border-white/20 transition-all self-end sm:self-center cursor-pointer">
+                                                    ✕ Hủy Đề Xuất
+                                                </button>
+                                            </div>
+                                        <?php else: ?>
+                                            <div class="p-4 bg-emerald-950/80 border-2 border-emerald-500 rounded-2xl text-xs text-white shadow-xl animate-bounce-subtle">
+                                                <div class="flex items-start gap-3">
+                                                    <span class="text-2xl shrink-0">🏟️</span>
+                                                    <div class="flex-1 space-y-2">
+                                                        <div>
+                                                            <span class="text-emerald-400 font-black uppercase tracking-wider text-[11px] block">ĐỐI THỦ ĐỀ XUẤT ĐỔI SÂN THI ĐẤU</span>
+                                                            <p class="text-sm font-bold text-white mt-0.5">
+                                                                <?php echo htmlspecialchars($t['opp_name']); ?> muốn đổi sang: <span class="text-[#d8ff3e] underline"><?php echo htmlspecialchars($t['proposed_pitch_name']); ?></span>
+                                                            </p>
+                                                            <p class="text-xs text-white/70 mt-0.5">
+                                                                📍 <?php echo htmlspecialchars($t['proposed_pitch_location']); ?> • Giá: <?php echo number_format($t['proposed_pitch_price'], 0, ',', '.'); ?>đ/h (Mỗi bên 50%: <?php echo number_format($t['proposed_pitch_price'] / 2, 0, ',', '.'); ?>đ)
+                                                            </p>
+                                                        </div>
+                                                        <div class="flex items-center gap-2 pt-1">
+                                                            <button type="button" 
+                                                               onclick="return ajaxAcceptSwitchPitch(event, this, <?php echo $t['id']; ?>);"
+                                                               class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-black px-4 py-2 rounded-xl text-xs uppercase tracking-wider shadow transition-all cursor-pointer">
+                                                                ✅ Đồng Ý Đổi Sân
+                                                            </button>
+                                                            <button type="button" 
+                                                               onclick="return ajaxRejectSwitchPitch(event, this, <?php echo $t['id']; ?>);"
+                                                               class="bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-xl text-xs border border-white/15 transition-all cursor-pointer">
+                                                                ✕ Từ Chối (Giữ Sân Cũ)
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                    </div>
+
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-1.5">
                                             <span class="text-white/60 font-medium">📍 Sân thi đấu:</span>
                                             <?php if(!empty($t['has_pitch']) || !empty($t['specified_pitch_id'])): ?>
-                                                <span class="text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full border border-amber-300">Chủ Kèo Chọn Sân</span>
+                                                <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/40">Chủ Kèo Chọn Sân</span>
                                             <?php else: ?>
-                                                <span class="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full border border-blue-300">Hệ Thống Đề Xuất</span>
+                                                <span class="text-[10px] bg-blue-500/20 text-blue-300 font-bold px-2 py-0.5 rounded-full border border-blue-500/40">Hệ Thống Đề Xuất</span>
                                             <?php endif; ?>
                                         </div>
-                                        <strong class="text-white font-bold text-sm"><?php echo htmlspecialchars($t['pitch_name']); ?></strong>
+                                        <strong class="text-white font-bold text-sm" id="current_pitch_name_<?php echo $t['id']; ?>"><?php echo htmlspecialchars($t['pitch_name']); ?></strong>
                                     </div>
 
                                     <div class="flex items-center justify-between">
                                         <span class="text-white/60 font-medium">⏰ Khung giờ:</span>
-                                        <strong class="text-white"><?php echo date('d/m/Y', strtotime($t['play_date'])); ?> lúc <?php echo substr($t['start_time'], 0, 5); ?> - <?php echo substr($t['end_time'], 0, 5); ?></strong>
+                                        <strong class="text-emerald-400"><?php echo date('d/m/Y', strtotime($t['play_date'])); ?> lúc <?php echo substr($t['start_time'], 0, 5); ?> - <?php echo substr($t['end_time'], 0, 5); ?></strong>
                                     </div>
 
-                                    <div class="flex items-center justify-between pt-2 border-t border-amber-500/20/60">
+                                    <div class="flex items-center justify-between pt-2 border-t border-white/10">
                                         <div>
-                                            <span class="text-white/60 font-medium">Chi phí chia đôi (Split Bill 50/50):</span>
+                                            <span class="text-white/60 font-medium">Chi phí chia đôi (Split 50/50):</span>
                                             <?php if($discount > 0): ?>
-                                                <span class="text-emerald-600 font-bold ml-1">(Đã giảm <?php echo $discount; ?>% theo Rank của bạn)</span>
+                                                <span class="text-emerald-400 font-bold ml-1">(Giảm <?php echo $discount; ?>% theo Rank)</span>
                                             <?php endif; ?>
                                         </div>
-                                        <?php 
-                                            $hrs = max(1, (strtotime($t['end_time']) - strtotime($t['start_time'])) / 3600);
-                                            $baseHalf = ($hrs * $t['price_per_hour']) / 2;
-                                            $myPay = $baseHalf * ((100 - $discount) / 100);
-                                        ?>
-                                        <strong class="text-emerald-700 font-black text-base"><?php echo number_format($myPay, 0, ',', '.'); ?>đ</strong>
+                                        <div class="text-right">
+                                            <span class="text-[10px] text-white/40 block">Tổng sân: <?php echo number_format($totalBase, 0, ',', '.'); ?>đ</span>
+                                            <strong class="text-[#d8ff3e] font-black text-base">Phần bạn (50%): <?php echo number_format($myPay, 0, ',', '.'); ?>đ</strong>
+                                        </div>
                                     </div>
 
                                     <!-- Nút Mở Form Đổi Sân -->
-                                    <div class="pt-2 flex items-center justify-between border-t border-amber-200/50">
-                                        <span class="text-[11px] text-amber-800 italic">Muốn chọn sân khác? Bạn có thể thương lượng chọn lại trước khi bấm xác nhận.</span>
+                                    <div class="pt-2 flex items-center justify-between border-t border-white/10">
+                                        <span class="text-[11px] text-amber-300/80 italic">Chat thương lượng trước, bạn có thể đề xuất đổi sân khác:</span>
                                         <button type="button" onclick="document.getElementById('switchPitchBox_<?php echo $t['id']; ?>').classList.toggle('hidden')"
-                                                class="text-xs text-amber-700 hover:text-amber-900 font-extrabold bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg border border-amber-300 transition-colors flex items-center gap-1 shadow-sm">
-                                            <span>🔄</span> Đổi Sân Khác
+                                                class="text-xs text-amber-300 hover:text-white font-extrabold bg-amber-500/20 hover:bg-amber-500/30 px-3 py-1.5 rounded-lg border border-amber-500/40 transition-colors flex items-center gap-1 shadow-sm cursor-pointer">
+                                            <span>🔄</span> Đề Xuất Đổi Sân
                                         </button>
                                     </div>
 
                                     <!-- Box Đổi Sân Thi Đấu (Ẩn/Hiện) -->
-                                    <div id="switchPitchBox_<?php echo $t['id']; ?>" class="hidden bg-[#0b1116] p-3.5 rounded-xl border border-amber-400 space-y-2 animate-fade-in mt-2">
+                                    <div id="switchPitchBox_<?php echo $t['id']; ?>" class="hidden bg-[#0b1116] p-3.5 rounded-xl border border-amber-500/40 space-y-2 animate-fade-in mt-2">
                                         <h5 class="font-bold text-amber-400 text-xs flex items-center gap-1">
-                                            <span>🏟️</span> Chọn Sân Thi Đấu Thay Thế Trống Slot:
+                                            <span>🏟️</span> Chọn Sân Thi Đấu Thay Thế (Gợi ý theo khoảng cách GPS của cả 2 bạn):
                                         </h5>
-                                        <form action="index.php?action=switch_pitch" method="POST" class="flex items-center gap-2">
+                                        <form action="index.php?action=switch_pitch" method="POST" onsubmit="return ajaxProposeSwitchPitch(event, this, <?php echo $t['id']; ?>);" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                                             <input type="hidden" name="ticket_id" value="<?php echo $t['id']; ?>">
-                                            <select name="pitch_id" required class="flex-1 px-3 py-2 bg-[#0b1116] border border-gray-600 rounded-lg text-xs font-medium text-white focus:ring-2 focus:ring-amber-500">
+                                            <select name="pitch_id" id="pitch_select_<?php echo $t['id']; ?>" required class="flex-1 px-3 py-2 bg-[#121b21] border border-white/20 rounded-lg text-xs font-medium text-white focus:ring-2 focus:ring-amber-500">
                                                 <?php 
                                                     $availPitches = $ticketModel->getAvailablePitchesForMatch($t['id']);
                                                     foreach($availPitches as $ap): 
+                                                        $distText = '';
+                                                        if ($ap['dist_user'] !== null) $distText .= ' • Bạn: ' . $ap['dist_user'] . 'km';
+                                                        if ($ap['dist_opp'] !== null) $distText .= ' • Đối thủ: ' . $ap['dist_opp'] . 'km';
                                                 ?>
-                                                    <option value="<?php echo $ap['id']; ?>" <?php echo $ap['is_current'] ? 'selected' : ''; ?>>
-                                                        <?php echo htmlspecialchars($ap['name']); ?> (<?php echo htmlspecialchars($ap['district']); ?>) - <?php echo number_format($ap['price_per_hour'], 0, ',', '.'); ?>đ/h
+                                                    <option value="<?php echo $ap['id']; ?>" data-name="<?php echo htmlspecialchars($ap['name']); ?>" data-price="<?php echo number_format($ap['price_per_hour'], 0, ',', '.'); ?>" <?php echo $ap['is_current'] ? 'selected' : ''; ?>>
+                                                        <?php echo htmlspecialchars($ap['name']); ?> (<?php echo htmlspecialchars($ap['district']); ?>)<?php echo $distText; ?> - <?php echo number_format($ap['price_per_hour'], 0, ',', '.'); ?>đ/h
                                                     </option>
                                                 <?php endforeach; ?>
                                             </select>
-                                            <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3.5 py-2 rounded-lg transition-colors whitespace-nowrap">
-                                                Xác Nhận Đổi
+                                            <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition-colors whitespace-nowrap cursor-pointer">
+                                                Gửi Đề Xuất Đổi Sân
                                             </button>
                                         </form>
                                     </div>
                                 </div>
 
-                                <!-- Action Buttons -->
-                                <div class="flex items-center gap-3">
-                                    <?php if(!$t['user_confirmed']): ?>
-                                        <a href="index.php?action=confirm_ticket&id=<?php echo $t['id']; ?>" 
-                                           class="flex-1 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold py-3.5 px-4 rounded-xl shadow-none text-center transition-all flex items-center justify-center gap-2 text-sm">
-                                            <span>✅</span> XÁC NHẬN KÈO ĐẤU
-                                        </a>
-                                    <?php else: ?>
-                                        <div class="flex-1 bg-green-100 text-green-800 font-bold py-3.5 px-4 rounded-xl text-center text-sm border border-green-200 flex items-center justify-center gap-2">
-                                            <span>✓</span> Đang chờ đối thủ bấm xác nhận...
-                                        </div>
-                                    <?php endif; ?>
+                                <!-- ACTION BUTTONS: CHAT THƯƠNG LƯỢNG & XÁC NHẬN THANH TOÁN 50% -->
+                                <div class="space-y-3 relative z-10">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <!-- NÚT 1: CHAT THƯƠNG LƯỢNG VỚI ĐỐI THỦ -->
+                                        <button type="button" 
+                                                onclick="openMatchQuickChat(<?php echo (int)$t['opp_user_id']; ?>, '<?php echo addslashes($t['opp_name']); ?>', '<?php echo addslashes($t['opp_avatar'] ?? ''); ?>', '<?php echo addslashes($t['opp_rank']); ?>')"
+                                                class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-black py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer">
+                                            <span class="text-base">💬</span>
+                                            <span>Chat Thỏa Thuận Với <?php echo htmlspecialchars($t['opp_name']); ?></span>
+                                        </button>
 
-                                    <a href="index.php?action=cancel_ticket&id=<?php echo $t['id']; ?>" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn từ chối kèo này? Hệ thống sẽ hủy và tiếp tục tìm đối thủ khác.');"
-                                       class="px-4 py-3.5 bg-[#0b1116]/10 hover:bg-[#0b1116]/10 text-gray-700 font-bold rounded-xl text-xs transition-colors">
-                                        Từ Chối
-                                    </a>
+                                        <!-- NÚT 2: XÁC NHẬN KÈO & THANH TOÁN 50% -->
+                                        <?php if(!$myConfirmed): ?>
+                                            <button type="button" 
+                                                    onclick="openSplitPaymentModal(<?php echo (int)$t['id']; ?>, <?php echo (int)$myPay; ?>, '<?php echo addslashes($t['pitch_name']); ?>', '<?php echo addslashes($t['opp_name']); ?>')"
+                                                    class="w-full bg-gradient-to-r from-[#d8ff3e] to-lime-400 hover:from-[#c8ef2e] hover:to-lime-300 text-slate-950 font-black py-3.5 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-sm cursor-pointer">
+                                                <span>💳</span>
+                                                <span>Xác Nhận & Trả 50% (<?php echo number_format($myPay, 0, ',', '.'); ?>đ)</span>
+                                            </button>
+                                        <?php else: ?>
+                                            <div class="bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold py-3.5 px-4 rounded-xl text-center text-xs flex items-center justify-center gap-2">
+                                                <span>✅</span>
+                                                <span>Bạn đã trả 50% (<?php echo $myMethod === 'vietqr' ? 'VietQR' : 'Tiền mặt'; ?>) - Chờ đối thủ</span>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+
+                                    <!-- Nút từ chối kèo -->
+                                    <div class="flex justify-between items-center pt-2">
+                                        <span class="text-[11px] text-white/50">Mã lệnh: #TICK-<?php echo $t['id']; ?></span>
+                                        <a href="index.php?action=cancel_ticket&id=<?php echo $t['id']; ?>" 
+                                           onclick="return confirm('Bạn có chắc chắn muốn từ chối kèo này? Hệ thống sẽ hủy và tiếp tục tìm đối thủ khác.');"
+                                           class="text-xs text-red-400 hover:text-red-300 font-bold transition-colors">
+                                            ✕ Hủy & Tìm Đối Thủ Khác
+                                        </a>
+                                    </div>
                                 </div>
+
                             </div>
 
                         <!-- CARD TRƯỜNG HỢP 3: ĐÃ CHỐT XONG (CONFIRMED) -->
                         <?php elseif($t['status'] == 'confirmed'): ?>
-                            <div class="bg-[#0b1116] rounded-3xl p-6 shadow-none border-2 border-green-500 relative overflow-hidden">
-                                <div class="flex items-center justify-between pb-3 border-b border-white/5 mb-4">
+                            <div class="bg-gradient-to-br from-[#0b1116] via-[#121b21] to-[#0b1116] rounded-3xl p-6 shadow-2xl border-2 border-emerald-500 relative overflow-hidden">
+                                
+                                <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
                                     <div class="flex items-center gap-2">
-                                        <span class="text-green-400 font-black text-lg">🎉 TRẬN ĐẤU ĐÃ ĐƯỢC CHỐT!</span>
+                                        <span class="text-2xl animate-bounce">🎉</span>
+                                        <div>
+                                            <span class="text-emerald-400 font-black text-lg block">KÈO ĐÃ ĐƯỢC CHỐT THÀNH CÔNG!</span>
+                                            <span class="text-xs text-white/60">Cả 2 cơ thủ đã hoàn tất thanh toán chia đôi (50/50)</span>
+                                        </div>
                                     </div>
-                                    <span class="bg-green-600 text-white text-xs font-black px-3 py-1 rounded-full uppercase">
-                                        Đã Đặt Sân
+                                    <span class="bg-emerald-500 text-slate-950 text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider shadow">
+                                        ✓ Đã Đặt Sân
                                     </span>
                                 </div>
 
+                                <!-- THẺ MÃ CHECK-IN RIÊNG CỦA BẠN (CÁ NHÂN) -->
+                                <?php 
+                                    $bookingCheckin = 'CKIN-CONFIRMED';
+                                    if (!empty($t['booking_id'])) {
+                                        $bStmt = (new Database())->getConnection()->prepare("SELECT checkin_code FROM bookings WHERE id = ?");
+                                        $bStmt->execute([$t['booking_id']]);
+                                        $bRow = $bStmt->fetch(PDO::FETCH_ASSOC);
+                                        if ($bRow && !empty($bRow['checkin_code'])) {
+                                            $bookingCheckin = $bRow['checkin_code'];
+                                        }
+                                    }
+                                    $myCheckinCode = !empty($t['checkin_code']) ? $t['checkin_code'] : $bookingCheckin;
+                                    $myCheckedIn = !empty($t['is_checked_in']);
+                                    $oppCheckedIn = !empty($t['opp_is_checked_in']);
+                                    $noshowStatus = $t['noshow_status'] ?? 'none';
+                                ?>
+
+                                <div class="bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 text-white p-5 rounded-2xl mb-5 shadow-xl">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div>
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="text-[11px] uppercase tracking-widest font-black text-emerald-100">MÃ CHECK-IN RIÊNG CỦA BẠN (TẠI QUẦY)</span>
+                                                <?php if($myCheckedIn): ?>
+                                                    <span class="bg-[#d8ff3e] text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow">
+                                                        ✓ ĐÃ CHECK-IN
+                                                    </span>
+                                                <?php else: ?>
+                                                    <span class="bg-amber-400 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider shadow animate-pulse">
+                                                        ⏳ CHƯA CHECK-IN
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="text-3xl font-black tracking-widest my-1 font-mono text-white">
+                                                <?php echo htmlspecialchars($myCheckinCode); ?>
+                                            </div>
+                                            <p class="text-[11px] text-emerald-100">
+                                                Mỗi người có 1 mã riêng. Xuất trình mã này cho lễ tân để điểm danh vào sân và kiểm tra phần tiền 50% của bạn.
+                                            </p>
+                                        </div>
+                                        <button type="button" onclick="navigator.clipboard.writeText('<?php echo htmlspecialchars($myCheckinCode); ?>'); alert('Đã sao chép mã check-in: <?php echo htmlspecialchars($myCheckinCode); ?>');" 
+                                                class="bg-white/20 hover:bg-white/30 text-white font-black text-xs px-4 py-3 rounded-xl transition border border-white/30 shrink-0 cursor-pointer flex items-center justify-center gap-1.5">
+                                            <span>📋</span> Sao Chép Mã
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs mb-4">
-                                    <div class="bg-[#0b1116]/5 p-3 rounded-xl space-y-1">
+                                    <div class="bg-[#121b21] p-3.5 rounded-xl border border-white/5 space-y-1">
                                         <span class="text-white/40 block">Sân thi đấu:</span>
                                         <strong class="text-white font-bold text-sm block"><?php echo htmlspecialchars($t['pitch_name']); ?></strong>
                                         <span class="text-white/60 block"><?php echo htmlspecialchars($t['pitch_location'] ?? ''); ?></span>
                                     </div>
-                                    <div class="bg-[#0b1116]/5 p-3 rounded-xl space-y-1">
+                                    <div class="bg-[#121b21] p-3.5 rounded-xl border border-white/5 space-y-1">
                                         <span class="text-white/40 block">Thời gian:</span>
                                         <strong class="text-white font-bold text-sm block"><?php echo date('d/m/Y', strtotime($t['play_date'])); ?></strong>
-                                        <span class="text-emerald-600 font-bold"><?php echo substr($t['start_time'], 0, 5); ?> - <?php echo substr($t['end_time'], 0, 5); ?></span>
+                                        <span class="text-emerald-400 font-black text-sm"><?php echo substr($t['start_time'], 0, 5); ?> - <?php echo substr($t['end_time'], 0, 5); ?></span>
                                     </div>
                                 </div>
 
-                                <div class="flex items-center justify-between bg-green-500/100/10 p-3 rounded-xl mb-4 text-xs">
+                                <!-- THÔNG TIN THANH TOÁN & CHECK-IN TỪNG NGƯỜI (TÁCH BIỆT 100%) -->
+                                <div class="bg-[#121b21] p-4 rounded-xl border border-white/10 mb-4 text-xs space-y-3">
+                                    <div class="flex items-center justify-between border-b border-white/10 pb-2">
+                                        <span class="text-xs font-bold text-white/60 uppercase tracking-wider">Trạng Thái Check-in & Thanh Toán Riêng Biệt (50/50):</span>
+                                        <span class="text-[10px] text-cyan-400 font-semibold">Độc Lập Từng Bên</span>
+                                    </div>
+
+                                    <!-- Bạn -->
+                                    <div class="flex justify-between items-center py-1">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm">🏸</span>
+                                            <div>
+                                                <span class="text-white font-bold block">Bạn (50% - <?php echo number_format($t['split_price'] ?? 0, 0, ',', '.'); ?>đ):</span>
+                                                <span class="text-[10px] <?php echo $myCheckedIn ? 'text-emerald-400' : 'text-amber-400'; ?>">
+                                                    <?php echo $myCheckedIn ? '✓ Đã điểm danh tại quầy' : '⏳ Chưa điểm danh tại quầy'; ?>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span class="font-bold text-xs px-2.5 py-1 rounded-md <?php echo ($t['payment_method'] ?? '') === 'vietqr' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'; ?>">
+                                            <?php echo ($t['payment_method'] ?? '') === 'vietqr' ? '📱 VietQR (Đã Thanh Toán)' : '💵 Tiền Mặt (Trả Tại Quầy)'; ?>
+                                        </span>
+                                    </div>
+
+                                    <!-- Đối thủ -->
+                                    <div class="flex justify-between items-center py-1 border-t border-white/5">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm">👤</span>
+                                            <div>
+                                                <span class="text-white/80 font-bold block">Đối thủ [<?php echo htmlspecialchars($t['opp_name']); ?>] (50% - <?php echo number_format($t['opp_split_price'] ?? 0, 0, ',', '.'); ?>đ):</span>
+                                                <span class="text-[10px] <?php echo $oppCheckedIn ? 'text-emerald-400' : 'text-amber-400'; ?>">
+                                                    <?php echo $oppCheckedIn ? '✓ Đã điểm danh tại quầy' : '⏳ Chưa điểm danh tại quầy'; ?>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span class="font-bold text-xs px-2.5 py-1 rounded-md <?php echo ($t['opp_payment_method'] ?? '') === 'vietqr' ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'; ?>">
+                                            <?php echo ($t['opp_payment_method'] ?? '') === 'vietqr' ? '📱 VietQR (Đã Thanh Toán)' : '💵 Tiền Mặt (Trả Tại Quầy)'; ?>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- THÔNG BÁO VỀ TRẠNG THÁI BÙNG KÈO (NẾU CÓ) -->
+                                <?php if($noshowStatus === 'pending'): ?>
+                                    <div class="bg-amber-500/20 border border-amber-500/40 text-amber-300 p-4 rounded-xl mb-4 text-xs flex items-start gap-3">
+                                        <span class="text-xl">⏳</span>
+                                        <div>
+                                            <strong class="font-black text-amber-200 text-sm block mb-1">ĐÃ GỬI YÊU CẦU BÁO VẮNG ĐỐI THỦ</strong>
+                                            <p class="leading-relaxed text-amber-300/90">
+                                                Chủ Sân / Lễ tân đã nhận được báo cáo vắng mặt. Chủ sân sẽ kiểm tra thực tế tại sân thi đấu và bấm <strong>[Xác Nhận Bùng Kèo]</strong>. Bạn được bảo vệ quyền lợi và không bị ảnh hưởng.
+                                            </p>
+                                        </div>
+                                    </div>
+                                <?php elseif($noshowStatus === 'confirmed_noshow'): ?>
+                                    <div class="bg-red-500/20 border border-red-500/40 text-red-300 p-4 rounded-xl mb-4 text-xs flex items-start gap-3">
+                                        <span class="text-xl">🚫</span>
+                                        <div>
+                                            <strong class="font-black text-red-200 text-sm block mb-1">CHỦ SÂN ĐÃ XÁC NHẬN ĐỐI THỦ BÙNG KÈO</strong>
+                                            <p class="leading-relaxed text-red-300/90">
+                                                Đối thủ đã bị xử phạt nghiêm minh (-30 Điểm Uy Tín, -50 Elo và tạm khóa ghép trận). Quyền lợi của bạn được bảo vệ 100%. Vui lòng liên hệ quầy để nhận sân hoặc hoàn cọc theo quy định.
+                                            </p>
+                                        </div>
+                                    </div>
+                                <?php endif; ?>
+
+                                <div class="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl mb-4 text-xs">
                                     <div>
-                                        <span class="text-green-800">Đối thủ của bạn: <strong class="font-bold"><?php echo htmlspecialchars($t['opp_name']); ?></strong> (<?php echo $t['opp_rank']; ?>)</span>
+                                        <span class="text-emerald-300 font-medium">Đối thủ: <strong class="font-bold text-white"><?php echo htmlspecialchars($t['opp_name']); ?></strong> (<?php echo $t['opp_rank']; ?> • <?php echo $t['opp_elo']; ?> Elo)</span>
                                     </div>
                                     <div class="flex items-center gap-2">
-                                        <a href="index.php?action=chat&user=<?php echo $t['opp_user_id']; ?>" 
-                                           class="bg-green-700 hover:bg-green-800 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow-none">
-                                            <span>💬</span> Nhắn Tin
-                                        </a>
+                                        <button type="button" 
+                                                onclick="openMatchQuickChat(<?php echo (int)$t['opp_user_id']; ?>, '<?php echo addslashes($t['opp_name']); ?>', '<?php echo addslashes($t['opp_avatar'] ?? ''); ?>', '<?php echo addslashes($t['opp_rank']); ?>')"
+                                                class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 shadow transition cursor-pointer">
+                                            <span>💬</span> Chat Với Đối Thủ
+                                        </button>
                                     </div>
                                 </div>
 
-                                <!-- Nút Báo Cáo Đối Thủ Bùng Kèo (No-Show) -->
-                                <div class="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
+                                <!-- THANH HÀNH ĐỘNG DƯỚI CÙNG: BÁO VẮNG CHO CHỦ SÂN XÁC NHẬN -->
+                                <div class="pt-3 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                                     <a href="index.php?action=my_bookings" class="text-white/60 hover:text-white underline font-medium">
-                                        Chi tiết đơn #<?php echo $t['booking_id']; ?> →
+                                        Xem chi tiết trong lịch sử đặt sân →
                                     </a>
-                                    <a href="index.php?action=report_noshow&booking_id=<?php echo $t['booking_id']; ?>&violator_id=<?php echo $t['opp_user_id']; ?>" 
-                                       onclick="return confirm('CẢNH BÁO: Bạn có chắc chắn muốn báo cáo đối thủ [<?php echo addslashes($t['opp_name']); ?>] bùng kèo không đến sân? Hệ thống sẽ phạt trừ 30 điểm uy tín, trừ 50 Elo và tạm khóa tìm trận của đối thủ.');"
-                                       class="text-red-500 hover:text-red-700 font-bold hover:bg-red-50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1">
-                                        <span>⚠️ Báo cáo bùng kèo</span>
-                                    </a>
+                                    
+                                    <?php if($noshowStatus === 'none' || $noshowStatus === 'rejected'): ?>
+                                        <button type="button" 
+                                                onclick="openReportAbsentModal(<?php echo $t['id']; ?>, '<?php echo addslashes($t['opp_name']); ?>')" 
+                                                class="text-amber-400 hover:text-amber-300 font-bold hover:bg-amber-500/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 self-start sm:self-center border border-amber-500/30 cursor-pointer">
+                                            <span>⚠️</span> Báo Vắng Đối Thủ (Chờ Chủ Sân Xác Nhận)
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
                             </div>
-
                         <?php endif; ?>
 
                     <?php endforeach; ?>
@@ -857,8 +1062,218 @@ $allDistrictsList = [
     </div>
 </div>
 
+<!-- MODAL: QUICK CHAT THƯƠNG LƯỢNG KÈO ĐẤU -->
+<div id="quickChatModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#0b1116] border border-white/10 rounded-3xl max-w-lg w-full shadow-2xl flex flex-col overflow-hidden animate-scale-up h-[600px] max-h-[90vh]">
+        
+        <!-- Header -->
+        <div class="p-4 bg-[#121b21] border-b border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <img id="chatOppAvatar" src="" class="w-11 h-11 rounded-xl object-cover border-2 border-amber-400 shrink-0">
+                    <span class="w-3 h-3 bg-emerald-500 rounded-full border-2 border-[#121b21] absolute -bottom-0.5 -right-0.5 animate-pulse"></span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h4 id="chatOppName" class="font-extrabold text-white text-base">Đối thủ</h4>
+                        <span id="chatOppRank" class="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-bold">Rank</span>
+                    </div>
+                    <span class="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Đang trực tuyến • Chat thỏa thuận kèo
+                    </span>
+                </div>
+            </div>
+            <button type="button" onclick="closeMatchQuickChat()" class="text-white/40 hover:text-white text-2xl font-bold w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center transition cursor-pointer">&times;</button>
+        </div>
+
+        <!-- Quick Reply Chips -->
+        <div class="px-4 py-2.5 bg-[#0b1116] border-b border-white/5 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap">
+            <span class="text-white/40 text-[11px] font-bold">Gợi ý:</span>
+            <button type="button" onclick="insertQuickMessage('Sân này và giờ này ok không bạn ơi?')" class="bg-[#121b21] hover:bg-white/10 text-white/80 hover:text-white px-2.5 py-1 rounded-lg border border-white/10 text-[11px] font-medium transition cursor-pointer">
+                🏸 Sân này ok không bạn?
+            </button>
+            <button type="button" onclick="insertQuickMessage('Mình đồng ý giờ này nhé, bạn bấm xác nhận kèo nhé!')" class="bg-[#121b21] hover:bg-white/10 text-white/80 hover:text-white px-2.5 py-1 rounded-lg border border-white/10 text-[11px] font-medium transition cursor-pointer">
+                ✅ Mình chốt thanh toán 50% rồi!
+            </button>
+            <button type="button" onclick="insertQuickMessage('Bạn có muốn đổi sang sân khác gần hơn không?')" class="bg-[#121b21] hover:bg-white/10 text-white/80 hover:text-white px-2.5 py-1 rounded-lg border border-white/10 text-[11px] font-medium transition cursor-pointer">
+                🔄 Đổi sân khác không?
+            </button>
+        </div>
+
+        <!-- Message List Container -->
+        <div id="quickChatMessagesList" class="flex-1 p-4 overflow-y-auto space-y-3 bg-[#080d11]">
+            <div class="text-center py-6 text-white/40 text-xs italic" id="quickChatLoading">
+                Đang tải tin nhắn...
+            </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="p-3 bg-[#121b21] border-t border-white/10">
+            <form onsubmit="sendQuickChatMessage(event)" class="flex items-center gap-2">
+                <input type="text" id="quickChatInput" placeholder="Nhập tin nhắn thỏa thuận..." required autocomplete="off"
+                       class="flex-1 bg-[#0b1116] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-white/40 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                <button type="submit" id="btnSendQuickChat" class="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer shadow">
+                    <span>Gửi</span>
+                    <span>➤</span>
+                </button>
+            </form>
+            <div class="flex items-center justify-between mt-2 pt-1.5 border-t border-white/5 text-[11px]">
+                <span class="text-white/40">Tin nhắn được gửi trực tiếp</span>
+                <a id="linkFullChat" href="index.php?action=chat" class="text-cyan-400 hover:text-cyan-300 font-bold hover:underline">
+                    Mở toàn màn hình tin nhắn →
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: THANH TOÁN CHIA ĐÔI 50/50 (SPLIT PAYMENT) -->
+<div id="splitPaymentModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#0b1116] border border-white/15 rounded-3xl max-w-md w-full shadow-2xl overflow-hidden animate-scale-up">
+        
+        <!-- Header -->
+        <div class="p-5 bg-gradient-to-r from-[#121b21] to-[#0b1116] border-b border-white/10 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#d8ff3e] to-emerald-400 text-slate-950 font-black flex items-center justify-center text-lg shadow">
+                    💳
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-white text-base">Thanh Toán Chia Đôi (Split 50/50)</h4>
+                    <p class="text-xs text-white/60">Mỗi bên thanh toán 50% để chính thức khóa sân</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeSplitPaymentModal()" class="text-white/40 hover:text-white text-2xl font-bold w-9 h-9 rounded-xl hover:bg-white/10 flex items-center justify-center transition cursor-pointer">&times;</button>
+        </div>
+
+        <div class="p-6 space-y-5">
+            <!-- Hóa đơn tóm tắt -->
+            <div class="bg-[#121b21] p-4 rounded-2xl border border-white/10 space-y-2 text-xs">
+                <div class="flex justify-between items-center text-white/70">
+                    <span>Sân thi đấu:</span>
+                    <strong id="modalPitchName" class="text-white font-bold text-right truncate max-w-[200px]">Sân Cầu Lông</strong>
+                </div>
+                <div class="flex justify-between items-center text-white/70">
+                    <span>Đối thủ cùng chia tiền:</span>
+                    <strong id="modalOppName" class="text-white font-bold">Đối thủ</strong>
+                </div>
+                <div class="flex justify-between items-center pt-2 border-t border-white/10">
+                    <span class="font-bold text-white text-sm">Phần bạn thanh toán (50%):</span>
+                    <strong id="modalMyPayText" class="text-2xl font-black text-[#d8ff3e]">0đ</strong>
+                </div>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="grid grid-cols-2 gap-2 bg-[#121b21] p-1.5 rounded-2xl border border-white/10">
+                <button type="button" id="tabBtnVietQr" onclick="switchPaymentTab('vietqr')" 
+                        class="py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 bg-[#d8ff3e] text-slate-950 shadow cursor-pointer">
+                    <span>📱</span> VietQR Online
+                </button>
+                <button type="button" id="tabBtnCash" onclick="switchPaymentTab('cash')" 
+                        class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-white/60 hover:text-white cursor-pointer">
+                    <span>💵</span> Tiền Mặt Tại Quầy
+                </button>
+            </div>
+
+            <!-- TAB 1: VIETQR -->
+            <div id="tabContentVietQr" class="space-y-4">
+                <div class="p-4 border-2 border-dashed border-cyan-500/40 rounded-2xl bg-cyan-950/20 text-center">
+                    <span class="text-[10px] font-black uppercase text-cyan-400 tracking-wider block mb-2">QUÉT MÃ VIETQR CHUYỂN KHOẢN (50% TIỀN SÂN)</span>
+                    <div class="inline-block p-3 bg-white rounded-2xl shadow-xl my-1 border border-white/10">
+                        <img id="modalQrImg" src="" alt="VietQR" class="w-36 h-36 object-contain mx-auto">
+                    </div>
+                    <div class="text-xs text-white/80 mt-2 space-y-1">
+                        <div>Số tiền: <strong id="modalQrAmount" class="text-[#d8ff3e] font-black text-sm">0đ</strong></div>
+                        <div class="text-[11px] text-white/60">Nội dung: <span id="modalQrContent" class="font-mono text-cyan-300 font-bold">SMART_TICK</span></div>
+                    </div>
+                </div>
+
+                <button type="button" id="btnSimulateSplit" onclick="simulateSplitPayment()" 
+                        class="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3 px-4 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                    <span>⚡</span> Mô Phỏng Quét VietQR Thành Công (Demo Sandbox)
+                </button>
+                <p class="text-[10px] text-white/40 text-center italic">* Dành cho buổi bảo vệ đồ án: Bấm để giả lập giao dịch chuyển khoản 50% thành công ngay</p>
+            </div>
+
+            <!-- TAB 2: CASH -->
+            <div id="tabContentCash" class="hidden space-y-4">
+                <div class="p-4 border border-emerald-500/30 rounded-2xl bg-emerald-500/10 text-center space-y-2">
+                    <span class="text-2xl block">💵</span>
+                    <h5 class="font-black text-emerald-400 text-sm">Cam Kết Thanh Toán Tiền Mặt Khi Đến Sân</h5>
+                    <p class="text-xs text-white/70 leading-relaxed">
+                        Bạn cam kết sẽ thanh toán đúng <strong>50% số tiền</strong> cho nhân viên lễ tân khi đến check-in tại sân.
+                    </p>
+                    <div class="text-[11px] text-amber-300 bg-amber-500/10 border border-amber-500/20 p-2 rounded-xl mt-2">
+                        ⚠️ <strong>Lưu ý:</strong> Hành vi bùng kèo (No-Show) không đến sân sẽ bị phạt trừ 30 điểm Uy Tín Fair-Play, trừ 50 Elo và khóa tài khoản 3 ngày.
+                    </div>
+                </div>
+
+                <button type="button" id="btnConfirmCash" onclick="confirmCashSplitPayment()" 
+                        class="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-black py-3.5 px-4 rounded-xl text-xs uppercase tracking-wider shadow-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                    <span>✓</span> Xác Nhận Trả 50% Tiền Mặt Khi Đến Sân
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL: BÁO CÁO ĐỐI THỦ VẮNG MẶT (CHỦ SÂN XÁC NHẬN) -->
+<div id="reportAbsentModal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-[#0b1116] border border-amber-500/40 rounded-3xl max-w-md w-full shadow-2xl overflow-hidden animate-scale-up">
+        <div class="p-5 bg-gradient-to-r from-amber-950/60 via-[#121b21] to-[#0b1116] border-b border-amber-500/30 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+                <span class="text-2xl animate-pulse">⚠️</span>
+                <div>
+                    <h3 class="font-black text-amber-300 text-base uppercase">Báo Đối Thủ Vắng Mặt</h3>
+                    <p class="text-[11px] text-white/60">Gửi yêu cầu tới Chủ Sân / Lễ tân để kiểm tra & xác nhận bùng kèo</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeReportAbsentModal()" class="text-white/40 hover:text-white text-2xl font-bold w-8 h-8 rounded-xl hover:bg-white/10 flex items-center justify-center transition cursor-pointer">&times;</button>
+        </div>
+
+        <form action="index.php?action=report_absent" method="POST" class="p-5 space-y-4">
+            <input type="hidden" name="ticket_id" id="reportAbsentTicketId" value="">
+            
+            <div class="bg-amber-500/10 border border-amber-500/30 p-3 rounded-2xl text-xs text-amber-200">
+                <span>Đối thủ bị báo cáo:</span> <strong id="reportAbsentOppName" class="text-white font-bold block text-sm">Tên đối thủ</strong>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-white/80 mb-1.5 uppercase tracking-wider">Lý Do / Chi Tiết Thực Tế Tại Sân:</label>
+                <textarea name="reason" rows="3" required placeholder="Ví dụ: Đã quá 15 phút so với giờ thi đấu nhưng đối thủ không đến, gọi điện không bắt máy..."
+                          class="w-full bg-[#121b21] border border-white/10 rounded-xl p-3 text-xs text-white placeholder-white/30 focus:ring-2 focus:ring-amber-500 focus:outline-none"></textarea>
+            </div>
+
+            <div class="text-[11px] text-white/60 bg-[#121b21] p-3 rounded-xl border border-white/5 space-y-1">
+                <span class="text-amber-400 font-bold block">🛡️ Cơ chế trọng tài công bằng:</span>
+                <p>Chủ Sân / Lễ tân đang có mặt trực tiếp tại sân sẽ xác minh thực tế. Khi Chủ Sân bấm <strong>[Xác Nhận Bùng Kèo]</strong>, đối thủ sẽ bị xử phạt (-30 điểm uy tín, -50 Elo) và bạn được bảo đảm quyền lợi.</p>
+            </div>
+
+            <div class="flex gap-2.5 pt-2">
+                <button type="button" onclick="closeReportAbsentModal()" class="flex-1 py-3 bg-[#121b21] hover:bg-white/10 text-white/70 font-bold text-xs rounded-xl transition cursor-pointer">
+                    Hủy Bỏ
+                </button>
+                <button type="submit" class="flex-1 py-3 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-black text-xs uppercase rounded-xl transition shadow cursor-pointer">
+                    Gửi Tới Chủ Sân
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- SCRIPT AUTO-POLL KIỂM TRA TÌNH TRẠNG KÈO (REALTIME CHECK) -->
 <script>
+function openReportAbsentModal(ticketId, oppName) {
+    document.getElementById('reportAbsentTicketId').value = ticketId;
+    document.getElementById('reportAbsentOppName').textContent = oppName;
+    document.getElementById('reportAbsentModal').classList.remove('hidden');
+}
+
+function closeReportAbsentModal() {
+    document.getElementById('reportAbsentModal').classList.add('hidden');
+}
 function getLocationGPS() {
     const statusText = document.getElementById('gpsStatusText');
     const btn = document.getElementById('btnGpsLocate');
@@ -1144,24 +1559,447 @@ function onPitchDropdownChange() {
     }
 }
 
+// --- QUICK CHAT SYSTEM FOR SMART MATCH ---
+let activeChatOpponentId = null;
+let quickChatTimer = null;
+
+function openMatchQuickChat(oppUserId, oppName, oppAvatar, oppRank) {
+    activeChatOpponentId = oppUserId;
+    document.getElementById('chatOppName').textContent = oppName;
+    document.getElementById('chatOppRank').textContent = oppRank || 'VĐV';
+    document.getElementById('chatOppAvatar').src = oppAvatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150';
+    document.getElementById('linkFullChat').href = `index.php?action=chat&user=${oppUserId}`;
+    
+    document.getElementById('quickChatModal').classList.remove('hidden');
+    loadQuickChatMessages(oppUserId, true);
+    
+    if (quickChatTimer) clearInterval(quickChatTimer);
+    quickChatTimer = setInterval(() => {
+        if (activeChatOpponentId && !document.getElementById('quickChatModal').classList.contains('hidden')) {
+            loadQuickChatMessages(activeChatOpponentId, false);
+        }
+    }, 2500);
+
+    setTimeout(() => {
+        const inp = document.getElementById('quickChatInput');
+        if (inp) inp.focus();
+    }, 150);
+}
+
+function closeMatchQuickChat() {
+    document.getElementById('quickChatModal').classList.add('hidden');
+    activeChatOpponentId = null;
+    if (quickChatTimer) {
+        clearInterval(quickChatTimer);
+        quickChatTimer = null;
+    }
+}
+
+function insertQuickMessage(text) {
+    const input = document.getElementById('quickChatInput');
+    input.value = text;
+    input.focus();
+}
+
+function loadQuickChatMessages(userId, scroll = true) {
+    const container = document.getElementById('quickChatMessagesList');
+    if (!container) return;
+
+    fetch(`index.php?action=api_get_messages&user=${userId}`)
+        .then(r => r.json())
+        .then(messages => {
+            if (!Array.isArray(messages) || messages.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 space-y-2">
+                        <span class="text-3xl">🏸</span>
+                        <p class="text-white/60 text-xs font-medium">Chưa có tin nhắn nào giữa 2 bạn.</p>
+                        <p class="text-[11px] text-white/40">Hãy gửi tin nhắn đầu tiên để chào và thỏa thuận kèo nhé!</p>
+                    </div>`;
+                return;
+            }
+
+            let html = '';
+            const myUserId = <?php echo (int)($_SESSION['user_id'] ?? 0); ?>;
+            messages.forEach(m => {
+                const isMe = (parseInt(m.sender_id) === myUserId);
+                const timeStr = m.created_at ? m.created_at.substring(11, 16) : '';
+                if (isMe) {
+                    html += `
+                        <div class="flex flex-col items-end">
+                            <div class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs px-3.5 py-2.5 rounded-2xl rounded-tr-none max-w-[80%] shadow-md">
+                                ${escapeHtml(m.content)}
+                            </div>
+                            <span class="text-[10px] text-white/30 mt-1 mr-1">${timeStr}</span>
+                        </div>`;
+                } else {
+                    html += `
+                        <div class="flex flex-col items-start">
+                            <div class="bg-[#121b21] border border-white/10 text-white text-xs px-3.5 py-2.5 rounded-2xl rounded-tl-none max-w-[80%] shadow-md">
+                                ${escapeHtml(m.content)}
+                            </div>
+                            <span class="text-[10px] text-white/30 mt-1 ml-1">${timeStr}</span>
+                        </div>`;
+                }
+            });
+            container.innerHTML = html;
+            if (scroll) {
+                container.scrollTop = container.scrollHeight;
+            }
+        })
+        .catch(err => console.log('Chat load error:', err));
+}
+
+function sendQuickChatMessage(e) {
+    if (e) e.preventDefault();
+    const input = document.getElementById('quickChatInput');
+    const content = input.value.trim();
+    if (!content || !activeChatOpponentId) return;
+
+    const btn = document.getElementById('btnSendQuickChat');
+    btn.disabled = true;
+
+    const formData = new URLSearchParams();
+    formData.append('receiver_id', activeChatOpponentId);
+    formData.append('content', content);
+
+    fetch('index.php?action=api_send_message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString()
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        if (data.success) {
+            input.value = '';
+            loadQuickChatMessages(activeChatOpponentId, true);
+        } else {
+            alert('Lỗi gửi tin nhắn: ' + (data.error || 'Vui lòng thử lại'));
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        alert('Lỗi kết nối máy chủ.');
+    });
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+// --- SPLIT PAYMENT 50/50 MODAL SYSTEM ---
+let currentPayTicketId = null;
+let currentPayAmount = 0;
+let currentPayMethod = 'vietqr';
+
+function openSplitPaymentModal(ticketId, myPay, pitchName, oppName) {
+    currentPayTicketId = ticketId;
+    currentPayAmount = myPay;
+    
+    document.getElementById('modalPitchName').textContent = pitchName;
+    document.getElementById('modalOppName').textContent = oppName;
+    document.getElementById('modalMyPayText').textContent = Number(myPay).toLocaleString('vi-VN') + 'đ';
+    document.getElementById('modalQrAmount').textContent = Number(myPay).toLocaleString('vi-VN') + 'đ';
+    
+    const qrContentStr = `SMART_TICK_${ticketId}`;
+    document.getElementById('modalQrContent').textContent = qrContentStr;
+    document.getElementById('modalQrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=BADMINTON_SPLIT_${ticketId}_${myPay}`;
+    
+    switchPaymentTab('vietqr');
+    document.getElementById('splitPaymentModal').classList.remove('hidden');
+}
+
+function closeSplitPaymentModal() {
+    document.getElementById('splitPaymentModal').classList.add('hidden');
+    currentPayTicketId = null;
+}
+
+function switchPaymentTab(tab) {
+    currentPayMethod = tab;
+    const btnV = document.getElementById('tabBtnVietQr');
+    const btnC = document.getElementById('tabBtnCash');
+    const contentV = document.getElementById('tabContentVietQr');
+    const contentC = document.getElementById('tabContentCash');
+    
+    if (tab === 'vietqr') {
+        btnV.className = "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 bg-[#d8ff3e] text-slate-950 shadow cursor-pointer";
+        btnC.className = "py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-white/60 hover:text-white cursor-pointer";
+        contentV.classList.remove('hidden');
+        contentC.classList.add('hidden');
+    } else {
+        btnC.className = "py-2.5 px-3 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5 bg-[#d8ff3e] text-slate-950 shadow cursor-pointer";
+        btnV.className = "py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-white/60 hover:text-white cursor-pointer";
+        contentC.classList.remove('hidden');
+        contentV.classList.add('hidden');
+    }
+}
+
+function simulateSplitPayment() {
+    if (!currentPayTicketId) return;
+    const btn = document.getElementById('btnSimulateSplit');
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> Đang xác thực giao dịch chuyển khoản 50%...';
+
+    const params = new URLSearchParams();
+    params.append('ticket_id', currentPayTicketId);
+    params.append('payment_method', 'vietqr');
+    params.append('is_ajax', '1');
+
+    fetch('index.php?action=api_confirm_split_payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            btn.className = 'w-full bg-emerald-500/20 text-emerald-300 font-bold py-3 px-4 rounded-xl text-xs uppercase cursor-default';
+            btn.innerHTML = '✅ ĐÃ THANH TOÁN 50% THÀNH CÔNG!';
+            setTimeout(() => {
+                closeSplitPaymentModal();
+                window.location.href = 'index.php?action=smart_match&msg=' + (res.status === 'fully_confirmed' ? 'fully_confirmed' : 'waiting_opponent_payment');
+            }, 800);
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<span>⚡</span> Mô Phỏng Quét VietQR Thành Công (Demo Sandbox)';
+            alert('Lỗi: ' + (res.message || 'Không thể ghi nhận thanh toán.'));
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<span>⚡</span> Mô Phỏng Quét VietQR Thành Công (Demo Sandbox)';
+        alert('Lỗi kết nối máy chủ.');
+    });
+}
+
+function confirmCashSplitPayment() {
+    if (!currentPayTicketId) return;
+    const btn = document.getElementById('btnConfirmCash');
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> Đang ghi nhận cam kết trả tiền mặt...';
+
+    const params = new URLSearchParams();
+    params.append('ticket_id', currentPayTicketId);
+    params.append('payment_method', 'cash');
+    params.append('is_ajax', '1');
+
+    fetch('index.php?action=api_confirm_split_payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            closeSplitPaymentModal();
+            window.location.href = 'index.php?action=smart_match&msg=' + (res.status === 'fully_confirmed' ? 'fully_confirmed' : 'waiting_opponent_payment');
+        } else {
+            btn.disabled = false;
+            btn.innerHTML = '<span>✓</span> Xác Nhận Trả 50% Tiền Mặt Khi Đến Sân';
+            alert('Lỗi: ' + (res.message || 'Không thể xác nhận.'));
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = '<span>✓</span> Xác Nhận Trả 50% Tiền Mặt Khi Đến Sân';
+        alert('Lỗi kết nối máy chủ.');
+    });
+}
+
+// === AJAX Zero-Reload Switch Pitch Handlers ===
+async function ajaxProposeSwitchPitch(event, form, ticketId) {
+    if (event) event.preventDefault();
+    const select = document.getElementById('pitch_select_' + ticketId);
+    if (!select || !select.value) {
+        if (typeof window.showToast === 'function') window.showToast('Vui lòng chọn sân thay thế!', 'error');
+        return false;
+    }
+    const selectedOption = select.options[select.selectedIndex];
+    const pitchName = selectedOption.getAttribute('data-name') || selectedOption.text;
+    const pitchPrice = selectedOption.getAttribute('data-price') || '';
+
+    const btn = form.querySelector('button[type="submit"]');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> Đang gửi đề xuất...';
+
+    const formData = new URLSearchParams();
+    formData.append('ticket_id', ticketId);
+    formData.append('pitch_id', select.value);
+    formData.append('is_ajax', '1');
+
+    try {
+        const response = await fetch('index.php?action=switch_pitch&is_ajax=1', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData.toString()
+        });
+        const data = await response.json();
+        if (data.success) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Đã gửi đề xuất đổi sân!', 'success');
+            }
+            const bannerContainer = document.getElementById('pitch_proposal_banner_container_' + ticketId);
+            if (bannerContainer) {
+                bannerContainer.innerHTML = `
+                    <div class="p-3.5 bg-amber-950/70 border border-amber-500/50 rounded-2xl text-xs text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md animate-pulse">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl shrink-0">⏳</span>
+                            <div>
+                                <strong>Bạn đã gửi đề xuất đổi sang sân: <span class="text-white underline">${pitchName}</span> ${pitchPrice ? '(' + pitchPrice + 'đ/h)' : ''}.</strong>
+                                <span class="block text-[11px] text-amber-300/70">Đang chờ đối thủ đồng ý...</span>
+                            </div>
+                        </div>
+                        <button type="button" 
+                           onclick="return ajaxRejectSwitchPitch(event, this, ${ticketId});"
+                           class="bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-1.5 rounded-lg text-xs whitespace-nowrap border border-white/20 transition-all self-end sm:self-center cursor-pointer">
+                            ✕ Hủy Đề Xuất
+                        </button>
+                    </div>
+                `;
+            }
+            const switchBox = document.getElementById('switchPitchBox_' + ticketId);
+            if (switchBox) switchBox.classList.add('hidden');
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Không thể đề xuất đổi sân', 'error');
+            } else {
+                alert(data.message || 'Không thể đề xuất đổi sân');
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        if (typeof window.showToast === 'function') window.showToast('Lỗi kết nối máy chủ', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+    return false;
+}
+
+async function ajaxAcceptSwitchPitch(event, btn, ticketId) {
+    if (event) event.preventDefault();
+    if (!confirm('Xác nhận đồng ý đổi sang sân theo đề xuất của đối thủ?')) return false;
+
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> Đang xử lý...';
+
+    try {
+        const response = await fetch(`index.php?action=accept_switch_pitch&ticket_id=${ticketId}&is_ajax=1`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (data.success) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Đã đồng ý chuyển sang sân mới!', 'success');
+            }
+            const bannerContainer = document.getElementById('pitch_proposal_banner_container_' + ticketId);
+            if (bannerContainer) {
+                bannerContainer.innerHTML = `
+                    <div class="p-3 bg-emerald-950/90 border border-emerald-500 rounded-xl text-xs text-emerald-300 font-bold flex items-center gap-2">
+                        <span>🎉</span>
+                        <span>Đã chốt chuyển sang sân: <strong class="text-white underline">${data.pitch_name || ''}</strong>. Hai bên tiến hành thanh toán 50%!</span>
+                    </div>
+                `;
+            }
+            const currentPitchEl = document.getElementById('current_pitch_name_' + ticketId);
+            if (currentPitchEl && data.pitch_name) {
+                currentPitchEl.textContent = data.pitch_name;
+            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 1200);
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Không thể chấp nhận đề xuất', 'error');
+            } else {
+                alert(data.message || 'Không thể chấp nhận đề xuất');
+            }
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    } catch (err) {
+        console.error(err);
+        if (typeof window.showToast === 'function') window.showToast('Lỗi kết nối máy chủ', 'error');
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+    return false;
+}
+
+async function ajaxRejectSwitchPitch(event, btn, ticketId) {
+    if (event) event.preventDefault();
+    if (!confirm('Xác nhận từ chối / hủy đề xuất đổi sân và giữ nguyên sân ban đầu?')) return false;
+
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span>';
+
+    try {
+        const response = await fetch(`index.php?action=reject_switch_pitch&ticket_id=${ticketId}&is_ajax=1`, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await response.json();
+        if (data.success) {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Đã hủy đề xuất đổi sân', 'info');
+            }
+            const bannerContainer = document.getElementById('pitch_proposal_banner_container_' + ticketId);
+            if (bannerContainer) {
+                bannerContainer.innerHTML = '';
+            }
+        } else {
+            if (typeof window.showToast === 'function') {
+                window.showToast(data.message || 'Không thể từ chối đề xuất', 'error');
+            } else {
+                alert(data.message || 'Không thể từ chối đề xuất');
+            }
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+        }
+    } catch (err) {
+        console.error(err);
+        if (typeof window.showToast === 'function') window.showToast('Lỗi kết nối máy chủ', 'error');
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+    return false;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Nếu có ticket đang ở trạng thái 'waiting', tự động polling API mỗi 4 giây
-    const waitingCards = document.querySelectorAll('[id^="ticket-card-"]');
-    if (waitingCards.length > 0) {
+    // Polling tự động kiểm tra cả ticket đang 'waiting' và 'matched' (chờ đối thủ trả tiền / đổi sân)
+    const activeTicketCards = document.querySelectorAll('[id^="ticket-card-"], [id^="matched-card-"]');
+    if (activeTicketCards.length > 0) {
         setInterval(() => {
-            waitingCards.forEach(card => {
-                const ticketId = card.id.replace('ticket-card-', '');
+            activeTicketCards.forEach(card => {
+                let ticketId = card.getAttribute('data-matched-id');
+                if (!ticketId) {
+                    ticketId = card.id.replace('ticket-card-', '').replace('matched-card-', '');
+                }
+                if (!ticketId) return;
+
                 fetch(`index.php?action=api_check_ticket&id=${ticketId}`)
                     .then(r => r.json())
                     .then(data => {
-                        if (data && data.status && data.status !== 'waiting') {
-                            // Khi trạng thái đổi từ waiting sang matched hoặc confirmed -> Tự động reload để người dùng xem trận
-                            window.location.reload();
+                        if (data && data.status) {
+                            if (card.id.startsWith('ticket-card-') && data.status !== 'waiting') {
+                                window.location.reload();
+                            } else if (card.id.startsWith('matched-card-')) {
+                                if (data.status === 'confirmed') {
+                                    window.location.reload();
+                                }
+                            }
                         }
                     })
                     .catch(err => console.log('Polling check:', err));
             });
-        }, 4000);
+        }, 3500);
     }
 });
 </script>

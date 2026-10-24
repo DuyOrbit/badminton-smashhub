@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once 'models/Ranking.php';
 $ranking = new Ranking((new Database())->getConnection());
 ?>
@@ -11,7 +11,21 @@ $ranking = new Ranking((new Database())->getConnection());
     <?php if(isset($_GET['msg']) && $_GET['msg'] == 'payment_approved'): ?>
         <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 mb-6 rounded-xl shadow-none flex items-center">
             <svg class="w-5 h-5 text-emerald-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            <p class="text-emerald-800 font-bold">Xác nhận thu tiền mặt thành công! Trạng thái thanh toán đã được cập nhật.</p>
+            <p class="text-emerald-800 font-bold">Xác nhận thu tiền mặt và điểm danh Check-in thành công!</p>
+        </div>
+    <?php endif; ?>
+
+    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'noshow_confirmed'): ?>
+        <div class="bg-red-950/70 border-l-4 border-red-500 p-4 mb-6 rounded-xl flex items-center text-white">
+            <span class="text-2xl mr-3">🚫</span>
+            <p class="font-bold text-sm">Đã xác nhận bùng kèo (No-Show)! Hệ thống đã phạt trừ 30 điểm uy tín, trừ 50 Elo và tạm khóa tìm trận của người vi phạm. Quyền lợi người không vi phạm đã được bảo vệ.</p>
+        </div>
+    <?php endif; ?>
+
+    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'noshow_rejected'): ?>
+        <div class="bg-gray-800 border-l-4 border-gray-500 p-4 mb-6 rounded-xl flex items-center text-white">
+            <span class="text-2xl mr-3">ℹ️</span>
+            <p class="font-bold text-sm">Đã bác bỏ báo cáo vắng mặt. Trận đấu vẫn duy trì bình thường.</p>
         </div>
     <?php endif; ?>
 
@@ -37,11 +51,17 @@ $ranking = new Ranking((new Database())->getConnection());
             ?>
             <div class="bg-[#121b21] rounded-2xl shadow-none border border-white/5 overflow-hidden w-full relative">
                 <!-- Status Badge -->
-                <div class="absolute top-4 right-4 z-10">
+                <div class="absolute top-4 right-4 z-10 flex items-center gap-1.5">
+                    <?php if(!empty($m['noshow_status']) && $m['noshow_status'] == 'pending'): ?>
+                        <span class="bg-red-600 text-white text-xs font-black uppercase px-3 py-1.5 rounded-md border border-red-400 shadow-md animate-pulse">⚠️ Khiếu Nại Bùng Kèo</span>
+                    <?php elseif(!empty($m['noshow_status']) && $m['noshow_status'] == 'confirmed_noshow'): ?>
+                        <span class="bg-red-950 text-red-400 text-xs font-black uppercase px-3 py-1.5 rounded-md border border-red-800">🚫 Đã Xử Phạt Bùng Kèo</span>
+                    <?php endif; ?>
+
                     <?php if($m['status'] == 'cancelled'): ?>
                         <span class="bg-red-100 text-red-800 text-xs font-black uppercase px-3 py-1.5 rounded-md border border-red-200 shadow-none">Đã Hủy Bỏ</span>
                     <?php elseif($m['match_result'] == 'pending'): ?>
-                        <span class="bg-yellow-100 text-yellow-800 text-xs font-black uppercase px-3 py-1.5 rounded-md border border-yellow-200 shadow-none animate-pulse">Chờ Chấm Điểm</span>
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-black uppercase px-3 py-1.5 rounded-md border border-yellow-200 shadow-none">Chờ Chấm Điểm</span>
                     <?php else: ?>
                         <span class="bg-[#0b1116]/10 text-white/70 text-xs font-bold px-3 py-1.5 rounded-md border border-white/10">Đã Hoàn Tất</span>
                     <?php endif; ?>
@@ -73,6 +93,19 @@ $ranking = new Ranking((new Database())->getConnection());
                                             <?php endif; ?>
                                         </div>
                                         <span class="text-sm font-black text-white"><?php echo number_format($hostFinalPrice, 0, ',', '.'); ?>đ</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px] pt-1 border-t <?php echo $m['host_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>">
+                                        <span class="text-white/60 font-medium">Điểm danh Check-in:</span>
+                                        <?php if(!empty($m['host_checkin'])): ?>
+                                            <span class="text-emerald-400 font-bold inline-flex items-center gap-1">
+                                                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                Đã Check-in <?php echo !empty($m['host_checkin_time']) ? '(' . date('H:i', strtotime($m['host_checkin_time'])) . ')' : ''; ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-amber-400 font-semibold inline-flex items-center gap-1">
+                                                ⏳ Chưa Check-in
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="flex items-center justify-between pt-1 border-t <?php echo $m['host_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>">
                                         <?php if($m['host_paid']): ?>
@@ -106,6 +139,19 @@ $ranking = new Ranking((new Database())->getConnection());
                                             <?php endif; ?>
                                         </div>
                                         <span class="text-sm font-black text-white"><?php echo number_format($guestFinalPrice, 0, ',', '.'); ?>đ</span>
+                                    </div>
+                                    <div class="flex items-center justify-between text-[11px] pt-1 border-t <?php echo $m['guest_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>">
+                                        <span class="text-white/60 font-medium">Điểm danh Check-in:</span>
+                                        <?php if(!empty($m['guest_checkin'])): ?>
+                                            <span class="text-emerald-400 font-bold inline-flex items-center gap-1">
+                                                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                                Đã Check-in <?php echo !empty($m['guest_checkin_time']) ? '(' . date('H:i', strtotime($m['guest_checkin_time'])) . ')' : ''; ?>
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-amber-400 font-semibold inline-flex items-center gap-1">
+                                                ⏳ Chưa Check-in
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="flex items-center justify-between pt-1 border-t <?php echo $m['guest_paid'] ? 'border-emerald-100' : 'border-amber-100'; ?>">
                                         <?php if($m['guest_paid']): ?>
@@ -142,6 +188,43 @@ $ranking = new Ranking((new Database())->getConnection());
 
                     <!-- Versus & Reporting -->
                     <div class="lg:w-2/3 p-6 flex flex-col justify-center">
+                        <?php if(!empty($m['noshow_status']) && $m['noshow_status'] == 'pending'): ?>
+                            <div class="mb-6 p-4 bg-red-950/70 border-2 border-red-500 rounded-2xl text-white shadow-lg">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-xl">⚖️</span>
+                                    <h4 class="font-black text-sm text-red-300 uppercase tracking-wide">Trọng Tài Chủ Sân: Có Báo Cáo Đối Thủ Bùng Kèo (No-Show)</h4>
+                                </div>
+                                <p class="text-xs text-white/90 mb-2">
+                                    Người báo: <strong class="text-white"><?php echo ($m['noshow_reported_by'] == $m['user_id']) ? htmlspecialchars($m['host_name']) : htmlspecialchars($m['guest_name']); ?></strong> 
+                                    tố giác đối thủ 
+                                    <strong class="text-red-300 underline font-black"><?php echo ($m['noshow_target_user_id'] == $m['user_id']) ? htmlspecialchars($m['host_name']) : htmlspecialchars($m['guest_name']); ?></strong> 
+                                    vắng mặt không đến sân thi đấu.
+                                </p>
+                                <?php if(!empty($m['noshow_reason'])): ?>
+                                    <div class="text-xs bg-black/50 p-2.5 rounded-lg border border-red-500/30 mb-3 text-red-200 italic">
+                                        "<?php echo htmlspecialchars($m['noshow_reason']); ?>"
+                                    </div>
+                                <?php endif; ?>
+                                <p class="text-[11px] text-white/60 mb-3">Vui lòng kiểm tra thực tế tại sân. Nếu đối phương thực sự không đến, bấm "Xác Nhận Bùng Kèo" để phạt -30 Điểm Uy Tín, -50 Elo và giải phóng sân.</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <a href="index.php?action=owner_confirm_noshow&match_id=<?php echo $m['id']; ?>&decision=confirm" 
+                                       onclick="return confirm('XÁC NHẬN BÙNG KÈO:\nBạn đã kiểm tra thực tế và xác nhận người này không đến sân?\nHệ thống sẽ:\n- Trừ 30 điểm Uy Tín người vi phạm\n- Trừ 50 điểm Elo xếp hạng\n- Tạm khóa tìm trận\n- Bảo lưu quyền lợi cho người có mặt\n- Hủy trận và giải phóng sân.');"
+                                       class="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all shadow-md">
+                                        ⚖️ Xác Nhận Bùng Kèo (Xử Phạt)
+                                    </a>
+                                    <a href="index.php?action=owner_confirm_noshow&match_id=<?php echo $m['id']; ?>&decision=reject"
+                                       onclick="return confirm('BÁC BỎ BÁO CÁO:\nBạn xác nhận người này có đến sân hoặc hai bên vẫn thi đấu bình thường?');"
+                                       class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all border border-white/10">
+                                        ✕ Bác Bỏ Báo Cáo
+                                    </a>
+                                </div>
+                            </div>
+                        <?php elseif(!empty($m['noshow_status']) && $m['noshow_status'] == 'confirmed_noshow'): ?>
+                            <div class="mb-6 p-3.5 bg-red-950/40 border border-red-500/40 rounded-xl text-xs text-red-300 flex items-center gap-2">
+                                <span class="text-lg">🚫</span>
+                                <span>Kèo đấu này đã được xác nhận bùng kèo (No-Show). Người vi phạm đã bị trừ 30 điểm uy tín, -50 Elo và bị xử phạt theo đúng quy định.</span>
+                            </div>
+                        <?php endif; ?>
                         <div class="flex items-center justify-between mb-8">
                             <!-- Host -->
                             <div class="flex flex-col items-center flex-1">

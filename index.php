@@ -189,6 +189,12 @@ switch ($action) {
         $controller = new MatchmakingController();
         $controller->confirmTicket();
         break;
+    case 'confirm_split_payment':
+    case 'api_confirm_split_payment':
+        requireAuth();
+        $controller = new MatchmakingController();
+        $controller->confirmSplitPayment();
+        break;
     case 'cancel_ticket':
         requireAuth();
         $controller = new MatchmakingController();
@@ -204,10 +210,25 @@ switch ($action) {
         $controller = new MatchmakingController();
         $controller->reportNoShow();
         break;
+    case 'report_absent':
+        requireAuth();
+        $controller = new MatchmakingController();
+        $controller->reportAbsent();
+        break;
     case 'switch_pitch':
         requireAuth();
         $controller = new MatchmakingController();
         $controller->switchPitch();
+        break;
+    case 'accept_switch_pitch':
+        requireAuth();
+        $controller = new MatchmakingController();
+        $controller->acceptSwitchPitch();
+        break;
+    case 'reject_switch_pitch':
+        requireAuth();
+        $controller = new MatchmakingController();
+        $controller->rejectSwitchPitch();
         break;
 
     // Chat Routes
@@ -462,6 +483,16 @@ switch ($action) {
         requireRole('owner');
         $controller = new OwnerController();
         $controller->cancelMatch();
+        break;
+    case 'owner_matches':
+        requireRole('owner');
+        $controller = new OwnerController();
+        $controller->matches();
+        break;
+    case 'owner_confirm_noshow':
+        requireRole(['owner', 'staff', 'admin']);
+        $controller = new OwnerController();
+        $controller->confirmNoShow();
         break;
 
     // Staff Routes
