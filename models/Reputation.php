@@ -126,14 +126,33 @@ class Reputation {
     }
 
     public function reportNoShow($reporterId, $violatorId, $bookingId, $detail = '') {
-        // Kiểm tra booking hợp lệ
-        $q = "SELECT * FROM bookings WHERE id = ?";
+        $reporterId = (int)$reporterId;
+        $violatorId = (int)$violatorId;
+        $bookingId = (int)$bookingId;
+
+        // 1. Kiểm tra booking hợp lệ kèm thông tin chủ sân
+        $q = "SELECT b.*, p.owner_id as pitch_owner_id FROM bookings b LEFT JOIN pitches p ON b.pitch_id = p.id WHERE b.id = ?";
         $s = $this->conn->prepare($q);
-        $s->execute([(int)$bookingId]);
+        $s->execute([$bookingId]);
         $booking = $s->fetch(PDO::FETCH_ASSOC);
 
         if (!$booking) {
             return ['success' => false, 'message' => 'Đơn đặt sân không tồn tại.'];
+        }
+
+        // 2. Kiểm tra phân quyền chặt chẽ (Chống IDOR): Người báo cáo phải là thành viên trong trận hoặc chủ sân
+        $isPitchOwner = (!empty($booking['pitch_owner_id']) && $booking['pitch_owner_id'] == $reporterId);
+        $isAdmin = (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin');
+
+        // Kiểm tra xem reporterId và violatorId có là đối thủ trong matchmaking không
+        $matchStmt = $this->conn->prepare("SELECT * FROM matchmaking WHERE (user_id = ? AND opponent_id = ?) OR (user_id = ? AND opponent_id = ?)");
+        $matchStmt->execute([$reporterId, $violatorId, $violatorId, $reporterId]);
+        $isMatchOpponent = ($matchStmt->rowCount() > 0);
+
+        $isBookingParty = ($booking['user_id'] == $reporterId || $booking['user_id'] == $violatorId);
+
+        if (!$isPitchOwner && !$isAdmin && !$isMatchOpponent && !$isBookingParty) {
+            return ['success' => false, 'message' => 'Lỗi phân quyền: Bạn không có quyền báo cáo đơn đặt sân này.'];
         }
 
         // Thực hiện xử phạt

@@ -26,8 +26,13 @@
             </div>
 
             <div>
-                <label class=block text-white/80 font-bold mb-1.5 text-xs>Mật Khẩu Mới</label>
-                <input type=password name=new_password placeholder=Nhập mật khẩu mới (Mặc định 123456) class=w-full bg-[#0b1116] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#d8ff3e] focus:ring-1 focus:ring-[#d8ff3e] transition>
+                <label class="block text-white/80 font-bold mb-1.5 text-xs">Mật Khẩu Mới</label>
+                <input type="password" name="new_password" required minlength="6" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" class="w-full bg-[#0b1116] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#d8ff3e] focus:ring-1 focus:ring-[#d8ff3e] transition">
+            </div>
+
+            <div>
+                <label class="block text-white/80 font-bold mb-1.5 text-xs">Xác Nhận Mật Khẩu Mới</label>
+                <input type="password" name="confirm_password" required minlength="6" placeholder="Nhập lại mật khẩu mới" class="w-full bg-[#0b1116] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#d8ff3e] focus:ring-1 focus:ring-[#d8ff3e] transition">
             </div>
 
             <button type=submit class=w-full bg-[#d8ff3e] text-[#0d1715] font-black rounded-xl py-3.5 text-xs uppercase tracking-wider hover:bg-[#bce628] transition-all shadow-[0_0_20px_rgba(216,255,62,0.2)] mt-2>

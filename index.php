@@ -1,4 +1,7 @@
 <?php
+// Timezone configuration (Vietnam Standard Time GMT+7)
+date_default_timezone_set('Asia/Ho_Chi_Minh');
+
 // Simple MVC Router for Demo
 session_start();
 require_once 'config/database.php';

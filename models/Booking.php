@@ -168,7 +168,7 @@ class Booking {
     }
 
     public function getConfirmedOverlappingCount($pitch_id, $booking_date, $start_time, $end_time, $include_pending = true) {
-        $status_condition = $include_pending ? "status IN ('confirmed', 'pending')" : "status = 'confirmed'";
+        $status_condition = $include_pending ? "status IN ('confirmed', 'pending', 'completed')" : "status IN ('confirmed', 'completed')";
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " 
                   WHERE pitch_id = :pitch_id 
                   AND booking_date = :booking_date 
@@ -280,14 +280,26 @@ class Booking {
     }
 
     public function checkin($id) {
+        $id = (int)$id;
+
+        // Chỉ cho phép check-in đơn có trạng thái 'confirmed' hoặc 'pending'
+        // Tuyệt đối không cho phép check-in lại đơn đã 'completed' hoặc 'cancelled' (chống lạm dụng +2 điểm uy tín)
+        $chk = $this->conn->prepare("SELECT id, status, user_id FROM " . $this->table_name . " WHERE id = ?");
+        $chk->execute([$id]);
+        $b = $chk->fetch(PDO::FETCH_ASSOC);
+
+        if (!$b || in_array($b['status'], ['completed', 'cancelled'])) {
+            return false;
+        }
+
         $query = "UPDATE " . $this->table_name . " 
                   SET status = 'completed', payment_status = 'paid' 
-                  WHERE id = :id";
+                  WHERE id = :id AND status IN ('confirmed', 'pending')";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':id', $id);
         $res = $stmt->execute();
 
-        if ($res) {
+        if ($res && $stmt->rowCount() > 0) {
             // Đồng bộ trạng thái vé Smart Match nếu có
             try {
                 $tStmt = $this->conn->prepare("SELECT * FROM match_tickets WHERE booking_id = ?");
@@ -300,19 +312,15 @@ class Booking {
                 }
             } catch (\Exception $e) {}
 
-            // Thưởng +2 điểm uy tín Fair-Play vì đã đến sân đúng hẹn
-            $q = "SELECT user_id FROM " . $this->table_name . " WHERE id = ?";
-            $s = $this->conn->prepare($q);
-            $s->execute([$id]);
-            if ($row = $s->fetch(PDO::FETCH_ASSOC)) {
-                if (!empty($row['user_id'])) {
-                    require_once __DIR__ . '/Reputation.php';
-                    $rep = new Reputation($this->conn);
-                    $rep->changeScore($row['user_id'], 2, "Hoàn tất thi đấu đúng hẹn tại sân", $id);
-                }
+            // Thưởng +2 điểm uy tín Fair-Play vì đã đến sân đúng hẹn (chỉ 1 lần duy nhất)
+            if (!empty($b['user_id'])) {
+                require_once __DIR__ . '/Reputation.php';
+                $rep = new Reputation($this->conn);
+                $rep->changeScore($b['user_id'], 2, "Hoàn tất thi đấu đúng hẹn tại sân", $id);
             }
+            return true;
         }
-        return $res;
+        return false;
     }
 
     public function readAllForStaff($date = null, $keyword = null, $assigned_pitch_id = null, $owner_id = null) {

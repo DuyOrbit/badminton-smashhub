@@ -2,21 +2,29 @@
 class AuthController {
     public function forgotPassword() {
         $error = null;
-        if ($_SERVER['REQUEST_METHOD'] == 'POST' && !empty($_POST['username'])) {
-            $database = new Database();
-            $db = $database->getConnection();
-            $username = trim($_POST['username']);
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $username = trim($_POST['username'] ?? '');
             $phone = trim($_POST['phone'] ?? '');
+            $newPass = $_POST['new_password'] ?? '';
+            $confirmPass = $_POST['confirm_password'] ?? '';
 
-            if (empty($phone)) {
-                $error = "Vui lòng cung cấp số điện thoại đã đăng ký để xác minh quyền sở hữu tài khoản.";
+            if (empty($username) || empty($phone)) {
+                $error = "Vui lòng cung cấp đầy đủ Tên đăng nhập và Số điện thoại đã đăng ký.";
+            } elseif (empty($newPass)) {
+                $error = "Vui lòng nhập mật khẩu mới.";
+            } elseif (strlen($newPass) < 6) {
+                $error = "Mật khẩu mới phải có tối thiểu 6 ký tự để đảm bảo an toàn.";
+            } elseif ($newPass !== $confirmPass) {
+                $error = "Mật khẩu xác nhận không khớp với mật khẩu mới.";
             } else {
+                $database = new Database();
+                $db = $database->getConnection();
+
                 $stmt = $db->prepare("SELECT id, username, phone FROM users WHERE username = ? AND phone = ? LIMIT 1");
                 $stmt->execute([$username, $phone]);
                 $userFound = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($userFound) {
-                    $newPass = !empty($_POST['new_password']) ? $_POST['new_password'] : '123456';
                     $hashed_password = password_hash($newPass, PASSWORD_DEFAULT);
                     $upd = $db->prepare("UPDATE users SET password = ? WHERE id = ?");
                     $upd->execute([$hashed_password, $userFound['id']]);
@@ -43,12 +51,16 @@ class AuthController {
             $user->password = $_POST['password'];
 
             if($user->login()) {
+                session_regenerate_id(true);
                 $_SESSION['user_id'] = $user->id;
                 $_SESSION['username'] = $user->username;
                 $_SESSION['user_role'] = $user->role;
                 $_SESSION['user_name'] = $user->name;
                 $_SESSION['owner_id'] = $user->owner_id;
                 $_SESSION['assigned_pitch_id'] = $user->assigned_pitch_id;
+                if (empty($_SESSION['csrf_token'])) {
+                    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+                }
 
                 if($user->role == 'admin') {
                     header("Location: index.php?action=admin_dashboard");

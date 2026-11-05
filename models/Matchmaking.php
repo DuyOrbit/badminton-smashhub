@@ -109,7 +109,8 @@ class Matchmaking {
     public function acceptMatch($id, $opponent_id) {
         $query = "UPDATE " . $this->table_name . " SET status = 'closed', opponent_id = ? WHERE id = ? AND status = 'open' AND user_id != ?";
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([$opponent_id, $id, $opponent_id]);
+        $stmt->execute([$opponent_id, $id, $opponent_id]);
+        return $stmt->rowCount() > 0;
     }
 
     public function readMyMatches($user_id) {
@@ -147,15 +148,25 @@ class Matchmaking {
     }
 
     public function reportResult($id, $result, $owner_id) {
+        $allowed = ['host_win', 'guest_win', 'draw'];
+        if (!in_array($result, $allowed, true)) {
+            return false;
+        }
+
         $verify = "SELECT m.user_id, m.opponent_id, m.match_result FROM " . $this->table_name . " m
                    INNER JOIN pitches p ON m.pitch_id = p.id
                    WHERE m.id = ? AND p.owner_id = ?";
         $vStmt = $this->conn->prepare($verify);
         $vStmt->execute([$id, $owner_id]);
         if($row = $vStmt->fetch(PDO::FETCH_ASSOC)) {
-            $query = "UPDATE " . $this->table_name . " SET match_result = ? WHERE id = ?";
+            // Không cho phép báo cáo lại nếu kết quả đã được ghi nhận trước đó (tránh cộng/trừ Elo nhiều lần)
+            if (!empty($row['match_result']) && $row['match_result'] !== 'pending') {
+                return false;
+            }
+
+            $query = "UPDATE " . $this->table_name . " SET match_result = ? WHERE id = ? AND (match_result = 'pending' OR match_result IS NULL)";
             $stmt = $this->conn->prepare($query);
-            if ($stmt->execute([$result, $id])) {
+            if ($stmt->execute([$result, $id]) && $stmt->rowCount() > 0) {
                 require_once 'models/Ranking.php';
                 $ranking = new Ranking($this->conn);
                 $ranking->updateScore($row['user_id'], $row['opponent_id'], $result);
@@ -168,7 +179,8 @@ class Matchmaking {
     public function closeMatch($id, $user_id) {
         $query = "UPDATE " . $this->table_name . " SET status = 'closed' WHERE id = ? AND user_id = ?";
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([$id, $user_id]);
+        $stmt->execute([$id, $user_id]);
+        return $stmt->rowCount() > 0;
     }
 
     public function completeMatch($id, $user_id) {
@@ -178,7 +190,8 @@ class Matchmaking {
     public function cancelMatch($id, $user_id) {
         $query = "UPDATE " . $this->table_name . " SET status = 'open', opponent_id = NULL WHERE id = ? AND (user_id = ? OR opponent_id = ?)";
         $stmt = $this->conn->prepare($query);
-        return $stmt->execute([$id, $user_id, $user_id]);
+        $stmt->execute([$id, $user_id, $user_id]);
+        return $stmt->rowCount() > 0;
     }
 
     public function cancelMatchByUser($id, $user_id) {

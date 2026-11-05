@@ -10,6 +10,7 @@ class Pitch {
     public $quantity;
     public $price_per_hour;
     public $image_url;
+    public $amenities;
     public $description;
 
     public function __construct($db) {
@@ -31,42 +32,86 @@ class Pitch {
         return $stmt;
     }
 
-    public function search($keyword = '', $max_price = 0, $type = '') {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE 1=1";
+    public function search($keyword = '', $max_price = 0, $type = '', $district = '', $amenity = '', $min_price = 0, $sort = '') {
+        // If first argument is an associative array, unpack it
+        if (is_array($keyword)) {
+            $filters = $keyword;
+            $keyword = $filters['keyword'] ?? ($filters['q'] ?? '');
+            $max_price = $filters['max_price'] ?? 0;
+            $type = $filters['type'] ?? '';
+            $district = $filters['district'] ?? '';
+            $amenity = $filters['amenity'] ?? '';
+            $min_price = $filters['min_price'] ?? 0;
+            $sort = $filters['sort'] ?? '';
+        }
+
+        $query = "SELECT p.*, u.name as owner_name FROM " . $this->table_name . " p 
+                  LEFT JOIN users u ON p.owner_id = u.id 
+                  WHERE (p.status = 'active' OR p.status IS NULL)";
+        $params = [];
         
         // Build conditions dynamically
         if (!empty($keyword)) {
-            $query .= " AND (name LIKE :keyword OR location LIKE :keyword)";
+            $query .= " AND (p.name LIKE :keyword OR p.location LIKE :keyword OR p.district LIKE :keyword OR p.description LIKE :keyword)";
+            $params[':keyword'] = "%" . htmlspecialchars(strip_tags($keyword)) . "%";
         }
         
-        if (!empty($max_price) && $max_price > 0) {
-            $query .= " AND price_per_hour <= :max_price";
+        if (!empty($district) && $district !== 'all' && $district !== 'Tất cả') {
+            $query .= " AND (p.district = :district OR p.location LIKE :district_loc)";
+            $params[':district'] = $district;
+            $params[':district_loc'] = "%" . $district . "%";
         }
         
-        if (!empty($type)) {
-            $query .= " AND type = :type";
+        if (!empty($type) && $type !== 'all' && $type !== 'Tất cả') {
+            $query .= " AND p.type = :type";
+            $params[':type'] = $type;
+        }
+
+        if (!empty($min_price) && (float)$min_price > 0) {
+            $query .= " AND p.price_per_hour >= :min_price";
+            $params[':min_price'] = (float)$min_price;
         }
         
-        $query .= " ORDER BY id DESC";
+        if (!empty($max_price) && (float)$max_price > 0) {
+            $query .= " AND p.price_per_hour <= :max_price";
+            $params[':max_price'] = (float)$max_price;
+        }
+        
+        if (!empty($amenity) && $amenity !== 'all') {
+            $amenitiesList = is_array($amenity) ? $amenity : explode(',', $amenity);
+            foreach ($amenitiesList as $idx => $am) {
+                $am = trim($am);
+                if (!empty($am)) {
+                    $paramKey = ":amenity_" . $idx;
+                    $query .= " AND (p.amenities LIKE {$paramKey} OR p.description LIKE {$paramKey})";
+                    $params[$paramKey] = "%" . $am . "%";
+                }
+            }
+        }
+        
+        // Sorting
+        switch ($sort) {
+            case 'price_asc':
+                $query .= " ORDER BY p.price_per_hour ASC, p.id DESC";
+                break;
+            case 'price_desc':
+                $query .= " ORDER BY p.price_per_hour DESC, p.id DESC";
+                break;
+            case 'quantity_desc':
+                $query .= " ORDER BY p.quantity DESC, p.id DESC";
+                break;
+            case 'name_asc':
+                $query .= " ORDER BY p.name ASC";
+                break;
+            default:
+                $query .= " ORDER BY p.id DESC";
+                break;
+        }
         
         $stmt = $this->conn->prepare($query);
-        
-        // Bind parameters safely
-        if (!empty($keyword)) {
-            $keyword_param = "%" . htmlspecialchars(strip_tags($keyword)) . "%";
-            $stmt->bindParam(':keyword', $keyword_param);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
         }
-        
-        if (!empty($max_price) && $max_price > 0) {
-            $max_price_param = htmlspecialchars(strip_tags($max_price));
-            $stmt->bindParam(':max_price', $max_price_param);
-        }
-        
-        if (!empty($type)) {
-            $type_param = htmlspecialchars(strip_tags($type));
-            $stmt->bindParam(':type', $type_param);
-        }
-        
         $stmt->execute();
         return $stmt;
     }
@@ -79,11 +124,13 @@ class Pitch {
 
         $query = "SELECT p.*, u.name as owner_name,
                          (6371 * acos(
-                             cos(radians(:user_lat)) 
-                             * cos(radians(p.latitude)) 
-                             * cos(radians(p.longitude) - radians(:user_lng)) 
-                             + sin(radians(:user_lat)) 
-                             * sin(radians(p.latitude))
+                             LEAST(1.0, GREATEST(-1.0,
+                                 cos(radians(:user_lat)) 
+                                 * cos(radians(p.latitude)) 
+                                 * cos(radians(p.longitude) - radians(:user_lng)) 
+                                 + sin(radians(:user_lat)) 
+                                 * sin(radians(p.latitude))
+                             ))
                          )) AS distance
                   FROM " . $this->table_name . " p
                   LEFT JOIN users u ON p.owner_id = u.id
@@ -125,8 +172,8 @@ class Pitch {
 
     public function create($data) {
         $query = "INSERT INTO " . $this->table_name . " 
-                (owner_id, name, location, district, city, type, quantity, price_per_hour, image_url, description, latitude, longitude) 
-                VALUES (:owner_id, :name, :location, :district, :city, :type, :quantity, :price_per_hour, :image_url, :description, :latitude, :longitude)";
+                (owner_id, name, location, district, city, type, quantity, price_per_hour, image_url, amenities, description, latitude, longitude) 
+                VALUES (:owner_id, :name, :location, :district, :city, :type, :quantity, :price_per_hour, :image_url, :amenities, :description, :latitude, :longitude)";
         
         $stmt = $this->conn->prepare($query);
 
@@ -140,6 +187,7 @@ class Pitch {
         $this->quantity = htmlspecialchars(strip_tags($data['quantity'] ?? 1));
         $this->price_per_hour = htmlspecialchars(strip_tags($data['price_per_hour']));
         $this->image_url = htmlspecialchars(strip_tags($data['image_url']));
+        $this->amenities = htmlspecialchars(strip_tags($data['amenities'] ?? 'parking,lighting,cooling,shower'));
         $this->description = htmlspecialchars(strip_tags($data['description']));
         $lat = !empty($data['latitude']) ? floatval($data['latitude']) : null;
         $lng = !empty($data['longitude']) ? floatval($data['longitude']) : null;
@@ -154,6 +202,7 @@ class Pitch {
         $stmt->bindParam(':quantity', $this->quantity);
         $stmt->bindParam(':price_per_hour', $this->price_per_hour);
         $stmt->bindParam(':image_url', $this->image_url);
+        $stmt->bindParam(':amenities', $this->amenities);
         $stmt->bindParam(':description', $this->description);
         $stmt->bindParam(':latitude', $lat);
         $stmt->bindParam(':longitude', $lng);
@@ -166,7 +215,7 @@ class Pitch {
 
     public function update($data, $id) {
         $query = "UPDATE " . $this->table_name . " 
-                SET name = :name, location = :location, district = :district, city = :city, type = :type, quantity = :quantity, price_per_hour = :price_per_hour, description = :description, latitude = :latitude, longitude = :longitude";
+                SET name = :name, location = :location, district = :district, city = :city, type = :type, quantity = :quantity, price_per_hour = :price_per_hour, amenities = :amenities, description = :description, latitude = :latitude, longitude = :longitude";
         
         // Only update image_url if provided
         if (isset($data['image_url']) && !empty($data['image_url'])) {
@@ -185,6 +234,7 @@ class Pitch {
         $this->type = htmlspecialchars(strip_tags($data['type']));
         $this->quantity = htmlspecialchars(strip_tags($data['quantity'] ?? 1));
         $this->price_per_hour = htmlspecialchars(strip_tags($data['price_per_hour']));
+        $this->amenities = htmlspecialchars(strip_tags($data['amenities'] ?? 'parking,lighting,cooling,shower'));
         $this->description = htmlspecialchars(strip_tags($data['description']));
         $this->id = htmlspecialchars(strip_tags($id));
         $this->owner_id = htmlspecialchars(strip_tags($data['owner_id']));
@@ -199,6 +249,7 @@ class Pitch {
         $stmt->bindParam(':type', $this->type);
         $stmt->bindParam(':quantity', $this->quantity);
         $stmt->bindParam(':price_per_hour', $this->price_per_hour);
+        $stmt->bindParam(':amenities', $this->amenities);
         $stmt->bindParam(':description', $this->description);
         $stmt->bindParam(':id', $this->id);
         $stmt->bindParam(':owner_id', $this->owner_id);

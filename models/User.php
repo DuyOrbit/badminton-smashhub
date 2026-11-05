@@ -187,9 +187,20 @@ class User {
     }
 
     public function assignStaffToPitch($staff_id, $owner_id, $pitch_id = null) {
+        $staff_id = (int)$staff_id;
+        $owner_id = (int)$owner_id;
+
+        // Bảo vệ đặc quyền: Không bao giờ được phép đổi role của tài khoản admin hoặc owner
+        $chk = $this->conn->prepare("SELECT role FROM " . $this->table_name . " WHERE id = ?");
+        $chk->execute([$staff_id]);
+        $role = $chk->fetchColumn();
+        if ($role === 'admin' || $role === 'owner') {
+            return false;
+        }
+
         $query = "UPDATE " . $this->table_name . " 
                   SET role = 'staff', owner_id = :owner_id, assigned_pitch_id = :pitch_id 
-                  WHERE id = :staff_id";
+                  WHERE id = :staff_id AND role NOT IN ('admin', 'owner')";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':owner_id', $owner_id);
         $stmt->bindParam(':pitch_id', $pitch_id);
@@ -197,12 +208,20 @@ class User {
         return $stmt->execute();
     }
 
-    public function removeStaffAssignment($staff_id) {
+    public function removeStaffAssignment($staff_id, $owner_id = null) {
+        $staff_id = (int)$staff_id;
         $query = "UPDATE " . $this->table_name . " 
                   SET role = 'user', owner_id = NULL, assigned_pitch_id = NULL 
-                  WHERE id = :staff_id";
+                  WHERE id = :staff_id AND role = 'staff'";
+        if ($owner_id !== null) {
+            $query .= " AND owner_id = :owner_id";
+        }
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(':staff_id', $staff_id);
+        if ($owner_id !== null) {
+            $owner_id = (int)$owner_id;
+            $stmt->bindParam(':owner_id', $owner_id);
+        }
         return $stmt->execute();
     }
 

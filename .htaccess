@@ -1,0 +1,12 @@
+# Chặn truy cập trực tiếp vào các tệp tin nhạy cảm
+<FilesMatch "(^#.*#|\.(bak|config|dist|fla|inc|ini|log|psd|sh|sql|sw[op]|docx|md|env|yml|yaml))$">
+    Require all denied
+</FilesMatch>
+
+# Chặn truy cập thư mục .git
+RedirectMatch 404 /\.git
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+</IfModule>
+

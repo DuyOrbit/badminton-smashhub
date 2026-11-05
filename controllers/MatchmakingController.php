@@ -441,9 +441,14 @@ class MatchmakingController {
     public function apiCheckTicket() {
         header('Content-Type: application/json');
         if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {
+            http_response_code(401);
             echo json_encode(['error' => 'Unauthorized']);
             exit;
         }
+
+        $ticketId = (int)$_GET['id'];
+        $currentUserId = (int)$_SESSION['user_id'];
+        $currentUserRole = $_SESSION['user_role'] ?? 'user';
 
         $database = new Database();
         $db = $database->getConnection();
@@ -451,11 +456,28 @@ class MatchmakingController {
         require_once 'models/MatchTicket.php';
         $ticketModel = new MatchTicket($db);
 
-        // Kích hoạt quét tìm trận nếu ticket vẫn đang 'waiting'
-        $ticket = $ticketModel->getTicketById($_GET['id']);
-        if ($ticket && $ticket['status'] == 'waiting') {
+        $ticket = $ticketModel->getTicketById($ticketId);
+        if (!$ticket) {
+            echo json_encode(['status' => 'not_found']);
+            exit;
+        }
+
+        // BẢO VỆ CHỐNG IDOR: Chỉ cho phép người tạo vé, đối thủ được ghép, chủ sân của sân đó hoặc admin xem thông tin vé
+        $isOwner = ($ticket['user_id'] == $currentUserId);
+        $isOpponent = (!empty($ticket['matched_user_id']) && $ticket['matched_user_id'] == $currentUserId);
+        $isPitchOwner = (!empty($ticket['pitch_owner_id']) && $ticket['pitch_owner_id'] == $currentUserId);
+        $isAdmin = ($currentUserRole === 'admin');
+
+        if (!$isOwner && !$isOpponent && !$isPitchOwner && !$isAdmin) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Forbidden: Bạn không có quyền truy cập thông tin vé này.']);
+            exit;
+        }
+
+        // Kích hoạt quét tìm trận nếu ticket vẫn đang 'waiting' và chính chủ đang kiểm tra
+        if ($ticket['status'] == 'waiting' && $isOwner) {
             $ticketModel->autoMatch($ticket['id']);
-            $ticket = $ticketModel->getTicketById($_GET['id']); // lấy lại sau khi quét
+            $ticket = $ticketModel->getTicketById($ticketId); // lấy lại sau khi quét
         }
 
         echo json_encode($ticket ?: ['status' => 'not_found']);
@@ -468,9 +490,15 @@ class MatchmakingController {
             exit;
         }
 
-        $booking_id = $_GET['booking_id'] ?? $_POST['booking_id'] ?? null;
-        $violator_id = $_GET['violator_id'] ?? $_POST['violator_id'] ?? null;
-        $detail = $_POST['detail'] ?? 'Bỏ trận không đến sân theo lịch hẹn.';
+        // CHỐNG IDOR / CSRF: Bắt buộc gửi bằng phương thức POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=smart_match&error=" . urlencode("Yêu cầu không hợp lệ. Hành động này chỉ chấp nhận phương thức POST."));
+            exit;
+        }
+
+        $booking_id = isset($_POST['booking_id']) ? (int)$_POST['booking_id'] : null;
+        $violator_id = isset($_POST['violator_id']) ? (int)$_POST['violator_id'] : null;
+        $detail = trim($_POST['detail'] ?? 'Bỏ trận không đến sân theo lịch hẹn.');
 
         if (!$booking_id || !$violator_id) {
             header("Location: index.php?action=my_bookings&error=missing_params");
@@ -498,8 +526,14 @@ class MatchmakingController {
             exit;
         }
 
-        $ticketId = $_POST['ticket_id'] ?? $_GET['ticket_id'] ?? null;
-        $reason = $_POST['reason'] ?? $_GET['reason'] ?? '';
+        // CHỐNG IDOR / CSRF: Bắt buộc gửi bằng phương thức POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header("Location: index.php?action=smart_match&error=" . urlencode("Yêu cầu báo vắng phải được gửi bằng phương thức POST."));
+            exit;
+        }
+
+        $ticketId = isset($_POST['ticket_id']) ? (int)$_POST['ticket_id'] : null;
+        $reason = trim($_POST['reason'] ?? '');
 
         if (!$ticketId) {
             header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu mã vé thi đấu."));

@@ -140,8 +140,12 @@ http://localhost/badminton/index.php
 | :--- | :--- | :--- | :--- |
 | **Quản Trị Viên (Admin)** | `admin` | `123456` | Dashboard hệ thống, quản lý người dùng, duyệt sân |
 | **Chủ Sân (Owner)** | `chusan_demo` | `123456` | Quản lý sân, đặt tại quầy, quản lý thu ngân |
+| **Chủ Sân Bình Thạnh** | `chusan1` | `123456` | Quản lý cụm sân Bình Thạnh, duyệt lịch, duyệt thu 50% |
 | **Nhân Viên (Staff)** | `nhanvien_demo` | `123456` | Bàn trực lễ tân, kiểm tra mã check-in |
+| **Thu Ngân (Staff)** | `thungan` | `123456` | Bàn lễ tân cụm sân Bình Thạnh, check-in 1-Click |
 | **Khách Hàng (User)** | `khach_alpha` | `123456` | Đặt sân trực tuyến, lập lệnh Smart Match AI |
+| **Khách Hàng (User)** | `khach_beta` | `123456` | Đối thủ bắt cặp Smart Match AI, đàm phán đổi sân |
+| **Khách Hàng (User)** | `user` | `123456` | Đặt sân và tham gia CLB |
 
 ---
 

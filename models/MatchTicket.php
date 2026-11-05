@@ -367,152 +367,218 @@ class MatchTicket {
     }
 
     public function confirmMatch($ticketId, $userId, $paymentMethod = 'cash', $paymentStatus = 'unpaid') {
-        $ticket = $this->getTicketById($ticketId);
-        if (!$ticket || $ticket['user_id'] != $userId || $ticket['status'] != 'matched') {
-            return ['success' => false, 'message' => 'Lệnh tìm trận không hợp lệ.'];
-        }
+        $this->conn->beginTransaction();
+        try {
+            // Khóa hàng ticket hiện tại và ticket đối phương bằng FOR UPDATE
+            $stmt = $this->conn->prepare("SELECT * FROM " . $this->table_name . " WHERE id = ? FOR UPDATE");
+            $stmt->execute([(int)$ticketId]);
+            $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Tính toán chi phí 50% của người này (áp dụng giảm giá theo Rank cá nhân)
-        $start = strtotime($ticket['start_time']);
-        $end = strtotime($ticket['end_time']);
-        $hours = max(1, ($end - $start) / 3600);
-        $totalBase = $hours * $ticket['price_per_hour'];
-        $halfBase = $totalBase / 2;
+            if (!$ticket || $ticket['user_id'] != $userId || $ticket['status'] != 'matched') {
+                $this->conn->rollBack();
+                return ['success' => false, 'message' => 'Lệnh tìm trận không hợp lệ hoặc đã thay đổi trạng thái.'];
+            }
 
-        require_once __DIR__ . '/Ranking.php';
-        $ranking = new Ranking($this->conn);
-        $userDiscount = $ranking->getActiveDiscount($userId);
-        $userPay = $halfBase * ((100 - $userDiscount) / 100);
+            $oppTicketId = (int)$ticket['matched_ticket_id'];
+            $stmtOpp = $this->conn->prepare("SELECT * FROM " . $this->table_name . " WHERE id = ? FOR UPDATE");
+            $stmtOpp->execute([$oppTicketId]);
+            $oppTicket = $stmtOpp->fetch(PDO::FETCH_ASSOC);
 
-        // Đánh dấu user này đã xác nhận kèm phương thức và trạng thái thanh toán 50%
-        $up = "UPDATE " . $this->table_name . " 
-               SET user_confirmed = 1, payment_method = :pm, payment_status = :ps, split_price = :sp 
-               WHERE id = :id";
-        $stmt = $this->conn->prepare($up);
-        $stmt->execute([
-            ':pm' => $paymentMethod,
-            ':ps' => $paymentStatus,
-            ':sp' => $userPay,
-            ':id' => $ticketId
-        ]);
+            if (!$oppTicket) {
+                $this->conn->rollBack();
+                return ['success' => false, 'message' => 'Không tìm thấy thông tin đối thủ.'];
+            }
 
-        // Đồng thời cập nhật trên ticket của đối phương: matched_user_confirmed = 1
-        $upOpp = "UPDATE " . $this->table_name . " SET matched_user_confirmed = 1 WHERE id = ?";
-        $stmtOpp = $this->conn->prepare($upOpp);
-        $stmtOpp->execute([$ticket['matched_ticket_id']]);
+            // Tính toán chi phí 50% của người này (áp dụng giảm giá theo Rank cá nhân)
+            $start = strtotime($ticket['start_time']);
+            $end = strtotime($ticket['end_time']);
+            $hours = max(1, ($end - $start) / 3600);
+            $totalBase = $hours * $ticket['price_per_hour'];
+            $halfBase = $totalBase / 2;
 
-        // Kiểm tra đối phương đã xác nhận chưa
-        $oppTicket = $this->getTicketById($ticket['matched_ticket_id']);
-        
-        if ($oppTicket && $oppTicket['user_confirmed'] == 1) {
-            // --- CẢ 2 BÊN ĐÃ XÁC NHẬN & THANH TOÁN 50% -> TIẾN HÀNH KHÓA SÂN VÀ TẠO HÓA ĐƠN CHIA ĐÔI ---
-            $oppDiscount = $ranking->getActiveDiscount($ticket['opp_user_id']);
-            $oppPay = $halfBase * ((100 - $oppDiscount) / 100);
-            $finalTotalPrice = $userPay + $oppPay;
+            require_once __DIR__ . '/Ranking.php';
+            $ranking = new Ranking($this->conn);
+            $userDiscount = $ranking->getActiveDiscount($userId);
+            $userPay = $halfBase * ((100 - $userDiscount) / 100);
 
-            // Đánh giá trạng thái thanh toán tổng thể đơn đặt
-            $bothPaid = ($paymentStatus === 'paid' && ($oppTicket['payment_status'] ?? '') === 'paid');
-            $anyPaid = ($paymentStatus === 'paid' || ($oppTicket['payment_status'] ?? '') === 'paid');
-            $overallPaymentStatus = $bothPaid ? 'paid' : ($anyPaid ? 'deposited' : 'unpaid');
-            
-            $bookingPaymentMethod = ($paymentMethod === ($oppTicket['payment_method'] ?? 'cash')) ? $paymentMethod : 'split_mixed';
-
-            // 1. Tạo 2 mã Check-in riêng biệt cho từng cơ thủ
-            $userCheckinCode = 'CKIN-T' . $ticketId . '-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 4));
-            $oppCheckinCode = 'CKIN-T' . $ticket['matched_ticket_id'] . '-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 4));
-            $bookingCheckin = 'CKIN' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 5));
-
-            // Lưu mã Check-in cá nhân vào từng Ticket
-            $this->conn->prepare("UPDATE " . $this->table_name . " SET checkin_code = ? WHERE id = ?")->execute([$userCheckinCode, $ticketId]);
-            $this->conn->prepare("UPDATE " . $this->table_name . " SET checkin_code = ? WHERE id = ?")->execute([$oppCheckinCode, $ticket['matched_ticket_id']]);
-
-            // 2. Tạo Booking chính thức
-            $bookSql = "INSERT INTO bookings 
-                        (pitch_id, user_id, customer_name, customer_phone, booking_date, start_time, end_time, total_price, payment_method, payment_status, services_note, checkin_code, status)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')";
-            
-            $bStmt = $this->conn->prepare($bookSql);
-            $userPayDesc = ($paymentMethod === 'vietqr') ? 'VietQR Đã Trả' : 'Tiền mặt';
-            $oppPayDesc = (($oppTicket['payment_method'] ?? 'cash') === 'vietqr') ? 'VietQR Đã Trả' : 'Tiền mặt';
-            $servicesNote = "Kèo Ghép Thông Minh Elo: {$ticket['user_name']} [Mã Checkin: {$userCheckinCode}] ({$userPayDesc} 50%: " . number_format($userPay,0,',','.') . "đ) vs {$ticket['opp_name']} [Mã Checkin: {$oppCheckinCode}] ({$oppPayDesc} 50%: " . number_format($oppPay,0,',','.') . "đ)";
-
-            $bStmt->execute([
-                $ticket['matched_pitch_id'],
-                $userId,
-                $ticket['user_name'] . ' vs ' . $ticket['opp_name'] . ' (Ghép Kèo AI)',
-                $ticket['user_phone'] ?? '0368653018',
-                $ticket['play_date'],
-                $ticket['start_time'],
-                $ticket['end_time'],
-                $finalTotalPrice,
-                $bookingPaymentMethod,
-                $overallPaymentStatus,
-                $servicesNote,
-                $bookingCheckin
-            ]);
-            $newBookingId = $this->conn->lastInsertId();
-
-            // 3. Tạo bản ghi trong bảng matchmaking để chủ sân duyệt tiền & chấm điểm Elo sau trận
-            $hostPaid = ($paymentStatus === 'paid') ? 1 : 0;
-            $guestPaid = (($oppTicket['payment_status'] ?? 'unpaid') === 'paid') ? 1 : 0;
-
-            $matchSql = "INSERT INTO matchmaking 
-                         (user_id, pitch_id, play_date, start_time, end_time, format, skill_level, district, message, status, opponent_id, match_result, host_paid, guest_paid, host_checkin, guest_checkin, noshow_status)
-                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'closed', ?, 'pending', ?, ?, 0, 0, 'none')";
-            $mStmt = $this->conn->prepare($matchSql);
-            $mStmt->execute([
-                $userId,
-                $ticket['matched_pitch_id'],
-                $ticket['play_date'],
-                $ticket['start_time'],
-                $ticket['end_time'],
-                $ticket['format'],
-                3, // level trung bình
-                $ticket['district'],
-                "Ghép trận thông minh tự động (Split 50/50): {$ticket['user_name']} vs {$ticket['opp_name']}",
-                $ticket['opp_user_id'],
-                $hostPaid,
-                $guestPaid
+            // Đánh dấu user này đã xác nhận kèm phương thức và trạng thái thanh toán 50%
+            $up = "UPDATE " . $this->table_name . " 
+                   SET user_confirmed = 1, payment_method = :pm, payment_status = :ps, split_price = :sp 
+                   WHERE id = :id";
+            $stmtUp = $this->conn->prepare($up);
+            $stmtUp->execute([
+                ':pm' => $paymentMethod,
+                ':ps' => $paymentStatus,
+                ':sp' => $userPay,
+                ':id' => $ticketId
             ]);
 
-            // 4. Hoàn tất cả 2 Ticket: chuyển status sang 'confirmed'
-            $upFinish = "UPDATE " . $this->table_name . " SET status = 'confirmed', booking_id = ? WHERE id IN (?, ?)";
-            $fStmt = $this->conn->prepare($upFinish);
-            $fStmt->execute([$newBookingId, $ticketId, $ticket['matched_ticket_id']]);
+            // Đồng thời cập nhật trên ticket của đối phương: matched_user_confirmed = 1
+            $upOpp = "UPDATE " . $this->table_name . " SET matched_user_confirmed = 1 WHERE id = ?";
+            $this->conn->prepare($upOpp)->execute([$oppTicketId]);
 
-            // 5. Gửi tin nhắn chúc mừng và mã checkin riêng biệt cho từng người
-            $congrats1 = "🎉 [KÈO ĐÃ ĐƯỢC CHỐT THÀNH CÔNG] Cả hai bên đã hoàn tất xác nhận & thanh toán chia đôi (50/50)! Sân {$ticket['pitch_name']} đã được đặt vào lúc " . substr($ticket['start_time'], 0, 5) . " - " . substr($ticket['end_time'], 0, 5) . " ngày " . date('d/m/Y', strtotime($ticket['play_date'])) . ". Mã Check-in riêng của bạn tại quầy: [{$userCheckinCode}]. Chúc bạn có trận đấu rực lửa!";
-            $congrats2 = "🎉 [KÈO ĐÃ ĐƯỢC CHỐT THÀNH CÔNG] Cả hai bên đã hoàn tất xác nhận & thanh toán chia đôi (50/50)! Sân {$ticket['pitch_name']} đã được đặt vào lúc " . substr($ticket['start_time'], 0, 5) . " - " . substr($ticket['end_time'], 0, 5) . " ngày " . date('d/m/Y', strtotime($ticket['play_date'])) . ". Mã Check-in riêng của bạn tại quầy: [{$oppCheckinCode}]. Chúc bạn có trận đấu rực lửa!";
+            // Kiểm tra đối phương đã xác nhận trước đó chưa (đã được khóa bởi FOR UPDATE)
+            if ($oppTicket['user_confirmed'] == 1) {
+                // --- CẢ 2 BÊN ĐÃ XÁC NHẬN & THANH TOÁN 50% -> TIẾN HÀNH KHÓA SÂN VÀ TẠO HÓA ĐƠN CHIA ĐÔI ---
+                // Khóa sân để kiểm tra sức chứa và trạng thái hoạt động
+                $pitchStmt = $this->conn->prepare("SELECT id, name, quantity, status, location FROM pitches WHERE id = ? FOR UPDATE");
+                $pitchStmt->execute([(int)$ticket['matched_pitch_id']]);
+                $pitch = $pitchStmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$pitch || ($pitch['status'] ?? '') === 'locked') {
+                    $this->conn->rollBack();
+                    return ['success' => false, 'message' => 'Sân thi đấu hiện đang bảo trì hoặc tạm khóa. Vui lòng chọn sân khác.'];
+                }
+
+                // Kiểm tra sức chứa sân con thực tế (tránh race condition vượt số sân con)
+                require_once __DIR__ . '/Booking.php';
+                $bookingModel = new Booking($this->conn);
+                $overlappingCount = $bookingModel->getConfirmedOverlappingCount(
+                    $ticket['matched_pitch_id'],
+                    $ticket['play_date'],
+                    $ticket['start_time'],
+                    $ticket['end_time']
+                );
+
+                $courtQuantity = !empty($pitch['quantity']) ? (int)$pitch['quantity'] : 1;
+                if ($overlappingCount >= $courtQuantity) {
+                    $this->conn->rollBack();
+                    return ['success' => false, 'message' => 'Rất tiếc! Cụm sân đã hết sân con trống trong khung giờ này. Vui lòng thỏa thuận đổi sân khác.'];
+                }
+
+                // Tìm số sân con trống
+                $assignedCourt = 1;
+                $occupiedCourts = $bookingModel->getOccupiedCourtNumbers(
+                    $ticket['matched_pitch_id'],
+                    $ticket['play_date'],
+                    $ticket['start_time'],
+                    $ticket['end_time']
+                );
+                for ($c = 1; $c <= $courtQuantity; $c++) {
+                    if (!in_array($c, $occupiedCourts)) {
+                        $assignedCourt = $c;
+                        break;
+                    }
+                }
+
+                $oppDiscount = $ranking->getActiveDiscount($ticket['opp_user_id']);
+                $oppPay = $halfBase * ((100 - $oppDiscount) / 100);
+                $finalTotalPrice = $userPay + $oppPay;
+
+                // Đánh giá trạng thái thanh toán tổng thể đơn đặt
+                $bothPaid = ($paymentStatus === 'paid' && ($oppTicket['payment_status'] ?? '') === 'paid');
+                $anyPaid = ($paymentStatus === 'paid' || ($oppTicket['payment_status'] ?? '') === 'paid');
+                $overallPaymentStatus = $bothPaid ? 'paid' : ($anyPaid ? 'deposited' : 'unpaid');
+                
+                $bookingPaymentMethod = ($paymentMethod === ($oppTicket['payment_method'] ?? 'cash')) ? $paymentMethod : 'split_mixed';
+
+                // 1. Tạo 2 mã Check-in riêng biệt cho từng cơ thủ
+                $userCheckinCode = 'CKIN-T' . $ticketId . '-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 4));
+                $oppCheckinCode = 'CKIN-T' . $oppTicketId . '-' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 4));
+                $bookingCheckin = 'CKIN' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 5));
+
+                // Lưu mã Check-in cá nhân vào từng Ticket
+                $this->conn->prepare("UPDATE " . $this->table_name . " SET checkin_code = ? WHERE id = ?")->execute([$userCheckinCode, $ticketId]);
+                $this->conn->prepare("UPDATE " . $this->table_name . " SET checkin_code = ? WHERE id = ?")->execute([$oppCheckinCode, $oppTicketId]);
+
+                // 2. Tạo Booking chính thức
+                $bookSql = "INSERT INTO bookings 
+                            (pitch_id, court_number, user_id, customer_name, customer_phone, booking_date, start_time, end_time, total_price, payment_method, payment_status, services_note, checkin_code, status)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')";
+                
+                $bStmt = $this->conn->prepare($bookSql);
+                $userPayDesc = ($paymentMethod === 'vietqr') ? 'VietQR Đã Trả' : 'Tiền mặt';
+                $oppPayDesc = (($oppTicket['payment_status'] ?? 'cash') === 'vietqr') ? 'VietQR Đã Trả' : 'Tiền mặt';
+                $servicesNote = "Kèo Ghép Thông Minh Elo (Sân {$assignedCourt}): {$ticket['user_name']} [Mã: {$userCheckinCode}] ({$userPayDesc} 50%: " . number_format($userPay,0,',','.') . "đ) vs {$ticket['opp_name']} [Mã: {$oppCheckinCode}] ({$oppPayDesc} 50%: " . number_format($oppPay,0,',','.') . "đ)";
+
+                $bStmt->execute([
+                    $ticket['matched_pitch_id'],
+                    $assignedCourt,
+                    $userId,
+                    $ticket['user_name'] . ' vs ' . $ticket['opp_name'] . ' (Ghép Kèo AI)',
+                    !empty($ticket['user_phone']) ? $ticket['user_phone'] : '0900000000',
+                    $ticket['play_date'],
+                    $ticket['start_time'],
+                    $ticket['end_time'],
+                    $finalTotalPrice,
+                    $bookingPaymentMethod,
+                    $overallPaymentStatus,
+                    $servicesNote,
+                    $bookingCheckin
+                ]);
+                $newBookingId = $this->conn->lastInsertId();
+
+                // 3. Tạo bản ghi trong bảng matchmaking liên kết booking_id
+                $hostPaid = ($paymentStatus === 'paid') ? 1 : 0;
+                $guestPaid = (($oppTicket['payment_status'] ?? 'unpaid') === 'paid') ? 1 : 0;
+
+                $matchSql = "INSERT INTO matchmaking 
+                             (booking_id, user_id, pitch_id, play_date, start_time, end_time, format, skill_level, district, message, status, opponent_id, match_result, host_paid, guest_paid, host_checkin, guest_checkin, noshow_status)
+                             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'closed', ?, 'pending', ?, ?, 0, 0, 'none')";
+                $mStmt = $this->conn->prepare($matchSql);
+                $mStmt->execute([
+                    $newBookingId,
+                    $userId,
+                    $ticket['matched_pitch_id'],
+                    $ticket['play_date'],
+                    $ticket['start_time'],
+                    $ticket['end_time'],
+                    $ticket['format'],
+                    3, // level trung bình
+                    $ticket['district'],
+                    "Ghép trận thông minh tự động (Split 50/50): {$ticket['user_name']} vs {$ticket['opp_name']}",
+                    $ticket['opp_user_id'],
+                    $hostPaid,
+                    $guestPaid
+                ]);
+
+                // 4. Hoàn tất cả 2 Ticket: chuyển status sang 'confirmed'
+                $upFinish = "UPDATE " . $this->table_name . " SET status = 'confirmed', booking_id = ? WHERE id IN (?, ?)";
+                $fStmt = $this->conn->prepare($upFinish);
+                $fStmt->execute([$newBookingId, $ticketId, $oppTicketId]);
+
+                // 5. Gửi tin nhắn chúc mừng và mã checkin riêng biệt cho từng người
+                $congrats1 = "🎉 [KÈO ĐÃ ĐƯỢC CHỐT THÀNH CÔNG] Cả hai bên đã hoàn tất xác nhận & thanh toán chia đôi (50/50)! Sân {$pitch['name']} (Sân con #{$assignedCourt}) đã được đặt vào lúc " . substr($ticket['start_time'], 0, 5) . " - " . substr($ticket['end_time'], 0, 5) . " ngày " . date('d/m/Y', strtotime($ticket['play_date'])) . ". Mã Check-in riêng của bạn tại quầy: [{$userCheckinCode}]. Chúc bạn có trận đấu rực lửa!";
+                $congrats2 = "🎉 [KÈO ĐÃ ĐƯỢC CHỐT THÀNH CÔNG] Cả hai bên đã hoàn tất xác nhận & thanh toán chia đôi (50/50)! Sân {$pitch['name']} (Sân con #{$assignedCourt}) đã được đặt vào lúc " . substr($ticket['start_time'], 0, 5) . " - " . substr($ticket['end_time'], 0, 5) . " ngày " . date('d/m/Y', strtotime($ticket['play_date'])) . ". Mã Check-in riêng của bạn tại quầy: [{$oppCheckinCode}]. Chúc bạn có trận đấu rực lửa!";
+                $msgSql = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
+                $this->conn->prepare($msgSql)->execute([$ticket['opp_user_id'], $userId, $congrats1]);
+                $this->conn->prepare($msgSql)->execute([$userId, $ticket['opp_user_id'], $congrats2]);
+
+                $this->conn->commit();
+
+                return [
+                    'success' => true,
+                    'status' => 'fully_confirmed',
+                    'booking_id' => $newBookingId,
+                    'court_number' => $assignedCourt,
+                    'checkin_code' => $userCheckinCode,
+                    'opp_checkin_code' => $oppCheckinCode,
+                    'opp_name' => $ticket['opp_name'],
+                    'user_pay' => $userPay,
+                    'payment_method' => $paymentMethod,
+                    'payment_status' => $paymentStatus
+                ];
+            }
+
+            // Nếu đối thủ chưa xác nhận
+            $notifMsg = "🏸 [THÔNG BÁO GHÉP TRẬN] Đối thủ {$ticket['user_name']} đã xác nhận và chọn thanh toán 50% tiền sân! Hãy vào mục 'Ghép Trận Thông Minh' để hoàn tất phần thanh toán của bạn và chốt sân thi đấu.";
             $msgSql = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
-            $this->conn->prepare($msgSql)->execute([$ticket['opp_user_id'], $userId, $congrats1]);
-            $this->conn->prepare($msgSql)->execute([$userId, $ticket['opp_user_id'], $congrats2]);
+            $this->conn->prepare($msgSql)->execute([$userId, $ticket['opp_user_id'], $notifMsg]);
+
+            $this->conn->commit();
 
             return [
                 'success' => true,
-                'status' => 'fully_confirmed',
-                'booking_id' => $newBookingId,
-                'checkin_code' => $userCheckinCode,
-                'opp_checkin_code' => $oppCheckinCode,
-                'opp_name' => $ticket['opp_name'],
-                'user_pay' => $userPay,
+                'status' => 'waiting_opponent',
+                'message' => 'Bạn đã hoàn tất thanh toán 50% tiền sân! Đang chờ đối thủ hoàn tất để chốt sân...',
                 'payment_method' => $paymentMethod,
-                'payment_status' => $paymentStatus
+                'payment_status' => $paymentStatus,
+                'user_pay' => $userPay
             ];
+        } catch (Exception $e) {
+            $this->conn->rollBack();
+            return ['success' => false, 'message' => 'Lỗi xử lý xác nhận kèo: ' . $e->getMessage()];
         }
-
-        // Báo đối thủ biết qua tin nhắn
-        $notifMsg = "🏸 [THÔNG BÁO GHÉP TRẬN] Đối thủ {$ticket['user_name']} đã xác nhận và chọn thanh toán 50% tiền sân! Hãy vào mục 'Ghép Trận Thông Minh' để hoàn tất phần thanh toán của bạn và chốt sân thi đấu.";
-        $msgSql = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
-        $this->conn->prepare($msgSql)->execute([$userId, $ticket['opp_user_id'], $notifMsg]);
-
-        return [
-            'success' => true,
-            'status' => 'waiting_opponent',
-            'message' => 'Bạn đã hoàn tất thanh toán 50% tiền sân! Đang chờ đối thủ hoàn tất để chốt sân...',
-            'payment_method' => $paymentMethod,
-            'payment_status' => $paymentStatus,
-            'user_pay' => $userPay
-        ];
     }
 
     public function reportAbsent($ticketId, $userId, $reason = '') {
@@ -576,19 +642,20 @@ class MatchTicket {
             return ['success' => false, 'message' => 'Không tìm thấy trận đấu hoặc bạn không có quyền xử lý.'];
         }
 
+        // Kiểm tra trận đấu có đang chờ xử lý No-Show không (tránh phạt lặp lại khi refresh)
+        if (($m['noshow_status'] ?? '') !== 'pending') {
+            return ['success' => false, 'message' => 'Trận đấu này không có khiếu nại vắng mặt đang chờ xử lý hoặc đã được giải quyết trước đó.'];
+        }
+
         if ($decision === 'confirm') {
             $violatorId = $m['noshow_target_user_id'] ? $m['noshow_target_user_id'] : $m['opponent_id'];
             $victimId = ($violatorId == $m['user_id']) ? $m['opponent_id'] : $m['user_id'];
 
-            // 1. Phạt người vi phạm (-30 điểm uy tín, -50 Elo)
+            // 1. Phạt người vi phạm (-30 điểm uy tín, changeScore bên trong đã tự động -50 Elo và khóa tài khoản khi vi phạm nặng)
             require_once __DIR__ . '/Reputation.php';
             $repModel = new Reputation($this->conn);
             $reason = "Chủ sân {$m['pitch_name']} xác nhận bùng kèo (No-Show) không đến sân tại trận #" . $matchId;
             $repModel->changeScore($violatorId, -30, $reason);
-
-            require_once __DIR__ . '/Ranking.php';
-            $ranking = new Ranking($this->conn);
-            $ranking->penalizeNoShow($violatorId, -50);
 
             // 2. Cập nhật bảng matchmaking
             $upM = "UPDATE matchmaking SET noshow_status = 'confirmed_noshow', status = 'cancelled' WHERE id = ?";
@@ -599,9 +666,14 @@ class MatchTicket {
                     WHERE (user_id = ? OR user_id = ?) AND play_date = ? AND start_time = ?";
             $this->conn->prepare($upT)->execute([$violatorId, $victimId, $m['play_date'], $m['start_time']]);
 
-            // 4. Hủy booking tương ứng để giải phóng sân
-            $this->conn->prepare("UPDATE bookings SET status = 'cancelled' WHERE pitch_id = ? AND booking_date = ? AND start_time = ?")
-                       ->execute([$m['pitch_id'], $m['play_date'], $m['start_time']]);
+            // 4. Hủy booking tương ứng để giải phóng sân (dùng booking_id chính xác nếu có, tránh hủy nhầm sân người khác)
+            if (!empty($m['booking_id'])) {
+                $this->conn->prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?")
+                           ->execute([(int)$m['booking_id']]);
+            } else {
+                $this->conn->prepare("UPDATE bookings SET status = 'cancelled' WHERE pitch_id = ? AND booking_date = ? AND start_time = ?")
+                           ->execute([$m['pitch_id'], $m['play_date'], $m['start_time']]);
+            }
 
             // 5. Gửi thông báo tới người vi phạm và nạn nhân
             require_once __DIR__ . '/Notification.php';
@@ -821,6 +893,24 @@ class MatchTicket {
 
         if (!$pitch) {
             return ['success' => false, 'message' => 'Sân đề xuất không tồn tại.'];
+        }
+
+        if (($pitch['status'] ?? '') === 'locked') {
+            return ['success' => false, 'message' => 'Sân đề xuất hiện đang bảo trì hoặc tạm khóa.'];
+        }
+
+        // Kiểm tra sức chứa của sân mới trong khung giờ thi đấu
+        require_once __DIR__ . '/Booking.php';
+        $bookingModel = new Booking($this->conn);
+        $overlappingCount = $bookingModel->getConfirmedOverlappingCount(
+            $newPitchId,
+            $ticket['play_date'],
+            $ticket['start_time'],
+            $ticket['end_time']
+        );
+        $courtQuantity = !empty($pitch['quantity']) ? (int)$pitch['quantity'] : 1;
+        if ($overlappingCount >= $courtQuantity) {
+            return ['success' => false, 'message' => 'Rất tiếc! Cụm sân đề xuất hiện đã kín lịch trong khung giờ này. Vui lòng chọn sân khác.'];
         }
 
         // Chính thức đổi sang sân mới cho cả 2 ticket, reset đề xuất và reset xác nhận 50%

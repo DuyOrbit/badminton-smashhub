@@ -87,10 +87,15 @@ class OwnerController {
         if(isset($_GET['match_id'])) {
             $database = new Database();
             $db = $database->getConnection();
-            $query = "SELECT m.* FROM matchmaking m WHERE id = ?";
+            $query = "SELECT m.*, p.owner_id FROM matchmaking m INNER JOIN pitches p ON m.pitch_id = p.id WHERE m.id = ?";
             $s = $db->prepare($query);
             $s->execute([$_GET['match_id']]);
             if($m = $s->fetch(PDO::FETCH_ASSOC)) {
+                // Kiểm tra phân quyền chủ sân
+                if ($m['owner_id'] != $_SESSION['user_id'] && ($_SESSION['user_role'] ?? '') !== 'admin') {
+                    header("Location: index.php?action=owner_dashboard&error=unauthorized");
+                    exit;
+                }
                 $upd = "UPDATE bookings SET status = 'confirmed' WHERE pitch_id = ? AND booking_date = ? AND start_time = ?";
                 $u = $db->prepare($upd);
                 $u->execute([$m['pitch_id'], $m['play_date'], $m['start_time']]);
@@ -137,17 +142,29 @@ class OwnerController {
         if (isset($_GET['id'])) {
             $database = new Database();
             $db = $database->getConnection();
+
+            // Kiểm tra phân quyền chủ sân
+            $mStmt = $db->prepare("SELECT m.*, p.owner_id FROM matchmaking m INNER JOIN pitches p ON m.pitch_id = p.id WHERE m.id = ?");
+            $mStmt->execute([$_GET['id']]);
+            $m = $mStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$m || ($m['owner_id'] != $_SESSION['user_id'] && ($_SESSION['user_role'] ?? '') !== 'admin')) {
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax'])) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Lỗi phân quyền: Trận đấu không thuộc cụm sân bạn quản lý.']);
+                    exit;
+                }
+                header("Location: index.php?action=owner_dashboard&error=unauthorized");
+                exit;
+            }
+
             $query = "UPDATE matchmaking SET host_paid = 1, host_checkin = 1, host_checkin_time = NOW() WHERE id = ?";
             $stmt = $db->prepare($query);
             $stmt->execute([$_GET['id']]);
 
             // Đồng bộ trạng thái vé match_tickets
-            $mStmt = $db->prepare("SELECT * FROM matchmaking WHERE id = ?");
-            $mStmt->execute([$_GET['id']]);
-            if ($m = $mStmt->fetch(PDO::FETCH_ASSOC)) {
-                $db->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE user_id = ? AND play_date = ? AND start_time = ?")
-                   ->execute([$m['user_id'], $m['play_date'], $m['start_time']]);
-            }
+            $db->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE user_id = ? AND play_date = ? AND start_time = ?")
+               ->execute([$m['user_id'], $m['play_date'], $m['start_time']]);
 
             $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
             if ($isAjax) {
@@ -168,17 +185,29 @@ class OwnerController {
         if (isset($_GET['id'])) {
             $database = new Database();
             $db = $database->getConnection();
+
+            // Kiểm tra phân quyền chủ sân
+            $mStmt = $db->prepare("SELECT m.*, p.owner_id FROM matchmaking m INNER JOIN pitches p ON m.pitch_id = p.id WHERE m.id = ?");
+            $mStmt->execute([$_GET['id']]);
+            $m = $mStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$m || ($m['owner_id'] != $_SESSION['user_id'] && ($_SESSION['user_role'] ?? '') !== 'admin')) {
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax'])) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Lỗi phân quyền: Trận đấu không thuộc cụm sân bạn quản lý.']);
+                    exit;
+                }
+                header("Location: index.php?action=owner_dashboard&error=unauthorized");
+                exit;
+            }
+
             $query = "UPDATE matchmaking SET guest_paid = 1, guest_checkin = 1, guest_checkin_time = NOW() WHERE id = ?";
             $stmt = $db->prepare($query);
             $stmt->execute([$_GET['id']]);
 
             // Đồng bộ trạng thái vé match_tickets
-            $mStmt = $db->prepare("SELECT * FROM matchmaking WHERE id = ?");
-            $mStmt->execute([$_GET['id']]);
-            if ($m = $mStmt->fetch(PDO::FETCH_ASSOC)) {
-                $db->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE user_id = ? AND play_date = ? AND start_time = ?")
-                   ->execute([$m['opponent_id'], $m['play_date'], $m['start_time']]);
-            }
+            $db->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE user_id = ? AND play_date = ? AND start_time = ?")
+               ->execute([$m['opponent_id'], $m['play_date'], $m['start_time']]);
 
             $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
             if ($isAjax) {
@@ -480,7 +509,22 @@ class OwnerController {
                 }
             }
 
-            // In a real app we should verify if this booking belongs to a pitch owned by this owner
+            // Kiểm tra phân quyền: Đơn đặt sân phải thuộc cụm sân do Owner này sở hữu (hoặc Admin)
+            $checkOwnerQuery = "SELECT b.id, p.owner_id FROM bookings b INNER JOIN pitches p ON b.pitch_id = p.id WHERE b.id = ?";
+            $chkStmt = $db->prepare($checkOwnerQuery);
+            $chkStmt->execute([$bookingId]);
+            $ownerRow = $chkStmt->fetch(PDO::FETCH_ASSOC);
+            $isAuthorized = ($ownerRow && ($ownerRow['owner_id'] == $_SESSION['user_id'] || ($_SESSION['user_role'] ?? '') === 'admin'));
+            if (!$isAuthorized) {
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax'])) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'Lỗi phân quyền: Đơn đặt sân không thuộc cụm sân bạn quản lý.'], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+                header("Location: index.php?action=owner_dashboard&error=unauthorized_booking");
+                exit;
+            }
+
             $booking->updateStatus($bookingId, $newStatus);
 
             if ($newStatus == 'cancelled') {
@@ -693,7 +737,26 @@ class OwnerController {
             $userModel = new User($db);
             $staff_id = (int)$_POST['staff_id'];
             $pitch_id = !empty($_POST['assigned_pitch_id']) ? (int)$_POST['assigned_pitch_id'] : null;
-            $owner_id = $_SESSION['user_id'];
+            $owner_id = (int)$_SESSION['user_id'];
+
+            // 1. Kiểm tra pitch_id có thực sự thuộc quyền sở hữu của Owner này không
+            if ($pitch_id) {
+                $pChk = $db->prepare("SELECT id FROM pitches WHERE id = ? AND owner_id = ?");
+                $pChk->execute([$pitch_id, $owner_id]);
+                if (!$pChk->fetch()) {
+                    header("Location: index.php?action=owner_staff&error=unauthorized_pitch");
+                    exit;
+                }
+            }
+
+            // 2. Chống leo thang đặc quyền: Không cho phép đổi quyền của Admin hoặc Owner khác
+            $uChk = $db->prepare("SELECT id, role FROM users WHERE id = ?");
+            $uChk->execute([$staff_id]);
+            $targetUser = $uChk->fetch(PDO::FETCH_ASSOC);
+            if (!$targetUser || in_array($targetUser['role'], ['admin', 'owner'])) {
+                header("Location: index.php?action=owner_staff&error=cannot_assign_protected_role");
+                exit;
+            }
 
             if ($userModel->assignStaffToPitch($staff_id, $owner_id, $pitch_id)) {
                 header("Location: index.php?action=owner_staff&msg=assigned");
@@ -715,8 +778,10 @@ class OwnerController {
 
             $userModel = new User($db);
             $staff_id = (int)$_GET['id'];
+            $owner_id = (int)$_SESSION['user_id'];
 
-            if ($userModel->removeStaffAssignment($staff_id)) {
+            // Chống xóa trái quyền: Chỉ gỡ nhân viên thuộc quyền quản lý của Owner này
+            if ($userModel->removeStaffAssignment($staff_id, $owner_id)) {
                 header("Location: index.php?action=owner_staff&msg=removed");
             } else {
                 header("Location: index.php?action=owner_staff&error=remove_failed");

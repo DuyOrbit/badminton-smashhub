@@ -1,0 +1,11 @@
+.git
+.gitignore
+*.sql
+*.docx
+*.md
+tests/
+Dockerfile
+docker-compose.yml
+node_modules
+package-lock.json
+

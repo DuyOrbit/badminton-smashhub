@@ -20,20 +20,42 @@ class HomeController {
         $pitch = new Pitch($db);
         
         // Lấy các tham số tìm kiếm từ URL
-        $keyword = isset($_GET['q']) ? $_GET['q'] : '';
-        $max_price = isset($_GET['max_price']) ? $_GET['max_price'] : 0;
-        $type = isset($_GET['type']) ? $_GET['type'] : '';
+        $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
+        $district = isset($_GET['district']) ? trim($_GET['district']) : '';
+        $type = isset($_GET['type']) ? trim($_GET['type']) : '';
+        $min_price = (isset($_GET['min_price']) && $_GET['min_price'] !== '') ? (float)$_GET['min_price'] : 0;
+        $max_price = (isset($_GET['max_price']) && $_GET['max_price'] !== '') ? (float)$_GET['max_price'] : 0;
+        $price_preset = isset($_GET['price_preset']) ? trim($_GET['price_preset']) : '';
+        $amenity = isset($_GET['amenity']) ? $_GET['amenity'] : '';
+        $sort = isset($_GET['sort']) ? trim($_GET['sort']) : '';
 
-        // Nếu có tham số tìm kiếm thì gọi hàm search, ngược lại readAll
-        if (!empty($keyword) || !empty($max_price) || !empty($type)) {
-            $stmt = $pitch->search($keyword, $max_price, $type);
+        // Tự động map các mốc khoảng giá nhanh (Price Presets)
+        if (!empty($price_preset)) {
+            if ($price_preset === 'under_80k') {
+                $max_price = 80000;
+                $min_price = 0;
+            } elseif ($price_preset === '80k_100k') {
+                $min_price = 80000;
+                $max_price = 100000;
+            } elseif ($price_preset === 'above_100k') {
+                $min_price = 100000;
+                $max_price = 0;
+            }
+        }
+
+        // Kiểm tra xem có bất kỳ điều kiện lọc nào đang hoạt động không
+        $has_filter = (!empty($keyword) || (!empty($district) && $district !== 'all') || (!empty($type) && $type !== 'all') || $min_price > 0 || $max_price > 0 || !empty($amenity) || !empty($sort) || !empty($price_preset));
+
+        if ($has_filter) {
+            $stmt = $pitch->search($keyword, $max_price, $type, $district, $amenity, $min_price, $sort);
         } else {
             $stmt = $pitch->readAll();
         }
         
         $pitches = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $districts_count = $pitch->getActiveDistrictsWithCount();
 
-        $page_title = "Trang Chủ";
+        $page_title = "Trang Chủ - Tìm Kiếm Sân Cầu Lông & Cáp Kèo AI";
         $content = 'home.php';
         require_once 'views/layout.php';
     }

@@ -18,7 +18,7 @@
         <?php if(isset($_GET['msg']) && $_GET['msg'] == 'reset_success'): ?>
             <div class="bg-green-500/10 border border-green-500/30 rounded-xl p-3.5 mb-6 text-green-400 text-xs font-semibold flex items-center gap-2">
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                <span>Mật khẩu mới của bạn là 123456. Vui lòng đăng nhập lại.</span>
+                <span>Mật khẩu đã được đặt lại thành công! Vui lòng đăng nhập bằng mật khẩu mới của bạn.</span>
             </div>
         <?php endif; ?>
 

@@ -1,0 +1,13 @@
+{
+  "name": "badminton-smashhub",
+  "version": "1.0.0",
+  "description": "Nền tảng đặt sân cầu lông & ghép kèo AI",
+  "scripts": {
+    "test": "node tests/qa_strict_audit_suite.js",
+    "test:concurrency": "php tests/concurrent_booking_test.php",
+    "test:e2e": "node tests/e2e_full_system_test.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  }
+}

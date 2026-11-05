@@ -586,6 +586,16 @@ if (isset($pitch_schedules) && is_array($pitch_schedules)) {
 <script>
 let serviceAddons = {};
 
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function openPosModal(pitchId = null, pitchName = null, pitchPrice = null, startTime = '18:00', endTime = '19:00') {
     document.getElementById('posModal').classList.remove('hidden');
     
@@ -668,15 +678,18 @@ function openDetailModal(b) {
         }
         document.getElementById('sm_guest_actions').innerHTML = guestHtml;
         
-        // No-show handling
+        // No-show handling (Chống Stored XSS bằng escapeHtml)
         const noShowAlert = document.getElementById('sm_noshow_alert');
         if (b.match_noshow_status === 'pending' && b.match_id) {
             noShowAlert.classList.remove('hidden');
             const reporter = (b.match_noshow_reported_by == b.match_host_id) ? (b.match_host_name || 'Chủ Nhà') : (b.match_guest_name || 'Đội Khách');
             const target = (b.match_noshow_target_user_id == b.match_host_id) ? (b.match_host_name || 'Chủ Nhà') : (b.match_guest_name || 'Đội Khách');
-            document.getElementById('sm_noshow_desc').innerHTML = '<strong>' + reporter + '</strong> báo đối thủ <strong class="text-red-300 underline">' + target + '</strong> vắng mặt.<br>Lý do: <em>"' + (b.match_noshow_reason || 'Không đến sân') + '"</em>';
-            document.getElementById('sm_btn_confirm_noshow').href = 'index.php?action=owner_confirm_noshow&match_id=' + b.match_id + '&decision=confirm';
-            document.getElementById('sm_btn_reject_noshow').href = 'index.php?action=owner_confirm_noshow&match_id=' + b.match_id + '&decision=reject';
+            const safeReporter = escapeHtml(reporter);
+            const safeTarget = escapeHtml(target);
+            const safeReason = escapeHtml(b.match_noshow_reason || 'Không đến sân');
+            document.getElementById('sm_noshow_desc').innerHTML = '<strong>' + safeReporter + '</strong> báo đối thủ <strong class="text-red-300 underline">' + safeTarget + '</strong> vắng mặt.<br>Lý do: <em>"' + safeReason + '"</em>';
+            document.getElementById('sm_btn_confirm_noshow').href = 'index.php?action=owner_confirm_noshow&match_id=' + encodeURIComponent(b.match_id) + '&decision=confirm';
+            document.getElementById('sm_btn_reject_noshow').href = 'index.php?action=owner_confirm_noshow&match_id=' + encodeURIComponent(b.match_id) + '&decision=reject';
         } else {
             noShowAlert.classList.add('hidden');
         }

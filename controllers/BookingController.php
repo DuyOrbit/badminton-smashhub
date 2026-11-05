@@ -48,34 +48,52 @@ class BookingController {
 
             $booking = new Booking($db);
 
-            $booking->pitch_id = $_POST['pitch_id'];
-            $booking->customer_name = $_POST['customer_name'];
-            $booking->customer_phone = $_POST['customer_phone'];
-            $booking->booking_date = $_POST['booking_date'];
-            $booking->start_time = $_POST['start_time'];
-            $booking->end_time = $_POST['end_time'];
-            $booking->user_id = $_SESSION['user_id'] ?? null;
-            
-            // Calculate total price (simplified)
-            $start = strtotime($_POST['start_time']);
-            $end = strtotime($_POST['end_time']);
-            $hours = ($end - $start) / 3600;
-            if($hours <= 0) {
-                 header("Location: index.php?action=book&id={$_POST['pitch_id']}&error=invalid_time");
-                 exit;
-            }
+            $pitch_id = (int)($_POST['pitch_id'] ?? 0);
+            $booking_date = trim($_POST['booking_date'] ?? '');
+            $start_time = trim($_POST['start_time'] ?? '');
+            $end_time = trim($_POST['end_time'] ?? '');
 
-            // Enforce operating hours 06:00 - 22:00
-            $start_hour = (int)date('H', $start);
-            $end_hour = (int)date('H', $end);
-            $end_min = (int)date('i', $end);
-            if ($start_hour < 6 || $end_hour > 23 || ($end_hour == 23 && $end_min > 0)) {
-                header("Location: index.php?action=book&id={$_POST['pitch_id']}&error=outside_operating_hours");
+            $pitch = new Pitch($db);
+            $pitchData = $pitch->readOne($pitch_id);
+            if (!$pitchData || ($pitchData['status'] ?? 'active') === 'locked') {
+                header("Location: index.php?action=home&error=pitch_unavailable");
                 exit;
             }
 
-            $pitch = new Pitch($db);
-            $pitchData = $pitch->readOne($_POST['pitch_id']);
+            $booking->pitch_id = $pitch_id;
+            $booking->customer_name = htmlspecialchars(strip_tags($_POST['customer_name'] ?? ''));
+            $booking->customer_phone = htmlspecialchars(strip_tags($_POST['customer_phone'] ?? ''));
+            $booking->booking_date = $booking_date;
+            $booking->start_time = $start_time;
+            $booking->end_time = $end_time;
+            $booking->user_id = $_SESSION['user_id'] ?? null;
+            
+            // 1. Kiểm tra thời gian bắt đầu và kết thúc
+            $start = strtotime($start_time);
+            $end = strtotime($end_time);
+            $hours = ($end - $start) / 3600;
+            if($hours <= 0) {
+                 header("Location: index.php?action=book&id={$pitch_id}&error=invalid_time");
+                 exit;
+            }
+
+            // 2. Chặn đặt ngày hoặc giờ trong quá khứ
+            $today = date('Y-m-d');
+            $nowTime = date('H:i:s');
+            if ($booking_date < $today || ($booking_date === $today && $start_time <= $nowTime)) {
+                header("Location: index.php?action=book&id={$pitch_id}&error=past_time");
+                exit;
+            }
+
+            // 3. Quy chuẩn khung giờ hoạt động chính xác (06:00 - 22:00)
+            $start_hour = (int)date('H', $start);
+            $end_hour = (int)date('H', $end);
+            $end_min = (int)date('i', $end);
+            if ($start_hour < 6 || $end_hour > 22 || ($end_hour == 22 && $end_min > 0)) {
+                header("Location: index.php?action=book&id={$pitch_id}&error=outside_operating_hours");
+                exit;
+            }
+
             $base_price = $hours * $pitchData['price_per_hour'];
             
             $discount = 0;
@@ -89,12 +107,12 @@ class BookingController {
             $service_total = 0;
             $service_notes = [];
             
-            if (!empty($services_selected)) {
+            if (!empty($services_selected) && is_array($services_selected)) {
                 $serviceModel = new Service($db);
                 foreach ($services_selected as $s_id => $qty) {
                     $qty = (int)$qty;
                     if ($qty > 0) {
-                        $sItem = $serviceModel->readOne($s_id);
+                        $sItem = $serviceModel->readOne((int)$s_id);
                         if ($sItem) {
                             $cost = $qty * $sItem['price'];
                             $service_total += $cost;
@@ -104,36 +122,64 @@ class BookingController {
                 }
             }
 
-            $payment_method = $_POST['payment_method'] ?? 'cash';
+            // Whitelist hình thức thanh toán
+            $allowed_pm = ['cash', 'vietqr'];
+            $payment_method = in_array($_POST['payment_method'] ?? '', $allowed_pm) ? $_POST['payment_method'] : 'cash';
+
             $booking->services_note = implode(', ', $service_notes);
             $booking->payment_method = $payment_method;
             $booking->payment_status = 'unpaid';
             $booking->checkin_code = 'CKIN' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 5));
             $booking->total_price = ($base_price * ((100 - $discount) / 100)) + $service_total;
 
-            // Transaction-safe booking creation to prevent race conditions / double booking
+            // XỬ LÝ ĐỒNG THỜI AN TOÀN (CONCURRENCY-SAFE / ROW-LEVEL LOCKING TRONG TRANSACTION)
             $db->beginTransaction();
             try {
-                // Check if full
-                $overlapping = $booking->getConfirmedOverlappingCount($_POST['pitch_id'], $_POST['booking_date'], $_POST['start_time'], $_POST['end_time']);
-                
-                if ($overlapping >= $pitchData['quantity']) {
+                // Khóa độc quyền (Exclusive Lock) dòng dữ liệu của Cụm sân trong InnoDB
+                // Mọi request đặt sân đồng thời trên cụm sân này đều phải xếp hàng (serialize) lần lượt
+                $lockStmt = $db->prepare("SELECT id, quantity, status FROM pitches WHERE id = ? FOR UPDATE");
+                $lockStmt->execute([$pitch_id]);
+                $lockedPitch = $lockStmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$lockedPitch || ($lockedPitch['status'] ?? 'active') === 'locked') {
                     $db->rollBack();
-                    header("Location: index.php?action=book&id={$_POST['pitch_id']}&error=fully_booked");
+                    header("Location: index.php?action=book&id={$pitch_id}&error=pitch_unavailable");
                     exit;
                 }
 
-                $occupiedCourts = $booking->getOccupiedCourts($_POST['pitch_id'], $_POST['booking_date'], $_POST['start_time'], $_POST['end_time'], (int)$pitchData['quantity']);
+                $pitchCapacity = (int)$lockedPitch['quantity'];
+
+                // Kiểm tra số lượng sân con đang được sử dụng trong khung giờ này
+                $overlapping = $booking->getConfirmedOverlappingCount($pitch_id, $booking_date, $start_time, $end_time);
+                if ($overlapping >= $pitchCapacity) {
+                    $db->rollBack();
+                    header("Location: index.php?action=book&id={$pitch_id}&error=fully_booked");
+                    exit;
+                }
+
+                // Tìm và chọn sân con còn trống an toàn tuyệt đối
+                $occupiedCourts = $booking->getOccupiedCourts($pitch_id, $booking_date, $start_time, $end_time, $pitchCapacity);
                 $requestedCourt = isset($_POST['court_number']) ? (int)$_POST['court_number'] : 1;
-                if ($requestedCourt < 1 || $requestedCourt > (int)$pitchData['quantity'] || in_array($requestedCourt, $occupiedCourts)) {
-                    for ($c = 1; $c <= (int)$pitchData['quantity']; $c++) {
+                $chosenCourt = null;
+
+                if ($requestedCourt >= 1 && $requestedCourt <= $pitchCapacity && !in_array($requestedCourt, $occupiedCourts)) {
+                    $chosenCourt = $requestedCourt;
+                } else {
+                    for ($c = 1; $c <= $pitchCapacity; $c++) {
                         if (!in_array($c, $occupiedCourts)) {
-                            $requestedCourt = $c;
+                            $chosenCourt = $c;
                             break;
                         }
                     }
                 }
-                $booking->court_number = $requestedCourt;
+
+                // Nếu không còn bất kỳ sân con nào trống, hủy giao dịch và báo hết sân
+                if ($chosenCourt === null) {
+                    $db->rollBack();
+                    header("Location: index.php?action=book&id={$pitch_id}&error=fully_booked");
+                    exit;
+                }
+                $booking->court_number = $chosenCourt;
 
                 $newBookingId = $booking->create();
                 if($newBookingId) {
@@ -141,11 +187,11 @@ class BookingController {
                     // Store in session for success display
                     $_SESSION['last_booking'] = [
                         'booking_id' => $newBookingId,
-                        'name' => $_POST['customer_name'],
+                        'name' => $booking->customer_name,
                         'pitch_name' => $pitchData['name'],
                         'court_number' => $booking->court_number,
-                        'date' => $_POST['booking_date'],
-                        'time' => $_POST['start_time'] . ' - ' . $_POST['end_time'],
+                        'date' => $booking->booking_date,
+                        'time' => $booking->start_time . ' - ' . $booking->end_time,
                         'total_price' => $booking->total_price,
                         'payment_method' => $payment_method,
                         'payment_status' => 'unpaid',
@@ -156,13 +202,16 @@ class BookingController {
                     exit;
                 } else {
                     $db->rollBack();
-                    echo "Lỗi: Không thể lưu thông tin đặt sân.";
+                    header("Location: index.php?action=book&id={$pitch_id}&error=save_failed");
+                    exit;
                 }
             } catch (Exception $e) {
                 if ($db->inTransaction()) {
                     $db->rollBack();
                 }
-                die("Lỗi giao dịch CSDL: " . $e->getMessage());
+                error_log("Lỗi giao dịch đặt sân BookingController: " . $e->getMessage());
+                header("Location: index.php?action=book&id={$pitch_id}&error=transaction_error");
+                exit;
             }
         }
     }

@@ -1,4 +1,9 @@
 <?php
+// Set system timezone to Vietnam (GMT+7)
+if (!date_default_timezone_get() || date_default_timezone_get() === 'UTC') {
+    date_default_timezone_set('Asia/Ho_Chi_Minh');
+}
+
 // Database Configuration
 $getEnvVal = function($names, $default = '') {
     if (!is_array($names)) $names = [$names];
@@ -75,6 +80,9 @@ class Database {
         // Create PDO instance
         try {
             $this->dbh = new PDO($dsn, $this->user, $this->pass, $options);
+            try {
+                $this->dbh->exec("SET time_zone = '+07:00'");
+            } catch (\Exception $tzEx) {}
             // Auto initialize database schema & tables if they do not exist yet
             $this->autoInitializeIfMissing();
         } catch (PDOException $e) {
@@ -244,6 +252,23 @@ class Database {
             } catch (\Exception $e) {}
             try {
                 $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN noshow_reason VARCHAR(255) DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN booking_id INT DEFAULT NULL");
+            } catch (\Exception $e) {}
+
+            // Auto-migrate amenities in pitches table
+            try {
+                $this->dbh->exec("ALTER TABLE pitches ADD COLUMN amenities VARCHAR(255) DEFAULT 'parking,lighting,cooling,shower'");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("UPDATE pitches SET amenities = 'parking,lighting,cooling,shower' WHERE id = 1 AND (amenities IS NULL OR amenities = '')");
+                $this->dbh->exec("UPDATE pitches SET amenities = 'parking,cooling,beverage,stringing' WHERE id = 2 AND (amenities IS NULL OR amenities = '')");
+                $this->dbh->exec("UPDATE pitches SET amenities = 'parking,cooling,beverage' WHERE id = 3 AND (amenities IS NULL OR amenities = '')");
+                $this->dbh->exec("UPDATE pitches SET amenities = 'parking,lighting,cooling,shower,stringing,beverage' WHERE id = 4 AND (amenities IS NULL OR amenities = '')");
+                $this->dbh->exec("UPDATE pitches SET amenities = 'parking,lighting,cooling,beverage' WHERE id = 5 AND (amenities IS NULL OR amenities = '')");
+                $this->dbh->exec("UPDATE pitches SET amenities = 'parking,cooling,stringing' WHERE id = 6 AND (amenities IS NULL OR amenities = '')");
+                $this->dbh->exec("UPDATE pitches SET amenities = 'parking,lighting,cooling,shower,stringing' WHERE id = 7 AND (amenities IS NULL OR amenities = '')");
             } catch (\Exception $e) {}
         } catch (\Exception $e) {
             // Silently continue

@@ -16,7 +16,8 @@ if (isset($_SESSION['user_id']) && class_exists('Database') && class_exists('Boo
         if (empty($upcoming_bookings) && !empty($all_b)) {
             $upcoming_bookings = array_slice($all_b, 0, 2);
         }
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
 }
 
 $is_logged_in = isset($_SESSION['user_id']);
@@ -34,7 +35,8 @@ if ($is_logged_in && isset($db_b)) {
                 break;
             }
         }
-    } catch (Exception $e) {}
+    } catch (Exception $e) {
+    }
 }
 
 // Fallback defaults for user metrics
@@ -66,19 +68,34 @@ $accents = [
                 Sân chuẩn BWF. Trận cầu đỉnh cao. Tích hợp AI ghép trận theo Elo và bản đồ bán kính siêu tốc.
             </p>
         </div>
-        
+
         <!-- CTA Quick Actions -->
         <div class="flex flex-wrap items-center gap-3">
-            <a href="#pitches" class="flex items-center gap-2 rounded-xl bg-[#d8ff3e] px-5 py-3.5 text-[12px] font-black uppercase tracking-wide text-[#10181e] shadow-[4px_4px_0_#6d8a16] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0_#6d8a16]">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <a href="#pitches"
+                class="flex items-center gap-2 rounded-xl bg-[#d8ff3e] px-5 py-3.5 text-[12px] font-black uppercase tracking-wide text-[#10181e] shadow-[4px_4px_0_#6d8a16] transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0_#6d8a16]">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                </svg>
                 Đặt sân ngay
             </a>
-            <a href="index.php?action=smart_match" class="flex items-center gap-2 rounded-xl border border-[#ff7652]/30 bg-[#ff7652]/10 px-4 py-3.5 text-[12px] font-black uppercase tracking-wide text-[#ff7652] hover:bg-[#ff7652]/20 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <a href="index.php?action=smart_match"
+                class="flex items-center gap-2 rounded-xl border border-[#ff7652]/30 bg-[#ff7652]/10 px-4 py-3.5 text-[12px] font-black uppercase tracking-wide text-[#ff7652] hover:bg-[#ff7652]/20 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
                 Smart Match AI
             </a>
-            <a href="index.php?action=map_search" class="flex items-center gap-2 rounded-xl border border-white/10 bg-[#0b1116]/5 px-4 py-3.5 text-[12px] font-black uppercase tracking-wide text-white hover:bg-[#0b1116]/10 transition">
-                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <a href="index.php?action=map_search"
+                class="flex items-center gap-2 rounded-xl border border-white/10 bg-[#0b1116]/5 px-4 py-3.5 text-[12px] font-black uppercase tracking-wide text-white hover:bg-[#0b1116]/10 transition">
+                <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
                 Bản đồ sân
             </a>
         </div>
@@ -94,24 +111,33 @@ $accents = [
                 <div class="relative flex items-start justify-between">
                     <div>
                         <div class="flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-[#d8ff3e]">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M19.48 12.35c-1.57-4.08-7.16-4.3-5.81-10.23.1-.44-.34-.78-.71-.56C8.84 3.9 4 9.17 4 14.5c0 4.41 3.59 8 8 8s8-3.59 8-8c0-.75-.12-1.46-.52-2.15zM12 20.5c-3.31 0-6-2.69-6-6 0-2.3 1.34-4.31 3.32-5.32-.4 2.76 1.83 4.82 4.68 4.82 1.3 0 2.47-.53 3.33-1.39C16.89 15.69 14.7 20.5 12 20.5z"/></svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M19.48 12.35c-1.57-4.08-7.16-4.3-5.81-10.23.1-.44-.34-.78-.71-.56C8.84 3.9 4 9.17 4 14.5c0 4.41 3.59 8 8 8s8-3.59 8-8c0-.75-.12-1.46-.52-2.15zM12 20.5c-3.31 0-6-2.69-6-6 0-2.3 1.34-4.31 3.32-5.32-.4 2.76 1.83 4.82 4.68 4.82 1.3 0 2.47-.53 3.33-1.39C16.89 15.69 14.7 20.5 12 20.5z" />
+                            </svg>
                             Hot streak của bạn
                         </div>
                         <div class="mt-2 text-3xl font-black text-white">
-                            <?php echo str_pad($user_streak, 2, '0', STR_PAD_LEFT); ?> <span class="text-lg text-[#81908b]">trận liên tiếp</span>
+                            <?php echo str_pad($user_streak, 2, '0', STR_PAD_LEFT); ?> <span
+                                class="text-lg text-[#81908b]">trận liên tiếp</span>
                         </div>
                         <p class="mt-1 text-[11px] text-[#82918b]">
                             <?php echo $user_streak > 0 ? 'Bạn đang ở phong độ đỉnh cao của mùa giải!' : 'Hãy ghép trận và giành chiến thắng để thiết lập chuỗi thắng!'; ?>
                         </p>
                     </div>
-                    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-[#d8ff3e] text-[#17231d] shadow-[0_0_20px_rgba(216,255,62,0.4)]">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19.48 12.35c-1.57-4.08-7.16-4.3-5.81-10.23.1-.44-.34-.78-.71-.56C8.84 3.9 4 9.17 4 14.5c0 4.41 3.59 8 8 8s8-3.59 8-8c0-.75-.12-1.46-.52-2.15z"/></svg>
+                    <div
+                        class="flex h-12 w-12 items-center justify-center rounded-full bg-[#d8ff3e] text-[#17231d] shadow-[0_0_20px_rgba(216,255,62,0.4)]">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19.48 12.35c-1.57-4.08-7.16-4.3-5.81-10.23.1-.44-.34-.78-.71-.56C8.84 3.9 4 9.17 4 14.5c0 4.41 3.59 8 8 8s8-3.59 8-8c0-.75-.12-1.46-.52-2.15z" />
+                        </svg>
                     </div>
                 </div>
                 <!-- Streak Bars -->
                 <div class="mt-5 flex gap-1.5">
-                    <?php for($i = 1; $i <= 5; $i++): ?>
-                        <span class="h-1.5 flex-1 rounded-full <?php echo $i <= $user_streak ? 'bg-[#d8ff3e]' : 'bg-[#0b1116]/30'; ?>"></span>
+                    <?php for ($i = 1; $i <= 5; $i++): ?>
+                        <span
+                            class="h-1.5 flex-1 rounded-full <?php echo $i <= $user_streak ? 'bg-[#d8ff3e]' : 'bg-[#0b1116]/30'; ?>"></span>
                     <?php endfor; ?>
                 </div>
             </div>
@@ -119,7 +145,11 @@ $accents = [
             <!-- Metric 2: Elo Rating Cá Nhân -->
             <div class="rounded-2xl border border-white/8 bg-[#121b21] p-5">
                 <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#b98aee]/15 text-[#c89aff]">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z">
+                        </path>
+                    </svg>
                 </div>
                 <div class="mt-4 text-[10px] font-black tracking-widest text-[#71818a] uppercase">ELO RATING CỦA BẠN</div>
                 <div class="mt-1 text-3xl font-black text-white"><?php echo number_format($user_elo_pts); ?></div>
@@ -129,10 +159,16 @@ $accents = [
             <!-- Metric 3: Điểm Uy Tín Cá Nhân -->
             <div class="rounded-2xl border border-white/8 bg-[#121b21] p-5">
                 <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#52e0ff]/15 text-[#52e0ff]">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                        </path>
+                    </svg>
                 </div>
-                <div class="mt-4 text-[10px] font-black tracking-widest text-[#71818a] uppercase">ĐIỂM UY TÍN FAIR-PLAY</div>
-                <div class="mt-1 text-3xl font-black text-white"><?php echo $user_rep_val; ?><span class="text-lg text-[#71818a]">/100</span></div>
+                <div class="mt-4 text-[10px] font-black tracking-widest text-[#71818a] uppercase">ĐIỂM UY TÍN FAIR-PLAY
+                </div>
+                <div class="mt-1 text-3xl font-black text-white"><?php echo $user_rep_val; ?><span
+                        class="text-lg text-[#71818a]">/100</span></div>
                 <div class="mt-1 text-[10px] font-bold text-cyan-400">
                     <?php echo ($user_rep_val >= 90) ? 'Top 5% Vận động viên mẫu mực' : (($user_rep_val >= 70) ? 'Uy tín tốt · Sẵn sàng ghép' : 'Cảnh báo vi phạm'); ?>
                 </div>
@@ -142,27 +178,34 @@ $accents = [
         <!-- TRẠNG THÁI KHÁCH VÃNG LAI (CHƯA ĐĂNG NHẬP): GIỚI THIỆU TÍNH NĂNG NỔI BẬT HỆ THỐNG -->
         <div class="grid gap-4 md:grid-cols-[1.7fr_1fr_1fr]">
             <!-- Feature 1: Ghép Kèo AI Cân Trình (1.7fr) -->
-            <div class="relative overflow-hidden rounded-2xl border border-[#d8ff3e]/30 bg-gradient-to-br from-[#17231d] via-[#121b21] to-[#0b1116] p-5 shadow-lg">
-                <div class="absolute -right-10 -top-12 h-44 w-44 rounded-full bg-[#d8ff3e]/15 blur-3xl pointer-events-none"></div>
+            <div
+                class="relative overflow-hidden rounded-2xl border border-[#d8ff3e]/30 bg-gradient-to-br from-[#17231d] via-[#121b21] to-[#0b1116] p-5 shadow-lg">
+                <div class="absolute -right-10 -top-12 h-44 w-44 rounded-full bg-[#d8ff3e]/15 blur-3xl pointer-events-none">
+                </div>
                 <div class="relative flex flex-col justify-between h-full">
                     <div>
                         <div class="flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-[#d8ff3e]">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
                             Công Nghệ Bắt Cặp AI Độc Quyền
                         </div>
                         <div class="mt-2 text-2xl sm:text-3xl font-black text-white">
                             Ghép Kèo AI <span class="text-[#d8ff3e]">Cân Trình</span>
                         </div>
                         <p class="mt-1.5 text-xs text-[#82918b] leading-relaxed max-w-lg">
-                            Tự động bắt cặp đối thủ có điểm Elo tương đương trong bán kính GPS gần bạn. Không lo lệch trình, không sợ bùng kèo!
+                            Tự động bắt cặp đối thủ có điểm Elo tương đương trong bán kính GPS gần bạn. Không lo lệch trình,
+                            không sợ bùng kèo!
                         </p>
                     </div>
 
                     <div class="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center gap-3">
-                        <a href="index.php?action=register" class="inline-flex items-center gap-1.5 rounded-xl bg-[#d8ff3e] px-4 py-2.5 text-xs font-black uppercase text-[#10181e] shadow-[3px_3px_0_#6d8a16] transition hover:translate-x-0.5 hover:translate-y-0.5">
+                        <a href="index.php?action=register"
+                            class="inline-flex items-center gap-1.5 rounded-xl bg-[#d8ff3e] px-4 py-2.5 text-xs font-black uppercase text-[#10181e] shadow-[3px_3px_0_#6d8a16] transition hover:translate-x-0.5 hover:translate-y-0.5">
                             <span>⚡</span> Đăng Ký Nhận 600 Elo Khởi Điểm
                         </a>
-                        <a href="index.php?action=smart_match" class="inline-flex items-center gap-1 text-xs font-bold text-white/70 hover:text-white transition">
+                        <a href="index.php?action=smart_match"
+                            class="inline-flex items-center gap-1 text-xs font-bold text-white/70 hover:text-white transition">
                             Tìm hiểu Smart Match →
                         </a>
                     </div>
@@ -170,44 +213,64 @@ $accents = [
             </div>
 
             <!-- Feature 2: Mạng Lưới Sân BWF (1fr) -->
-            <div class="rounded-2xl border border-white/8 bg-[#121b21] p-5 flex flex-col justify-between hover:border-white/20 transition">
+            <div
+                class="rounded-2xl border border-white/8 bg-[#121b21] p-5 flex flex-col justify-between hover:border-white/20 transition">
                 <div>
                     <div class="flex items-center justify-between">
                         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#b98aee]/15 text-[#c89aff]">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
                         </div>
-                        <span class="text-[10px] font-bold text-[#b98aee] bg-[#b98aee]/10 px-2 py-0.5 rounded-full border border-[#b98aee]/20">BÁN KÍNH GPS</span>
+                        <span
+                            class="text-[10px] font-bold text-[#b98aee] bg-[#b98aee]/10 px-2 py-0.5 rounded-full border border-[#b98aee]/20">BÁN
+                            KÍNH GPS</span>
                     </div>
-                    <div class="mt-3 text-[10px] font-black tracking-widest text-[#71818a] uppercase">Mạng Lưới Sân Bãi</div>
+                    <div class="mt-3 text-[10px] font-black tracking-widest text-[#71818a] uppercase">Mạng Lưới Sân Bãi
+                    </div>
                     <div class="mt-1 text-2xl font-black text-white">100% Sân Thảm BWF</div>
                     <p class="mt-1 text-xs text-[#82918b] leading-relaxed">
                         Định vị GPS quét sân trống siêu tốc, đặt lịch trực tuyến và check-in QR code thuận tiện.
                     </p>
                 </div>
                 <div class="mt-3 pt-2 border-t border-white/5">
-                    <a href="index.php?action=map_search" class="text-xs font-bold text-[#b98aee] hover:underline flex items-center gap-1">
+                    <a href="index.php?action=map_search"
+                        class="text-xs font-bold text-[#b98aee] hover:underline flex items-center gap-1">
                         Xem bản đồ sân gần bạn →
                     </a>
                 </div>
             </div>
 
             <!-- Feature 3: Bảo Chứng Fair-Play (1fr) -->
-            <div class="rounded-2xl border border-white/8 bg-[#121b21] p-5 flex flex-col justify-between hover:border-white/20 transition">
+            <div
+                class="rounded-2xl border border-white/8 bg-[#121b21] p-5 flex flex-col justify-between hover:border-white/20 transition">
                 <div>
                     <div class="flex items-center justify-between">
                         <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-[#52e0ff]/15 text-[#52e0ff]">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z">
+                                </path>
+                            </svg>
                         </div>
-                        <span class="text-[10px] font-bold text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full border border-cyan-400/20">VĂN MINH 100%</span>
+                        <span
+                            class="text-[10px] font-bold text-cyan-400 bg-cyan-400/10 px-2 py-0.5 rounded-full border border-cyan-400/20">VĂN
+                            MINH 100%</span>
                     </div>
-                    <div class="mt-3 text-[10px] font-black tracking-widest text-[#71818a] uppercase">Bảo Chứng Kèo Đấu</div>
+                    <div class="mt-3 text-[10px] font-black tracking-widest text-[#71818a] uppercase">Bảo Chứng Kèo Đấu
+                    </div>
                     <div class="mt-1 text-2xl font-black text-white">Chống Bùng Sân</div>
                     <p class="mt-1 text-xs text-[#82918b] leading-relaxed">
                         Hệ thống Uy Tín Fair-Play phạt nghiêm người bùng kèo và tự động hoàn cọc minh bạch.
                     </p>
                 </div>
                 <div class="mt-3 pt-2 border-t border-white/5">
-                    <a href="index.php?action=login" class="text-xs font-bold text-cyan-400 hover:underline flex items-center gap-1">
+                    <a href="index.php?action=login"
+                        class="text-xs font-bold text-cyan-400 hover:underline flex items-center gap-1">
                         Đăng nhập trải nghiệm →
                     </a>
                 </div>
@@ -215,59 +278,329 @@ $accents = [
         </div>
     <?php endif; ?>
 
-    <!-- Search & Filter Bar -->
-    <div id="search-bar" class="rounded-2xl border border-white/8 bg-[#121b21] p-4 sm:p-5">
-        <form action="index.php" method="GET" class="flex flex-col md:flex-row gap-4 items-end">
-            <input type="hidden" name="action" value="home">
-            
-            <!-- Keyword -->
-            <div class="flex-grow w-full md:w-auto">
-                <label for="q" class="block text-[11px] font-black text-[#71818a] uppercase tracking-widest mb-2 ml-1">Tên sân / Địa chỉ</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#71818a]">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    </div>
-                    <input type="text" name="q" id="q" value="<?php echo isset($_GET['q']) ? htmlspecialchars($_GET['q']) : ''; ?>" class="block w-full pl-10 pr-4 py-3 bg-[#0b1116] border border-white/10 text-white rounded-xl focus:border-[#d8ff3e] focus:outline-none text-[13px] font-medium" placeholder="Bạn muốn đánh cầu ở cụm sân nào?">
-                </div>
-            </div>
+    <!-- Search & Filter Bar Section (Lấy cảm hứng từ SanBong.vn tối ưu cho Cầu Lông) -->
+    <?php
+    $current_q = isset($_GET['q']) ? trim($_GET['q']) : '';
+    $current_district = isset($_GET['district']) ? trim($_GET['district']) : '';
+    $current_type = isset($_GET['type']) ? trim($_GET['type']) : '';
+    $current_min_price = isset($_GET['min_price']) && $_GET['min_price'] !== '' ? (float) $_GET['min_price'] : '';
+    $current_max_price = isset($_GET['max_price']) && $_GET['max_price'] !== '' ? (float) $_GET['max_price'] : '';
+    $current_price_preset = isset($_GET['price_preset']) ? trim($_GET['price_preset']) : '';
+    $current_amenity_raw = isset($_GET['amenity']) ? $_GET['amenity'] : '';
+    $current_amenities = is_array($current_amenity_raw) ? $current_amenity_raw : array_filter(explode(',', (string) $current_amenity_raw));
+    $current_sort = isset($_GET['sort']) ? trim($_GET['sort']) : '';
+    $districts_count = $districts_count ?? [];
 
-            <!-- Floor Type -->
-            <div class="w-full md:w-56 flex-shrink-0">
-                <label for="type" class="block text-[11px] font-black text-[#71818a] uppercase tracking-widest mb-2 ml-1">Loại Mặt Thảm</label>
-                <div class="relative">
-                    <select name="type" id="type" class="block w-full pl-3.5 pr-8 py-3 bg-[#0b1116] border border-white/10 text-white rounded-xl focus:border-[#d8ff3e] focus:outline-none text-[13px] font-medium appearance-none cursor-pointer">
-                        <option value="">Tất cả các loại thảm</option>
-                        <option value="Thảm PVC Tiêu Chuẩn BWF" <?php echo (isset($_GET['type']) && $_GET['type'] == 'Thảm PVC Tiêu Chuẩn BWF') ? 'selected' : ''; ?>>Thảm BWF Tiêu Chuẩn</option>
-                        <option value="Thảm PVC Yonex" <?php echo (isset($_GET['type']) && $_GET['type'] == 'Thảm PVC Yonex') ? 'selected' : ''; ?>>Thảm PVC Yonex</option>
-                        <option value="Sân Gỗ Thi Đấu" <?php echo (isset($_GET['type']) && $_GET['type'] == 'Sân Gỗ Thi Đấu') ? 'selected' : ''; ?>>Sân Gỗ Thi Đấu</option>
-                        <option value="Thảm Alite" <?php echo (isset($_GET['type']) && $_GET['type'] == 'Thảm Alite') ? 'selected' : ''; ?>>Thảm Alite</option>
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#71818a]">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
-                </div>
-            </div>
+    $amenity_definitions = [
+        'parking' => ['name' => 'Bãi ô tô', 'icon' => '🚗', 'tag' => 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25'],
+        'lighting' => ['name' => 'Đèn chống chói', 'icon' => '💡', 'tag' => 'bg-amber-500/10 text-amber-400 border-amber-500/25'],
+        'cooling' => ['name' => 'Quạt / Máy lạnh', 'icon' => '❄️', 'tag' => 'bg-cyan-500/10 text-cyan-400 border-cyan-500/25'],
+        'shower' => ['name' => 'Tắm nóng lạnh', 'icon' => '🚿', 'tag' => 'bg-blue-500/10 text-blue-400 border-blue-500/25'],
+        'stringing' => ['name' => 'Căng vợt lấy liền', 'icon' => '🏸', 'tag' => 'bg-purple-500/10 text-purple-400 border-purple-500/25'],
+        'beverage' => ['name' => 'Căng tin nước', 'icon' => '🥤', 'tag' => 'bg-rose-500/10 text-rose-400 border-rose-500/25']
+    ];
 
-            <!-- Max Price -->
-            <div class="w-full md:w-48 flex-shrink-0">
-                <label for="max_price" class="block text-[11px] font-black text-[#71818a] uppercase tracking-widest mb-2 ml-1">Giá tối đa / giờ</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#d8ff3e] font-black text-xs">₫</div>
-                    <input type="number" name="max_price" id="max_price" step="10000" min="0" value="<?php echo isset($_GET['max_price']) ? htmlspecialchars($_GET['max_price']) : ''; ?>" class="block w-full pl-7 pr-3 py-3 bg-[#0b1116] border border-white/10 text-white rounded-xl focus:border-[#d8ff3e] focus:outline-none text-[13px] font-medium" placeholder="VD: 100000">
-                </div>
-            </div>
+    $has_active_filters = (!empty($current_q) || (!empty($current_district) && $current_district !== 'all') || (!empty($current_type) && $current_type !== 'all') || !empty($current_min_price) || !empty($current_max_price) || !empty($current_price_preset) || !empty($current_amenities) || !empty($current_sort));
+    ?>
 
-            <!-- Search Action Buttons -->
-            <div class="w-full md:w-auto flex-shrink-0 flex gap-2">
-                <button type="submit" class="w-full md:w-auto px-6 py-3 bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] font-black rounded-xl shadow-[3px_3px_0_#73940f] transition flex items-center justify-center gap-2 text-[12px] uppercase">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <span>Lọc Sân</span>
-                </button>
-                <a href="index.php?action=map_search" class="hidden sm:flex px-4 py-3 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 text-[12px] font-black uppercase items-center gap-1.5 transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                    <span>Bán Kính</span>
+    <div id="search-bar"
+        class="rounded-2xl border border-white/10 bg-[#121b21] p-4 sm:p-6 shadow-xl relative overflow-hidden">
+        <!-- Background Ambient Glow -->
+        <div class="absolute -right-20 -top-20 w-60 h-60 rounded-full bg-[#d8ff3e]/5 blur-3xl pointer-events-none">
+        </div>
+
+        <!-- 1-Touch Quick Filter Chips (Chạm nhanh các tiêu chí hot) -->
+        <div class="mb-5 pb-4 border-b border-white/5">
+            <div class="flex items-center justify-between gap-3 mb-2.5">
+                <span class="text-[11px] font-black uppercase tracking-wider text-[#d8ff3e] flex items-center gap-1.5">
+                    <span>⚡</span> BỘ LỌC NHANH 1-CHẠM
+                </span>
+                <span class="text-[11px] text-[#71818a] hidden sm:inline">Chọn nhanh các tiêu chí được tìm nhiều
+                    nhất</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+                <a href="index.php#pitches"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?php echo (!$has_active_filters) ? 'bg-[#d8ff3e] text-[#0b1116] shadow-sm font-black' : 'bg-[#0b1116] text-white/80 hover:bg-white/5 border border-white/10'; ?>">
+                    <span>🌟</span> Tất cả sân
+                </a>
+                <a href="index.php?type=<?php echo urlencode('Thảm PVC Tiêu Chuẩn BWF'); ?>#pitches"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?php echo ($current_type === 'Thảm PVC Tiêu Chuẩn BWF') ? 'bg-[#d8ff3e] text-[#0b1116] font-black' : 'bg-[#0b1116] text-white/80 hover:bg-white/5 border border-white/10'; ?>">
+                    <span>🏆</span> Chuẩn BWF
+                </a>
+                <a href="index.php?amenity=parking#pitches"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?php echo in_array('parking', $current_amenities) ? 'bg-emerald-500 text-slate-950 font-black' : 'bg-[#0b1116] text-white/80 hover:bg-white/5 border border-white/10'; ?>">
+                    <span>🚗</span> Bãi xe Ô tô
+                </a>
+                <a href="index.php?amenity=lighting#pitches"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?php echo in_array('lighting', $current_amenities) ? 'bg-amber-400 text-slate-950 font-black' : 'bg-[#0b1116] text-white/80 hover:bg-white/5 border border-white/10'; ?>">
+                    <span>💡</span> Đèn LED dịu mắt
+                </a>
+                <a href="index.php?amenity=cooling#pitches"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?php echo in_array('cooling', $current_amenities) ? 'bg-cyan-400 text-slate-950 font-black' : 'bg-[#0b1116] text-white/80 hover:bg-white/5 border border-white/10'; ?>">
+                    <span>❄️</span> Quạt / Máy lạnh
+                </a>
+                <a href="index.php?amenity=stringing#pitches"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?php echo in_array('stringing', $current_amenities) ? 'bg-purple-400 text-slate-950 font-black' : 'bg-[#0b1116] text-white/80 hover:bg-white/5 border border-white/10'; ?>">
+                    <span>🏸</span> Căng cước lấy liền
+                </a>
+                <a href="index.php?price_preset=under_80k#pitches"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?php echo ($current_price_preset === 'under_80k' || ($current_max_price > 0 && $current_max_price <= 80000)) ? 'bg-lime-400 text-slate-950 font-black' : 'bg-[#0b1116] text-white/80 hover:bg-white/5 border border-white/10'; ?>">
+                    <span>💰</span> Giá sinh viên (&le; 80k)
+                </a>
+                <a href="index.php?action=map_search"
+                    class="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 hover:bg-cyan-500/20 ml-auto">
+                    <span>📍</span> Quét bán kính GPS
                 </a>
             </div>
+        </div>
+
+        <!-- Main Search Form -->
+        <form action="index.php" method="GET" id="searchFilterForm" class="space-y-4">
+            <input type="hidden" name="action" value="home">
+
+            <!-- Row 1: Primary Search Inputs -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                <!-- Keyword Input -->
+                <div class="md:col-span-5">
+                    <label for="q"
+                        class="block text-[11px] font-black text-[#71818a] uppercase tracking-widest mb-1.5 ml-1">
+                        Từ khóa tìm kiếm
+                    </label>
+                    <div class="relative">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#71818a]">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                        <input type="text" name="q" id="q" value="<?php echo htmlspecialchars($current_q); ?>"
+                            class="block w-full pl-10 pr-4 py-3 bg-[#0b1116] border border-white/10 text-white rounded-xl focus:border-[#d8ff3e] focus:outline-none text-[13px] font-medium transition"
+                            placeholder="Tên sân, tên đường (VD: Phương Đông, Đinh Bộ Lĩnh...)">
+                    </div>
+                </div>
+
+                <!-- District Select (Học từ SEO địa bàn Hà Nội / TP.HCM của SanBong.vn) -->
+                <div class="md:col-span-3">
+                    <label for="district"
+                        class="block text-[11px] font-black text-[#71818a] uppercase tracking-widest mb-1.5 ml-1">
+                        Khu vực / Quận Huyện
+                    </label>
+                    <div class="relative">
+                        <select name="district" id="district"
+                            class="block w-full pl-3.5 pr-8 py-3 bg-[#0b1116] border border-white/10 text-white rounded-xl focus:border-[#d8ff3e] focus:outline-none text-[13px] font-medium appearance-none cursor-pointer">
+                            <option value="">Tất cả khu vực</option>
+                            <?php foreach ($districts_count as $d_name => $count): ?>
+                                <option value="<?php echo htmlspecialchars($d_name); ?>" <?php echo ($current_district === $d_name) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($d_name); ?> (<?php echo $count; ?> cụm sân)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#71818a]">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Floor Type Select -->
+                <div class="md:col-span-2">
+                    <label for="type"
+                        class="block text-[11px] font-black text-[#71818a] uppercase tracking-widest mb-1.5 ml-1">
+                        Mặt thảm sân
+                    </label>
+                    <div class="relative">
+                        <select name="type" id="type"
+                            class="block w-full pl-3.5 pr-8 py-3 bg-[#0b1116] border border-white/10 text-white rounded-xl focus:border-[#d8ff3e] focus:outline-none text-[13px] font-medium appearance-none cursor-pointer">
+                            <option value="">Tất cả loại thảm</option>
+                            <option value="Thảm PVC Tiêu Chuẩn BWF" <?php echo ($current_type === 'Thảm PVC Tiêu Chuẩn BWF') ? 'selected' : ''; ?>>Thảm BWF Tiêu Chuẩn</option>
+                            <option value="Thảm PVC Yonex" <?php echo ($current_type === 'Thảm PVC Yonex') ? 'selected' : ''; ?>>Thảm PVC Yonex</option>
+                            <option value="Sân Gỗ Thi Đấu" <?php echo ($current_type === 'Sân Gỗ Thi Đấu') ? 'selected' : ''; ?>>Sân Gỗ Thi Đấu</option>
+                            <option value="Thảm Alite" <?php echo ($current_type === 'Thảm Alite') ? 'selected' : ''; ?>>
+                                Thảm Alite</option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#71818a]">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="md:col-span-2 flex items-center gap-2">
+                    <button type="submit"
+                        class="flex-1 py-3 px-4 bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] font-black rounded-xl shadow-[3px_3px_0_#73940f] transition flex items-center justify-center gap-2 text-xs uppercase cursor-pointer active:scale-95">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span>Lọc Sân</span>
+                    </button>
+                    <button type="button" id="toggleAdvancedFilterBtn" onclick="toggleAdvancedFilter()"
+                        class="p-3 rounded-xl border border-white/10 hover:border-white/20 bg-[#0b1116] text-[#71818a] hover:text-white transition flex items-center justify-center cursor-pointer"
+                        title="Bộ lọc chi tiết">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Row 2: Collapsible Advanced Filters (Tiện ích, Khoảng giá & Sắp xếp) -->
+            <div id="advancedFilterSection"
+                class="<?php echo ($has_active_filters && (!empty($current_amenities) || !empty($current_min_price) || !empty($current_max_price) || !empty($current_sort))) ? 'block' : 'hidden'; ?> pt-4 mt-3 border-t border-white/5 space-y-4 transition-all duration-300">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <!-- Price Range & Presets -->
+                    <div class="md:col-span-5 bg-[#0b1116]/80 p-3.5 rounded-xl border border-white/5">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-[11px] font-black text-[#71818a] uppercase tracking-wider">Khoảng Giá
+                                Thuê (₫ / giờ)</label>
+                            <span class="text-[10px] text-[#d8ff3e] font-bold">Theo ca 60 phút</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-2.5">
+                            <div>
+                                <input type="number" name="min_price" id="min_price" step="5000" min="0"
+                                    value="<?php echo $current_min_price ? htmlspecialchars($current_min_price) : ''; ?>"
+                                    class="w-full px-3 py-2 bg-[#121b21] border border-white/10 rounded-lg text-xs text-white placeholder-white/30 focus:border-[#d8ff3e] focus:outline-none"
+                                    placeholder="Tối thiểu: 50.000">
+                            </div>
+                            <div>
+                                <input type="number" name="max_price" id="max_price" step="5000" min="0"
+                                    value="<?php echo $current_max_price ? htmlspecialchars($current_max_price) : ''; ?>"
+                                    class="w-full px-3 py-2 bg-[#121b21] border border-white/10 rounded-lg text-xs text-white placeholder-white/30 focus:border-[#d8ff3e] focus:outline-none"
+                                    placeholder="Tối đa: 150.000">
+                            </div>
+                        </div>
+                        <!-- Quick Price Selector -->
+                        <div class="flex gap-1.5">
+                            <button type="button" onclick="setPriceRange(0, 80000)"
+                                class="flex-1 py-1 px-1.5 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white/70 font-semibold text-center">&lt;
+                                80k</button>
+                            <button type="button" onclick="setPriceRange(80000, 100000)"
+                                class="flex-1 py-1 px-1.5 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white/70 font-semibold text-center">80k
+                                - 100k</button>
+                            <button type="button" onclick="setPriceRange(100000, 0)"
+                                class="flex-1 py-1 px-1.5 rounded bg-white/5 hover:bg-white/10 text-[10px] text-white/70 font-semibold text-center">&gt;
+                                100k</button>
+                        </div>
+                    </div>
+
+                    <!-- Amenities Checklist (Chọn nhiều tiện ích) -->
+                    <div class="md:col-span-5 bg-[#0b1116]/80 p-3.5 rounded-xl border border-white/5">
+                        <label class="block text-[11px] font-black text-[#71818a] uppercase tracking-wider mb-2">Tiện
+                            ích sân đi kèm</label>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <?php foreach ($amenity_definitions as $a_key => $a_info):
+                                $is_checked = in_array($a_key, $current_amenities);
+                                ?>
+                                <label
+                                    class="flex items-center gap-1.5 p-1.5 rounded-lg border cursor-pointer text-xs transition <?php echo $is_checked ? 'bg-[#d8ff3e]/10 border-[#d8ff3e]/40 text-[#d8ff3e] font-bold' : 'bg-[#121b21] border-white/5 text-white/70 hover:border-white/15'; ?>">
+                                    <input type="checkbox" name="amenity[]" value="<?php echo $a_key; ?>" <?php echo $is_checked ? 'checked' : ''; ?>
+                                        class="rounded border-white/20 bg-slate-900 text-[#d8ff3e] focus:ring-0 w-3.5 h-3.5">
+                                    <span><?php echo $a_info['icon']; ?>     <?php echo $a_info['name']; ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+
+                    <!-- Sort Options -->
+                    <div
+                        class="md:col-span-2 bg-[#0b1116]/80 p-3.5 rounded-xl border border-white/5 flex flex-col justify-between">
+                        <label for="sort"
+                            class="block text-[11px] font-black text-[#71818a] uppercase tracking-wider mb-2">Sắp
+                            Xếp</label>
+                        <select name="sort" id="sort"
+                            class="w-full px-3 py-2 bg-[#121b21] border border-white/10 rounded-lg text-xs text-white focus:border-[#d8ff3e] focus:outline-none appearance-none cursor-pointer">
+                            <option value="">Mới nhất (Mặc định)</option>
+                            <option value="price_asc" <?php echo ($current_sort === 'price_asc') ? 'selected' : ''; ?>>
+                                Giá: Thấp &rarr; Cao</option>
+                            <option value="price_desc" <?php echo ($current_sort === 'price_desc') ? 'selected' : ''; ?>>
+                                Giá: Cao &rarr; Thấp</option>
+                            <option value="quantity_desc" <?php echo ($current_sort === 'quantity_desc') ? 'selected' : ''; ?>>Nhiều sân con nhất</option>
+                            <option value="name_asc" <?php echo ($current_sort === 'name_asc') ? 'selected' : ''; ?>>Tên:
+                                A &rarr; Z</option>
+                        </select>
+                        <button type="submit"
+                            class="mt-2 w-full py-1.5 rounded-lg bg-white/10 hover:bg-[#d8ff3e] hover:text-[#0b1116] text-white text-[11px] font-bold uppercase transition text-center">
+                            Áp Dụng
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Filters Status Bar -->
+            <?php if ($has_active_filters): ?>
+                <div class="pt-3 border-t border-white/5 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-xs text-[#71818a]">Đang lọc theo:</span>
+                        <?php if (!empty($current_q)): ?>
+                            <span
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white">
+                                Từ khóa: <b class="text-[#d8ff3e]">"<?php echo htmlspecialchars($current_q); ?>"</b>
+                                <a href="<?php echo preg_replace('/([?&])q=[^&]+(&|$)/', '$1', $_SERVER['REQUEST_URI']); ?>"
+                                    class="text-white/40 hover:text-white ml-1">✕</a>
+                            </span>
+                        <?php endif; ?>
+
+                        <?php if (!empty($current_district)): ?>
+                            <span
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white">
+                                Khu vực: <b class="text-cyan-400"><?php echo htmlspecialchars($current_district); ?></b>
+                                <a href="<?php echo preg_replace('/([?&])district=[^&]+(&|$)/', '$1', $_SERVER['REQUEST_URI']); ?>"
+                                    class="text-white/40 hover:text-white ml-1">✕</a>
+                            </span>
+                        <?php endif; ?>
+
+                        <?php if (!empty($current_type)): ?>
+                            <span
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white">
+                                Thảm: <b class="text-[#d8ff3e]"><?php echo htmlspecialchars($current_type); ?></b>
+                                <a href="<?php echo preg_replace('/([?&])type=[^&]+(&|$)/', '$1', $_SERVER['REQUEST_URI']); ?>"
+                                    class="text-white/40 hover:text-white ml-1">✕</a>
+                            </span>
+                        <?php endif; ?>
+
+                        <?php if (!empty($current_min_price) || !empty($current_max_price)): ?>
+                            <span
+                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-xs text-white">
+                                Giá: <b
+                                    class="text-amber-400"><?php echo $current_min_price ? number_format($current_min_price) . 'đ' : '0đ'; ?>
+                                    -
+                                    <?php echo $current_max_price ? number_format($current_max_price) . 'đ' : 'Không giới hạn'; ?></b>
+                            </span>
+                        <?php endif; ?>
+
+                        <?php foreach ($current_amenities as $am):
+                            if (isset($amenity_definitions[$am])):
+                                ?>
+                                <span
+                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md <?php echo $amenity_definitions[$am]['tag']; ?> text-[11px] font-bold">
+                                    <?php echo $amenity_definitions[$am]['icon']; ?>
+                                    <?php echo $amenity_definitions[$am]['name']; ?>
+                                </span>
+                            <?php endif; endforeach; ?>
+                    </div>
+
+                    <!-- Reset All Filters Button -->
+                    <a href="index.php#pitches"
+                        class="text-xs font-bold text-rose-400 hover:text-rose-300 hover:underline flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                            </path>
+                        </svg>
+                        <span>Đặt lại bộ lọc</span>
+                    </a>
+                </div>
+            <?php endif; ?>
         </form>
     </div>
 
@@ -278,99 +611,195 @@ $accents = [
             <div class="mb-5 flex items-end justify-between">
                 <div>
                     <div class="flex items-center gap-2">
-                        <h2 class="text-xl font-black uppercase italic tracking-tight text-white">Sân đang hot</h2>
-                        <span class="rounded bg-[#ff7652] px-2 py-0.5 text-[9px] font-black uppercase text-white">BWF Standards</span>
+                        <h2 class="text-xl font-black uppercase italic tracking-tight text-white">
+                            <?php echo $has_active_filters ? 'Kết quả tìm kiếm cụm sân' : 'Sân đang hot'; ?>
+                        </h2>
+                        <span class="rounded bg-[#ff7652] px-2 py-0.5 text-[9px] font-black uppercase text-white">
+                            <?php echo count($pitches); ?> CỤM SÂN
+                        </span>
                     </div>
-                    <p class="mt-1 text-[12px] text-[#708089]">Được cộng đồng lông thủ đánh giá cao nhất hôm nay</p>
+                    <p class="mt-1 text-[12px] text-[#708089]">
+                        <?php echo $has_active_filters ? 'Danh sách các cụm sân phù hợp với bộ lọc tiêu chí của bạn' : 'Được cộng đồng lông thủ đánh giá cao nhất hôm nay'; ?>
+                    </p>
                 </div>
-                <a href="index.php?action=map_search" class="text-[11px] font-black uppercase text-[#d8ff3e] hover:underline flex items-center gap-1">
-                    Xem bản đồ
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                <a href="index.php?action=map_search"
+                    class="text-[11px] font-black uppercase text-[#d8ff3e] hover:underline flex items-center gap-1">
+                    Xem trên bản đồ
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                    </svg>
                 </a>
             </div>
 
             <!-- Courts Grid -->
             <?php if (empty($pitches)): ?>
                 <div class="rounded-2xl border border-white/8 bg-[#121b21] p-12 text-center">
-                    <div class="text-4xl mb-3">🏸</div>
-                    <h3 class="text-lg font-black text-white">Không tìm thấy sân cầu lông nào</h3>
-                    <p class="text-xs text-[#708089] mt-1 max-w-sm mx-auto">Không có kết quả nào phù hợp với bộ lọc của bạn. Hãy thử thay đổi mức giá hoặc loại thảm.</p>
-                    <a href="index.php" class="mt-4 inline-block px-5 py-2.5 rounded-xl bg-[#d8ff3e] text-[#0b1116] text-xs font-black uppercase shadow-[2px_2px_0_#73940f]">Xóa bộ lọc</a>
+                    <div class="text-5xl mb-3">🏸</div>
+                    <h3 class="text-lg font-black text-white">Không tìm thấy sân cầu lông nào phù hợp</h3>
+                    <p class="text-xs text-[#708089] mt-2 max-w-sm mx-auto leading-relaxed">Không có kết quả nào trùng khớp
+                        với bộ lọc tiện ích hoặc mức giá hiện tại. Bạn hãy thử nới rộng tiêu chí hoặc xóa bộ lọc.</p>
+                    <div class="mt-5 flex items-center justify-center gap-3">
+                        <a href="index.php#pitches"
+                            class="px-5 py-2.5 rounded-xl bg-[#d8ff3e] text-[#0b1116] text-xs font-black uppercase shadow-[2px_2px_0_#73940f] transition hover:scale-105">Xóa
+                            tất cả bộ lọc</a>
+                        <a href="index.php?action=map_search"
+                            class="px-5 py-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 text-xs font-black uppercase transition hover:bg-cyan-500/20">Quét
+                            theo bán kính GPS</a>
+                    </div>
                 </div>
             <?php else: ?>
                 <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-                    <?php foreach ($pitches as $i => $court): 
+                    <?php foreach ($pitches as $i => $court):
                         $accent = $accents[$i % count($accents)];
                         $rating = '4.9';
-                        if ($i % 3 == 1) $rating = '4.8';
-                        if ($i % 3 == 2) $rating = '4.7';
-                    ?>
-                        <article class="group relative overflow-hidden rounded-2xl border border-white/8 bg-[#121b21] transition hover:-translate-y-1.5 hover:border-[#d8ff3e]/40 flex flex-col shadow-lg">
-                            <!-- Card Header Image (Sáng, Rõ Nét, Chuẩn Thực Tế) -->
-                            <?php 
-                                $court_img = !empty($court['image_url']) ? $court['image_url'] : 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80';
+                        if ($i % 3 == 1)
+                            $rating = '4.8';
+                        if ($i % 3 == 2)
+                            $rating = '4.7';
+
+                        // Parse Court Amenities
+                        $court_am_raw = !empty($court['amenities']) ? $court['amenities'] : '';
+                        if (empty($court_am_raw)) {
+                            $desc_lower = mb_strtolower($court['description'] ?? '', 'UTF-8');
+                            $auto_am = [];
+                            if (strpos($desc_lower, 'xe') !== false || strpos($desc_lower, 'bãi') !== false)
+                                $auto_am[] = 'parking';
+                            if (strpos($desc_lower, 'led') !== false || strpos($desc_lower, 'đèn') !== false)
+                                $auto_am[] = 'lighting';
+                            if (strpos($desc_lower, 'mát') !== false || strpos($desc_lower, 'lạnh') !== false || strpos($desc_lower, 'quạt') !== false)
+                                $auto_am[] = 'cooling';
+                            if (strpos($desc_lower, 'tắm') !== false)
+                                $auto_am[] = 'shower';
+                            if (strpos($desc_lower, 'cước') !== false || strpos($desc_lower, 'vợt') !== false)
+                                $auto_am[] = 'stringing';
+                            if (strpos($desc_lower, 'nước') !== false || strpos($desc_lower, 'khát') !== false)
+                                $auto_am[] = 'beverage';
+                            $court_am_raw = implode(',', $auto_am);
+                        }
+                        $court_am_keys = array_filter(array_map('trim', explode(',', $court_am_raw)));
+                        ?>
+                        <article
+                            class="group relative overflow-hidden rounded-2xl border border-white/8 bg-[#121b21] transition hover:-translate-y-1.5 hover:border-[#d8ff3e]/40 flex flex-col shadow-lg">
+                            <!-- Card Header Image -->
+                            <?php
+                            $court_img = !empty($court['image_url']) ? $court['image_url'] : 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80';
                             ?>
                             <div class="relative h-44 bg-[#0b1116] overflow-hidden">
-                                <img src="<?php echo htmlspecialchars($court_img); ?>" 
-                                     alt="<?php echo htmlspecialchars($court['name']); ?>" 
-                                     class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 brightness-[0.95] group-hover:brightness-105">
-                                
-                                <!-- Gradient nhẹ chân ảnh để text và badge nổi bật -->
-                                <div class="absolute inset-0 bg-gradient-to-t from-[#121b21] via-black/15 to-black/25 pointer-events-none"></div>
-                                
+                                <img src="<?php echo htmlspecialchars($court_img); ?>"
+                                    alt="<?php echo htmlspecialchars($court['name']); ?>"
+                                    class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 brightness-[0.95] group-hover:brightness-105">
+
+                                <div
+                                    class="absolute inset-0 bg-gradient-to-t from-[#121b21] via-black/15 to-black/25 pointer-events-none">
+                                </div>
+
                                 <!-- Top Badges -->
                                 <div class="relative p-3.5 flex justify-between items-start z-10">
-                                    <span class="rounded-lg bg-black/75 backdrop-blur-md px-2.5 py-1 text-[9px] font-black uppercase text-white border border-white/10 shadow-sm">
+                                    <span
+                                        class="rounded-lg bg-black/75 backdrop-blur-md px-2.5 py-1 text-[9px] font-black uppercase text-white border border-white/10 shadow-sm">
                                         <?php echo htmlspecialchars($court['type']); ?>
                                     </span>
-                                    <span class="rounded-lg bg-[#d8ff3e] text-[#0b1116] px-2.5 py-1 text-[9px] font-black uppercase shadow-sm">
+                                    <span
+                                        class="rounded-lg bg-[#d8ff3e] text-[#0b1116] px-2.5 py-1 text-[9px] font-black uppercase shadow-sm">
                                         <?php echo ($court['quantity'] ?? 6); ?> sân con
                                     </span>
                                 </div>
 
                                 <!-- Bottom Image Row: Rating & Nút Xem Ảnh Thực Tế -->
                                 <div class="absolute bottom-2.5 left-3.5 right-3.5 flex items-center justify-between z-10">
-                                    <span class="rounded-lg bg-black/75 backdrop-blur-md px-2 py-0.5 text-[10px] font-black text-white flex items-center border border-white/15 shadow-sm">
-                                        <svg class="w-3 h-3 text-[#ffd45b] fill-current mr-1" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+                                    <span
+                                        class="rounded-lg bg-black/75 backdrop-blur-md px-2 py-0.5 text-[10px] font-black text-white flex items-center border border-white/15 shadow-sm">
+                                        <svg class="w-3 h-3 text-[#ffd45b] fill-current mr-1" viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
                                         <?php echo $rating; ?>
                                     </span>
 
-                                    <!-- Nút Mở Album Ảnh Thực Tế -->
+                                    <!-- Nút Mở Album Ảnh & Tiện Ích Thực Tế -->
                                     <button type="button" onclick="openCourtGallery(<?php echo htmlspecialchars(json_encode([
                                         'id' => $court['id'],
                                         'name' => $court['name'],
                                         'location' => $court['location'],
+                                        'district' => $court['district'] ?? '',
                                         'type' => $court['type'],
                                         'price' => number_format($court['price_per_hour'], 0, ',', '.') . 'đ/h',
                                         'image_url' => $court_img,
+                                        'amenities' => $court_am_keys,
                                         'description' => !empty($court['description']) ? $court['description'] : 'Cụm sân cầu lông đạt chuẩn thi đấu BWF, trang bị thảm PVC chuyên dụng chống trượt và hệ thống đèn LED chống lóa.',
-                                    ])); ?>)" class="rounded-lg bg-black/80 hover:bg-[#d8ff3e] hover:text-[#0b1116] text-white/95 backdrop-blur-md px-2.5 py-1 text-[10px] font-black uppercase tracking-wider border border-white/20 transition flex items-center gap-1 shadow-md hover:scale-105 active:scale-95 cursor-pointer">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                        <span>Ảnh thực tế</span>
+                                    ])); ?>)"
+                                        class="rounded-lg bg-black/80 hover:bg-[#d8ff3e] hover:text-[#0b1116] text-white/95 backdrop-blur-md px-2.5 py-1 text-[10px] font-black uppercase tracking-wider border border-white/20 transition flex items-center gap-1 shadow-md hover:scale-105 active:scale-95 cursor-pointer">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        <span>Ảnh & Tiện ích</span>
                                     </button>
                                 </div>
                             </div>
 
                             <!-- Card Body -->
-                            <div class="p-4 flex-1 flex flex-col">
-                                <h3 class="font-black text-[15px] text-white truncate" title="<?php echo htmlspecialchars($court['name']); ?>">
-                                    <?php echo htmlspecialchars($court['name']); ?>
-                                </h3>
-                                <div class="mt-1.5 flex items-start gap-1 text-[11px] text-[#7f8e95] line-clamp-1">
-                                    <svg class="w-3.5 h-3.5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                    <span><?php echo htmlspecialchars($court['location']); ?></span>
+                            <div class="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <h3 class="font-black text-[15px] text-white truncate"
+                                        title="<?php echo htmlspecialchars($court['name']); ?>">
+                                        <?php echo htmlspecialchars($court['name']); ?>
+                                    </h3>
+                                    <div class="mt-1.5 flex items-start gap-1 text-[11px] text-[#7f8e95] line-clamp-1">
+                                        <svg class="w-3.5 h-3.5 text-cyan-400 flex-shrink-0 mt-0.5" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                            </path>
+                                        </svg>
+                                        <span><?php echo htmlspecialchars($court['location']); ?></span>
+                                    </div>
+
+                                    <!-- Amenities Pills on Card (Tối đa 3 tiện ích nổi bật) -->
+                                    <div class="mt-3 flex flex-wrap gap-1">
+                                        <?php
+                                        $shown_count = 0;
+                                        foreach ($court_am_keys as $ak):
+                                            if (isset($amenity_definitions[$ak]) && $shown_count < 3):
+                                                $shown_count++;
+                                                ?>
+                                                <span
+                                                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold <?php echo $amenity_definitions[$ak]['tag']; ?>">
+                                                    <span><?php echo $amenity_definitions[$ak]['icon']; ?></span>
+                                                    <span><?php echo $amenity_definitions[$ak]['name']; ?></span>
+                                                </span>
+                                            <?php
+                                            endif;
+                                        endforeach;
+                                        if (count($court_am_keys) > 3):
+                                            ?>
+                                            <span
+                                                class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-white/5 text-white/50 border border-white/5">
+                                                +<?php echo (count($court_am_keys) - 3); ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
 
                                 <div class="mt-4 pt-3 border-t border-white/5 flex items-end justify-between">
                                     <div>
                                         <div class="text-[10px] font-bold text-[#71818a] uppercase">Chi phí thuê</div>
                                         <div class="text-[11px] text-[#71818a]">
-                                            từ <b class="text-[#d8ff3e] text-base font-black"><?php echo number_format($court['price_per_hour'], 0, ',', '.'); ?>đ</b><span class="text-[10px]">/h</span>
+                                            từ <b
+                                                class="text-[#d8ff3e] text-base font-black"><?php echo number_format($court['price_per_hour'], 0, ',', '.'); ?>đ</b><span
+                                                class="text-[10px]">/h</span>
                                         </div>
                                     </div>
-                                    <a href="index.php?action=book&id=<?php echo $court['id']; ?>" class="rounded-xl bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] px-3.5 py-2 text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0_#73940f] transition flex items-center gap-1">
-                                        <span>Đặt</span>
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                    <a href="index.php?action=book&id=<?php echo $court['id']; ?>"
+                                        class="rounded-xl bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] px-3.5 py-2 text-[11px] font-black uppercase tracking-wider shadow-[2px_2px_0_#73940f] transition flex items-center gap-1 cursor-pointer">
+                                        <span>Đặt Sân</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                                        </svg>
                                     </a>
                                 </div>
                             </div>
@@ -387,13 +816,18 @@ $accents = [
                 <div class="flex items-start justify-between">
                     <div>
                         <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-[#d8ff3e]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+                            <svg class="w-4 h-4 text-[#d8ff3e]" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z" />
+                            </svg>
                             <h2 class="text-lg font-black uppercase italic tracking-tight text-white">Smart Match</h2>
                         </div>
                         <p class="mt-1 text-[11px] text-[#71818a]">Trận đấu phù hợp với bạn theo Elo</p>
                     </div>
                     <a href="index.php?action=smart_match" class="text-[#71818a] hover:text-[#d8ff3e] transition">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        </svg>
                     </a>
                 </div>
 
@@ -410,21 +844,28 @@ $accents = [
                     <div class="mt-3.5 flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <div class="flex -space-x-2">
-                                <span class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#17231d] bg-[#f3a7a0] text-[8px] font-black text-[#10181e]">MT</span>
-                                <span class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#17231d] bg-[#a6d6ed] text-[8px] font-black text-[#10181e]">TD</span>
-                                <span class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#17231d] bg-[#d7c0ee] text-[8px] font-black text-[#10181e]">+1</span>
+                                <span
+                                    class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#17231d] bg-[#f3a7a0] text-[8px] font-black text-[#10181e]">MT</span>
+                                <span
+                                    class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#17231d] bg-[#a6d6ed] text-[8px] font-black text-[#10181e]">TD</span>
+                                <span
+                                    class="flex h-7 w-7 items-center justify-center rounded-full border-2 border-[#17231d] bg-[#d7c0ee] text-[8px] font-black text-[#10181e]">+1</span>
                             </div>
                             <span class="text-[10px] text-[#82918d]">Đang trong hàng đợi</span>
                         </div>
                     </div>
-                    <a href="index.php?action=smart_match" class="mt-4 block w-full text-center rounded-lg bg-[#d8ff3e] hover:bg-[#c6f030] py-2.5 text-[11px] font-black uppercase text-[#10181e] shadow-[2px_2px_0_#73940f] transition">
+                    <a href="index.php?action=smart_match"
+                        class="mt-4 block w-full text-center rounded-lg bg-[#d8ff3e] hover:bg-[#c6f030] py-2.5 text-[11px] font-black uppercase text-[#10181e] shadow-[2px_2px_0_#73940f] transition">
                         Vào Hàng Chờ Tìm Trận (AI)
                     </a>
                 </div>
 
-                <a href="index.php?action=matchmaking" class="mt-3.5 flex items-center justify-center gap-1 text-[11px] font-black uppercase text-[#d8ff3e] hover:underline">
+                <a href="index.php?action=matchmaking"
+                    class="mt-3.5 flex items-center justify-center gap-1 text-[11px] font-black uppercase text-[#d8ff3e] hover:underline">
                     Xem Bảng Kèo Mở
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
                 </a>
             </aside>
 
@@ -433,8 +874,13 @@ $accents = [
                 <div class="flex items-start justify-between">
                     <div>
                         <div class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                            <h2 class="text-lg font-black uppercase italic tracking-tight text-white">Bản Đồ Bán Kính</h2>
+                            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                                </path>
+                            </svg>
+                            <h2 class="text-lg font-black uppercase italic tracking-tight text-white">Bản Đồ Bán Kính
+                            </h2>
                         </div>
                         <p class="mt-1 text-[11px] text-[#71818a]">Tìm sân quanh vị trí GPS của bạn</p>
                     </div>
@@ -442,9 +888,11 @@ $accents = [
 
                 <div class="mt-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
                     <p class="text-[12px] text-[#94a3b8] leading-relaxed">
-                        Định vị GPS tự động và quét tất cả cụm sân trong bán kính từ <b class="text-cyan-300">1km đến 15km</b> với công thức Haversine chính xác.
+                        Định vị GPS tự động và quét tất cả cụm sân trong bán kính từ <b class="text-cyan-300">1km đến
+                            15km</b> với công thức Haversine chính xác.
                     </p>
-                    <a href="index.php?action=map_search" class="mt-4 block w-full text-center rounded-lg bg-cyan-400 hover:bg-cyan-300 py-2.5 text-[11px] font-black uppercase text-[#0b1116] shadow-[2px_2px_0_#0e7490] transition">
+                    <a href="index.php?action=map_search"
+                        class="mt-4 block w-full text-center rounded-lg bg-cyan-400 hover:bg-cyan-300 py-2.5 text-[11px] font-black uppercase text-[#0b1116] shadow-[2px_2px_0_#0e7490] transition">
                         Mở Bản Đồ Quét Bán Kính
                     </a>
                 </div>
@@ -459,50 +907,73 @@ $accents = [
                 <h2 class="text-xl font-black uppercase italic tracking-tight text-white">Lịch sắp tới</h2>
                 <p class="mt-1 text-[12px] text-[#708089]">Đừng bỏ lỡ những trận cầu hấp dẫn của bạn</p>
             </div>
-            <a href="index.php?action=my_bookings" class="rounded-lg border border-white/10 p-2 text-[#819098] hover:text-white hover:bg-[#0b1116]/5 transition" title="Xem tất cả lịch">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <a href="index.php?action=my_bookings"
+                class="rounded-lg border border-white/10 p-2 text-[#819098] hover:text-white hover:bg-[#0b1116]/5 transition"
+                title="Xem tất cả lịch">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                </svg>
             </a>
         </div>
 
         <div class="mt-5 flex flex-col gap-3 md:flex-row">
             <?php if (!empty($upcoming_bookings)): ?>
-                <?php foreach ($upcoming_bookings as $bk): 
+                <?php foreach ($upcoming_bookings as $bk):
                     $dayName = 'TH ' . (date('N', strtotime($bk['booking_date'])) + 1);
-                    if ($dayName == 'TH 8') $dayName = 'CN';
+                    if ($dayName == 'TH 8')
+                        $dayName = 'CN';
                     $dateNum = date('d', strtotime($bk['booking_date']));
                     $timeStr = substr($bk['start_time'], 0, 5) . ' – ' . substr($bk['end_time'], 0, 5);
-                ?>
-                    <div class="flex flex-1 items-center gap-4 rounded-xl border border-white/6 bg-[#0d151b] p-3.5 hover:border-white/20 transition">
-                        <div class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-[#d8ff3e] text-[#10181e] font-black">
+                    ?>
+                    <div
+                        class="flex flex-1 items-center gap-4 rounded-xl border border-white/6 bg-[#0d151b] p-3.5 hover:border-white/20 transition">
+                        <div
+                            class="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-lg bg-[#d8ff3e] text-[#10181e] font-black">
                             <span class="text-[9px]"><?php echo $dayName; ?></span>
                             <b class="text-xl leading-5"><?php echo $dateNum; ?></b>
                         </div>
                         <div class="min-w-0 flex-1">
-                            <h3 class="truncate text-[13px] font-black text-white"><?php echo htmlspecialchars($bk['pitch_name'] ?? 'Cụm Sân Cầu Lông'); ?></h3>
+                            <h3 class="truncate text-[13px] font-black text-white">
+                                <?php echo htmlspecialchars($bk['pitch_name'] ?? 'Cụm Sân Cầu Lông'); ?></h3>
                             <div class="mt-1 flex items-center gap-1.5 text-[10px] text-[#7d8c94]">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
                                 <span><?php echo $timeStr; ?></span>
                                 <span class="mx-1">·</span>
-                                <span class="font-bold text-amber-400"><?php echo htmlspecialchars($bk['checkin_code'] ?? 'MÃ SÂN'); ?></span>
+                                <span
+                                    class="font-bold text-amber-400"><?php echo htmlspecialchars($bk['checkin_code'] ?? 'MÃ SÂN'); ?></span>
                             </div>
                         </div>
-                        <span class="hidden sm:block rounded bg-[#d8ff3e]/10 px-2.5 py-1 text-[9px] font-black text-[#d8ff3e] uppercase border border-[#d8ff3e]/20">
+                        <span
+                            class="hidden sm:block rounded bg-[#d8ff3e]/10 px-2.5 py-1 text-[9px] font-black text-[#d8ff3e] uppercase border border-[#d8ff3e]/20">
                             <?php echo ($bk['status'] == 'confirmed') ? 'ĐÃ XÁC NHẬN' : 'CHỜ DUYỆT'; ?>
                         </span>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
-                <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-white/6 bg-[#0d151b] p-4 text-[#7d8c94]">
+                <div
+                    class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-white/6 bg-[#0d151b] p-4 text-[#7d8c94]">
                     <div class="flex items-center gap-3">
-                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0b1116]/5 text-[#d8ff3e]">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <div
+                            class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0b1116]/5 text-[#d8ff3e]">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
                         </div>
                         <div class="text-[12px]">
                             <p class="font-bold text-white">Bạn chưa có lịch đặt sân nào sắp tới.</p>
-                            <p class="text-[11px] text-[#71818a]">Khởi động đam mê bằng việc chọn một sân đấu hoặc ghép trận cùng cộng đồng ngay hôm nay!</p>
+                            <p class="text-[11px] text-[#71818a]">Khởi động đam mê bằng việc chọn một sân đấu hoặc ghép trận
+                                cùng cộng đồng ngay hôm nay!</p>
                         </div>
                     </div>
-                    <a href="#pitches" class="px-4 py-2 rounded-lg bg-[#d8ff3e] text-[#10181e] font-black text-[11px] uppercase tracking-wider shadow-[2px_2px_0_#73940f] hover:translate-x-0.5 transition flex-shrink-0">
+                    <a href="#pitches"
+                        class="px-4 py-2 rounded-lg bg-[#d8ff3e] text-[#10181e] font-black text-[11px] uppercase tracking-wider shadow-[2px_2px_0_#73940f] hover:translate-x-0.5 transition flex-shrink-0">
                         Đặt sân ngay
                     </a>
                 </div>
@@ -512,24 +983,34 @@ $accents = [
 </div>
 
 <!-- POPUP ALBUM ẢNH THỰC TẾ (COURT PHOTO GALLERY MODAL) -->
-<div id="courtGalleryModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-4 transition-all">
-    <div class="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white/15 bg-[#121b21] shadow-2xl animate-fade-in flex flex-col max-h-[92vh]">
+<div id="courtGalleryModal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-md p-4 transition-all">
+    <div
+        class="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white/15 bg-[#121b21] shadow-2xl animate-fade-in flex flex-col max-h-[92vh]">
         <!-- Modal Header -->
         <div class="flex items-center justify-between border-b border-white/10 p-5 bg-[#0b1116]">
             <div>
                 <div class="flex items-center gap-2">
-                    <span id="modalPitchType" class="rounded bg-[#d8ff3e]/20 border border-[#d8ff3e]/30 text-[#d8ff3e] px-2 py-0.5 text-[10px] font-black uppercase">
+                    <span id="modalPitchType"
+                        class="rounded bg-[#d8ff3e]/20 border border-[#d8ff3e]/30 text-[#d8ff3e] px-2 py-0.5 text-[10px] font-black uppercase">
                         THẢM BWF
                     </span>
                     <h3 id="modalPitchName" class="text-lg font-black text-white">Tên Sân Cầu Lông</h3>
                 </div>
                 <p id="modalPitchLocation" class="text-xs text-white/60 mt-1 flex items-center gap-1">
-                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                    <svg class="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+                        </path>
+                    </svg>
                     <span>Địa chỉ</span>
                 </p>
             </div>
-            <button type="button" onclick="closeCourtGallery()" class="rounded-full bg-white/10 hover:bg-white/20 p-2 text-white/70 hover:text-white transition cursor-pointer">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <button type="button" onclick="closeCourtGallery()"
+                class="rounded-full bg-white/10 hover:bg-white/20 p-2 text-white/70 hover:text-white transition cursor-pointer">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
         </div>
 
@@ -537,8 +1018,10 @@ $accents = [
         <div class="overflow-y-auto p-5 space-y-4">
             <!-- Big Hero Image View -->
             <div class="relative h-64 sm:h-80 w-full rounded-2xl overflow-hidden border border-white/10 bg-black">
-                <img id="modalMainImg" src="" alt="Sân thực tế" class="w-full h-full object-cover transition-all duration-300">
-                <div id="modalImgTag" class="absolute bottom-3 left-3 rounded-lg bg-black/75 backdrop-blur-md px-3 py-1 text-xs font-black text-[#d8ff3e] border border-white/10 shadow">
+                <img id="modalMainImg" src="" alt="Sân thực tế"
+                    class="w-full h-full object-cover transition-all duration-300">
+                <div id="modalImgTag"
+                    class="absolute bottom-3 left-3 rounded-lg bg-black/75 backdrop-blur-md px-3 py-1 text-xs font-black text-[#d8ff3e] border border-white/10 shadow">
                     🏟️ Toàn cảnh hàng sân thi đấu & độ cao trần
                 </div>
             </div>
@@ -547,28 +1030,43 @@ $accents = [
             <div>
                 <p class="text-[11px] font-black uppercase tracking-wider text-white/50 mb-2">Chọn góc xem thực tế:</p>
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <button type="button" onclick="selectGalleryAngle(0)" class="gallery-thumb group border-2 border-[#d8ff3e] rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
-                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">1. Toàn Cảnh Sân</span>
+                    <button type="button" onclick="selectGalleryAngle(0)"
+                        class="gallery-thumb group border-2 border-[#d8ff3e] rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
+                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">1. Toàn Cảnh
+                            Sân</span>
                         <span class="text-[9px] text-white/40">Trần cao, không gian</span>
                     </button>
-                    <button type="button" onclick="selectGalleryAngle(1)" class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
-                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">2. Mặt Thảm BWF</span>
+                    <button type="button" onclick="selectGalleryAngle(1)"
+                        class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
+                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">2. Mặt Thảm
+                            BWF</span>
                         <span class="text-[9px] text-white/40">Chống trơn trượt</span>
                     </button>
-                    <button type="button" onclick="selectGalleryAngle(2)" class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
-                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">3. Dàn Đèn LED</span>
+                    <button type="button" onclick="selectGalleryAngle(2)"
+                        class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
+                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">3. Dàn Đèn
+                            LED</span>
                         <span class="text-[9px] text-white/40">Chống chói, dịu mắt</span>
                     </button>
-                    <button type="button" onclick="selectGalleryAngle(3)" class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
-                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">4. Quầy Nước & Bãi Xe</span>
+                    <button type="button" onclick="selectGalleryAngle(3)"
+                        class="gallery-thumb group border border-white/10 rounded-xl p-2.5 bg-[#0b1116] text-left transition hover:border-[#d8ff3e] cursor-pointer">
+                        <span class="block text-[11px] font-black text-white group-hover:text-[#d8ff3e]">4. Quầy Nước &
+                            Bãi Xe</span>
                         <span class="text-[9px] text-white/40">Tiện ích đi kèm</span>
                     </button>
                 </div>
             </div>
 
-            <!-- Description -->
-            <div class="p-3.5 rounded-xl bg-[#0b1116] border border-white/5 text-xs text-white/70 leading-relaxed">
-                <span class="font-bold text-white">Mô tả thực tế:</span> <span id="modalPitchDesc"></span>
+            <!-- Description & Amenities List -->
+            <div class="p-3.5 rounded-xl bg-[#0b1116] border border-white/5 space-y-2.5">
+                <div class="text-xs text-white/70 leading-relaxed">
+                    <span class="font-bold text-white">Mô tả thực tế:</span> <span id="modalPitchDesc"></span>
+                </div>
+                <div>
+                    <span class="text-[10px] uppercase font-black text-[#71818a] tracking-wider block mb-1.5">Tiện ích
+                        đi kèm tại sân:</span>
+                    <div id="modalAmenitiesList" class="flex flex-wrap gap-1.5"></div>
+                </div>
             </div>
         </div>
 
@@ -578,7 +1076,8 @@ $accents = [
                 <span class="text-[10px] text-white/50 uppercase font-bold block">Giá thuê chính thức</span>
                 <span id="modalPitchPrice" class="text-base font-black text-[#d8ff3e]"></span>
             </div>
-            <a id="modalBookLink" href="#" class="inline-flex items-center gap-2 rounded-xl bg-[#d8ff3e] hover:bg-[#c2ea2d] text-slate-950 font-black px-6 py-3 text-xs uppercase tracking-wider shadow-lg transition transform hover:-translate-y-0.5">
+            <a id="modalBookLink" href="#"
+                class="inline-flex items-center gap-2 rounded-xl bg-[#d8ff3e] hover:bg-[#c2ea2d] text-slate-950 font-black px-6 py-3 text-xs uppercase tracking-wider shadow-lg transition transform hover:-translate-y-0.5">
                 <span>⚡ Đặt Sân Này Ngay</span>
             </a>
         </div>
@@ -586,66 +1085,113 @@ $accents = [
 </div>
 
 <script>
-let currentGalleryAngles = [];
+    let currentGalleryAngles = [];
 
-function openCourtGallery(court) {
-    document.getElementById('modalPitchName').innerText = court.name || '';
-    document.getElementById('modalPitchLocation').querySelector('span').innerText = court.location || '';
-    document.getElementById('modalPitchType').innerText = court.type || 'SÂN CHUẨN';
-    document.getElementById('modalPitchPrice').innerText = court.price || '';
-    document.getElementById('modalPitchDesc').innerText = court.description || 'Sân đạt chuẩn chất lượng thi đấu BWF.';
-    document.getElementById('modalBookLink').href = 'index.php?action=book&id=' + court.id;
-
-    // Angle 1: Primary court image
-    const img1 = court.image_url || 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=1000&q=85';
-    // Angle 2: Close-up floor / tournament net
-    const img2 = 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=1000&q=85';
-    // Angle 3: Badminton court hall with lighting
-    const img3 = 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=1000&q=85';
-    // Angle 4: Facility lobby / refreshment lounge
-    const img4 = 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1000&q=85';
-
-    currentGalleryAngles = [
-        { url: img1, label: '🏟️ Toàn cảnh hàng sân thi đấu & độ cao trần' },
-        { url: img2, label: '🏸 Cận cảnh thảm PVC Yonex / BWF chống trơn trượt' },
-        { url: img3, label: '💡 Hệ thống đèn LED quang thông cao chống chói mắt' },
-        { url: img4, label: '🥤 Quầy nước giải khát, ghế chờ & bãi giữ xe rộng rãi' }
-    ];
-
-    selectGalleryAngle(0);
-
-    const modal = document.getElementById('courtGalleryModal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-}
-
-function selectGalleryAngle(index) {
-    if (!currentGalleryAngles[index]) return;
-    document.getElementById('modalMainImg').src = currentGalleryAngles[index].url;
-    document.getElementById('modalImgTag').innerText = currentGalleryAngles[index].label;
-
-    const thumbs = document.querySelectorAll('.gallery-thumb');
-    thumbs.forEach((t, i) => {
-        if (i === index) {
-            t.classList.add('border-2', 'border-[#d8ff3e]');
-            t.classList.remove('border-white/10');
+    function toggleAdvancedFilter() {
+        const sec = document.getElementById('advancedFilterSection');
+        const btn = document.getElementById('toggleAdvancedFilterBtn');
+        if (!sec) return;
+        if (sec.classList.contains('hidden')) {
+            sec.classList.remove('hidden');
+            if (btn) btn.classList.add('bg-[#d8ff3e]/10', 'text-[#d8ff3e]', 'border-[#d8ff3e]/40');
         } else {
-            t.classList.remove('border-2', 'border-[#d8ff3e]');
-            t.classList.add('border-white/10');
+            sec.classList.add('hidden');
+            if (btn) btn.classList.remove('bg-[#d8ff3e]/10', 'text-[#d8ff3e]', 'border-[#d8ff3e]/40');
+        }
+    }
+
+    function setPriceRange(min, max) {
+        const minInput = document.getElementById('min_price');
+        const maxInput = document.getElementById('max_price');
+        if (minInput) minInput.value = min > 0 ? min : '';
+        if (maxInput) maxInput.value = max > 0 ? max : '';
+        const form = document.getElementById('searchFilterForm');
+        if (form) form.submit();
+    }
+
+    function openCourtGallery(court) {
+        document.getElementById('modalPitchName').innerText = court.name || '';
+        document.getElementById('modalPitchLocation').querySelector('span').innerText = court.location || '';
+        document.getElementById('modalPitchType').innerText = court.type || 'SÂN CHUẨN';
+        document.getElementById('modalPitchPrice').innerText = court.price || '';
+        document.getElementById('modalPitchDesc').innerText = court.description || 'Sân đạt chuẩn chất lượng thi đấu BWF.';
+        document.getElementById('modalBookLink').href = 'index.php?action=book&id=' + court.id;
+
+        // Render amenities
+        const amContainer = document.getElementById('modalAmenitiesList');
+        if (amContainer) {
+            amContainer.innerHTML = '';
+            const amDefs = {
+                'parking': { name: 'Bãi đỗ ô tô', icon: '🚗' },
+                'lighting': { name: 'Đèn LED chống chói', icon: '💡' },
+                'cooling': { name: 'Quạt / Máy lạnh', icon: '❄️' },
+                'shower': { name: 'Phòng tắm nóng lạnh', icon: '🚿' },
+                'stringing': { name: 'Căng vợt lấy liền', icon: '🏸' },
+                'beverage': { name: 'Căng tin nước', icon: '🥤' }
+            };
+            const courtAms = court.amenities || [];
+            courtAms.forEach(amKey => {
+                if (amDefs[amKey]) {
+                    const badge = document.createElement('span');
+                    badge.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#121b21] border border-white/10 text-xs text-white/90 font-medium';
+                    badge.innerHTML = `<span>${amDefs[amKey].icon}</span> <span>${amDefs[amKey].name}</span>`;
+                    amContainer.appendChild(badge);
+                }
+            });
+            if (courtAms.length === 0) {
+                amContainer.innerHTML = '<span class="text-xs text-white/40 italic">Đầy đủ tiện ích thể thao tiêu chuẩn</span>';
+            }
+        }
+
+        // Angle 1: Primary court image
+        const img1 = court.image_url || 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=1000&q=85';
+        // Angle 2: Close-up floor / tournament net
+        const img2 = 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=1000&q=85';
+        // Angle 3: Badminton court hall with lighting
+        const img3 = 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=1000&q=85';
+        // Angle 4: Facility lobby / refreshment lounge
+        const img4 = 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=1000&q=85';
+
+        currentGalleryAngles = [
+            { url: img1, label: '🏟️ Toàn cảnh hàng sân thi đấu & độ cao trần' },
+            { url: img2, label: '🏸 Cận cảnh thảm PVC Yonex / BWF chống trơn trượt' },
+            { url: img3, label: '💡 Hệ thống đèn LED quang thông cao chống chói mắt' },
+            { url: img4, label: '🥤 Quầy nước giải khát, ghế chờ & bãi giữ xe rộng rãi' }
+        ];
+
+        selectGalleryAngle(0);
+
+        const modal = document.getElementById('courtGalleryModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function selectGalleryAngle(index) {
+        if (!currentGalleryAngles[index]) return;
+        document.getElementById('modalMainImg').src = currentGalleryAngles[index].url;
+        document.getElementById('modalImgTag').innerText = currentGalleryAngles[index].label;
+
+        const thumbs = document.querySelectorAll('.gallery-thumb');
+        thumbs.forEach((t, i) => {
+            if (i === index) {
+                t.classList.add('border-2', 'border-[#d8ff3e]');
+                t.classList.remove('border-white/10');
+            } else {
+                t.classList.remove('border-2', 'border-[#d8ff3e]');
+                t.classList.add('border-white/10');
+            }
+        });
+    }
+
+    function closeCourtGallery() {
+        const modal = document.getElementById('courtGalleryModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    document.getElementById('courtGalleryModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeCourtGallery();
         }
     });
-}
-
-function closeCourtGallery() {
-    const modal = document.getElementById('courtGalleryModal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-}
-
-document.getElementById('courtGalleryModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeCourtGallery();
-    }
-});
 </script>
-

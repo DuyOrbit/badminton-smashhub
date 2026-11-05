@@ -55,22 +55,23 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `users` (`id`, `username`, `password`, `role`, `name`, `phone`, `avatar_url`, `skill_level`, `preferred_format`, `district`, `latitude`, `longitude`, `location_address`, `reputation_score`, `penalty_until`, `created_at`, `owner_id`, `assigned_pitch_id`) VALUES
-(5, 'admin', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'admin', 'Quản Trị Viên', '0368653018', NULL, 4, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-03-22 06:54:13', NULL, NULL),
-(6, 'chusan1', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'owner', 'Lê Hữu Phương', '0368653018', NULL, 4, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-03-22 06:54:25', NULL, NULL),
+(5, 'admin', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'admin', 'Quản Trị Viên', '0901000001', NULL, 4, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-03-22 06:54:13', NULL, NULL),
+(6, 'chusan1', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'owner', 'Lê Hữu Phương', '0901000006', NULL, 4, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-03-22 06:54:25', NULL, NULL),
 (7, 'user', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', 'Nguyễn Anh Tuấn', '0368653018', 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150', 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-03-22 06:54:38', NULL, NULL),
 (8, 'chusanhoangkim', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'owner', 'Hoàng Kim Long', '0987654321', NULL, 3, 'Đánh Đơn', 'Tân Bình', NULL, NULL, '', 100, NULL, '2026-03-23 10:13:52', NULL, NULL),
 (9, 'nhanvien1', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'staff', 'Trần Văn Hùng', '0933112233', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-03-23 10:14:12', NULL, NULL),
 (10, 'tiendung', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', 'Trần Tiến Dũng', '0977112233', 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150', 4, 'Đánh Đơn', 'Gò Vấp', NULL, NULL, '', 100, NULL, '2026-03-23 10:39:51', NULL, NULL),
 (11, 'huonglan', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', 'Vũ Hương Lan', '0988223344', 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150', 2, 'Giao lưu nhóm', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-03-23 11:49:51', NULL, NULL),
-(12, 'q', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', 'q', 'q', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-09-26 04:36:10', NULL, NULL),
-(13, '1', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', '1', '1', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-09-26 17:57:23', NULL, NULL),
-(14, '2', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', 'Nguyễn Duy', '0368653018', 'assets/uploads/avatars/1790446643_tixung.jpg', 3, 'Đánh Đơn', 'Quận 10', NULL, NULL, '', 100, NULL, '2026-09-26 17:57:39', NULL, NULL),
-(15, 'chusanquan10', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'owner', 'Chủ sân quận 10', '0368653018', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-09-28 00:28:10', NULL, NULL),
+(12, 'q', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', 'q', '0901000012', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-09-26 04:36:10', NULL, NULL),
+(13, '1', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', '1', '0901000013', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-09-26 17:57:23', NULL, NULL),
+(14, '2', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'user', 'Nguyễn Duy', '0901000014', 'assets/uploads/avatars/1790446643_tixung.jpg', 3, 'Đánh Đơn', 'Quận 10', NULL, NULL, '', 100, NULL, '2026-09-26 17:57:39', NULL, NULL),
+(15, 'chusanquan10', '$2y$10$7H1Lsz/.J0D0ABBL9kUrt.yylwjZoWRC0J0mcLC1HKU82j8uHZ56G', 'owner', 'Chủ sân quận 10', '0901000015', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-09-28 00:28:10', NULL, NULL),
 (16, 'chusan_demo', '$2y$10$izisn0sh2MTB/AeTa5TGKO/xOw7u6u49yJuu3Ma9SdR9zEMhuuKOa', 'owner', 'Hoàng Văn Nam (Chủ Sân Tân Phú)', '0908889999', NULL, 3, 'Đánh Đôi', 'Tân Phú', NULL, NULL, '', 100, NULL, '2026-10-04 02:43:00', NULL, NULL),
-(17, 'khach_alpha', '$2y$10$izisn0sh2MTB/AeTa5TGKO/xOw7u6u49yJuu3Ma9SdR9zEMhuuKOa', 'owner', 'Đặng Việt Anh (VĐV Alpha)', '0912345678', NULL, 3, 'Đánh Đôi', 'Tân Phú', NULL, NULL, '', 100, NULL, '2026-10-04 02:43:00', NULL, NULL),
-(18, 'khach_beta', '$2y$10$izisn0sh2MTB/AeTa5TGKO/xOw7u6u49yJuu3Ma9SdR9zEMhuuKOa', 'owner', 'Nguyễn Minh Khoa (VĐV Beta)', '0987654321', NULL, 3, 'Đánh Đôi', 'Tân Bình', NULL, NULL, '', 100, NULL, '2026-10-04 02:43:00', NULL, NULL),
-(19, 'thungan', '$2y$10$SN9U2t9UyU7nyF5cew75kOR9Cnf7WCADy/hAZg.nJzonDHoeviojC', 'staff', 'thu ngân', '0123', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-10-04 03:10:11', NULL, NULL),
-(20, 'nhanvien_tanphu', '$2y$10$FtxwGXi744CgDVzfTJWIR.IW247qP7nOJs1b6/GCb5IoR1h14uRWG', 'staff', 'Nguyễn Thị Lễ Tân', '0933889900', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-10-04 03:18:12', 16, 7);
+(17, 'khach_alpha', '$2y$10$izisn0sh2MTB/AeTa5TGKO/xOw7u6u49yJuu3Ma9SdR9zEMhuuKOa', 'user', 'Đặng Việt Anh (VĐV Alpha)', '0912345678', NULL, 3, 'Đánh Đôi', 'Tân Phú', NULL, NULL, '', 100, NULL, '2026-10-04 02:43:00', NULL, NULL),
+(18, 'khach_beta', '$2y$10$izisn0sh2MTB/AeTa5TGKO/xOw7u6u49yJuu3Ma9SdR9zEMhuuKOa', 'user', 'Nguyễn Minh Khoa (VĐV Beta)', '0987654321', NULL, 3, 'Đánh Đôi', 'Tân Bình', NULL, NULL, '', 100, NULL, '2026-10-04 02:43:00', NULL, NULL),
+(19, 'thungan', '$2y$10$SN9U2t9UyU7nyF5cew75kOR9Cnf7WCADy/hAZg.nJzonDHoeviojC', 'staff', 'thu ngân', '0123', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-10-04 03:10:11', 6, 1),
+(20, 'nhanvien_tanphu', '$2y$10$FtxwGXi744CgDVzfTJWIR.IW247qP7nOJs1b6/GCb5IoR1h14uRWG', 'staff', 'Nguyễn Thị Lễ Tân', '0933889900', NULL, 3, 'Đánh Đôi', 'Bình Thạnh', NULL, NULL, '', 100, NULL, '2026-10-04 03:18:12', 16, 7),
+(21, 'nhanvien_demo', '$2y$10$izisn0sh2MTB/AeTa5TGKO/xOw7u6u49yJuu3Ma9SdR9zEMhuuKOa', 'staff', 'Nhân Viên Lễ Tân Demo', '0933112244', NULL, 3, 'Đánh Đôi', 'Tân Phú', NULL, NULL, '', 100, NULL, '2026-10-04 03:20:00', 16, 7);
 
 -- --------------------------------------------------------
 -- Table `pitches`
@@ -88,19 +89,20 @@ CREATE TABLE `pitches` (
   `quantity` int NOT NULL DEFAULT 1 COMMENT 'Số lượng sân con trong cụm',
   `price_per_hour` decimal(10,2) NOT NULL,
   `image_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `amenities` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT 'parking,lighting,cooling,shower',
   `description` text COLLATE utf8mb4_unicode_ci,
   `status` enum('active','locked') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO `pitches` (`id`, `owner_id`, `name`, `location`, `district`, `city`, `latitude`, `longitude`, `type`, `quantity`, `price_per_hour`, `image_url`, `description`, `status`) VALUES
-(1, 6, 'Sân Cầu Lông Phương Đông (Thảm BWF)', '128 Đinh Bộ Lĩnh, Phường 26', 'Bình Thạnh', 'TP.HCM', 10.81235000, 106.71182000, 'Thảm PVC Tiêu Chuẩn BWF', 8, 90000.00, 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80', 'Cụm 8 sân cầu lông thảm PVC BWF tiêu chuẩn thi đấu quốc tế. Đèn LED dịu mắt, quạt làm mát công nghiệp, phòng tắm nóng lạnh miễn phí, bãi đỗ xe rộng rãi.', 'active'),
-(2, 8, 'CLB Cầu Lông Hoàng Kim', '34 Hoàng Hoa Thám, Phường 12', 'Tân Bình', 'TP.HCM', 10.79854000, 106.64951000, 'Thảm PVC Yonex', 6, 95000.00, 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=800&q=80', 'Hệ thống 6 sân thảm cao su đệm êm chống chấn thương. Đầy đủ dịch vụ đan cước lấy liền trong 30 phút, bán cầu lông Hải Yến chính hãng, nước giải khát lạnh.', 'active'),
-(3, 6, 'Sân Cầu Lông Thanh Đa Riverside', '246 Bình Quới, Cư xá Thanh Đa', 'Bình Thạnh', 'TP.HCM', 10.82563000, 106.72891000, 'Thảm Alite', 4, 80000.00, 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=800&q=80', 'Không gian ven sông thoáng đãng, 4 sân thảm Alite đạt chuẩn. Phù hợp cho câu lạc bộ tập luyện và giao lưu nhóm cuối tuần.', 'active'),
-(4, 8, 'Trung Tâm Cầu Lông Quang Trung Pro', '890 Quang Trung, Phường 8', 'Gò Vấp', 'TP.HCM', 10.84521000, 106.65874000, 'Sân Gỗ Thi Đấu', 10, 110000.00, 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800&q=80', 'Tổ hợp 10 sân cầu lông quy mô lớn, sàn lót gỗ bên dưới thảm chống sốc, máy lạnh hỗ trợ các khung giờ cao điểm, phòng VIP máy lạnh riêng biệt.', 'active'),
-(5, 15, 'Sân quận 10', '354 cao thắng', 'Quận 10', 'TP.HCM', 10.80000000, 106.70000000, 'Thảm PVC Tiêu Chuẩn BWF', 16, 70000.00, 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=800&q=80', 'Cụm sân cầu lông quy mô 16 sân thảm BWF tiêu chuẩn, trần cao thoáng đãng, đèn LED chống chói.', 'active'),
-(6, 15, 'Sân Gò Vấp', '1122 Quang Trung', 'Quận Gò Vấp', 'Thành phố Hồ Chí Minh', 10.83807800, 106.65211000, 'Thảm PVC Tiêu Chuẩn BWF', 6, 70000.00, 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=800&q=80', 'Cụm 6 sân thảm PVC Yonex cao cấp, không gian rộng rãi, bãi gửi xe thuận tiện.', 'active'),
-(7, 16, 'Sân Cầu Lông Tân Phú Arena (BWF Standards)', '88 Tân Sơn Nhì, Phường Tân Sơn Nhì', 'Tân Phú', 'TP.HCM', 10.79500000, 106.63500000, 'Thảm PVC Tiêu Chuẩn BWF', 6, 100000.00, 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80', 'Cụm 6 sân thảm BWF chuẩn thi đấu quốc tế. Máy lạnh công nghiệp, đèn LED dịu mắt, bãi giữ xe ô tô rộng rãi.', 'active');
+INSERT INTO `pitches` (`id`, `owner_id`, `name`, `location`, `district`, `city`, `latitude`, `longitude`, `type`, `quantity`, `price_per_hour`, `image_url`, `amenities`, `description`, `status`) VALUES
+(1, 6, 'Sân Cầu Lông Phương Đông (Thảm BWF)', '128 Đinh Bộ Lĩnh, Phường 26', 'Bình Thạnh', 'TP.HCM', 10.81235000, 106.71182000, 'Thảm PVC Tiêu Chuẩn BWF', 8, 90000.00, 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80', 'parking,lighting,cooling,shower', 'Cụm 8 sân cầu lông thảm PVC BWF tiêu chuẩn thi đấu quốc tế. Đèn LED dịu mắt, quạt làm mát công nghiệp, phòng tắm nóng lạnh miễn phí, bãi đỗ xe rộng rãi.', 'active'),
+(2, 8, 'CLB Cầu Lông Hoàng Kim', '34 Hoàng Hoa Thám, Phường 12', 'Tân Bình', 'TP.HCM', 10.79854000, 106.64951000, 'Thảm PVC Yonex', 6, 95000.00, 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=800&q=80', 'parking,cooling,beverage,stringing', 'Hệ thống 6 sân thảm cao su đệm êm chống chấn thương. Đầy đủ dịch vụ đan cước lấy liền trong 30 phút, bán cầu lông Hải Yến chính hãng, nước giải khát lạnh.', 'active'),
+(3, 6, 'Sân Cầu Lông Thanh Đa Riverside', '246 Bình Quới, Cư xá Thanh Đa', 'Bình Thạnh', 'TP.HCM', 10.82563000, 106.72891000, 'Thảm Alite', 4, 80000.00, 'https://images.unsplash.com/photo-1599474924187-334a4ae5bd3c?w=800&q=80', 'parking,cooling,beverage', 'Không gian ven sông thoáng đãng, 4 sân thảm Alite đạt chuẩn. Phù hợp cho câu lạc bộ tập luyện và giao lưu nhóm cuối tuần.', 'active'),
+(4, 8, 'Trung Tâm Cầu Lông Quang Trung Pro', '890 Quang Trung, Phường 8', 'Gò Vấp', 'TP.HCM', 10.84521000, 106.65874000, 'Sân Gỗ Thi Đấu', 10, 110000.00, 'https://images.unsplash.com/photo-1622163642998-1ea32b0bbc67?w=800&q=80', 'parking,lighting,cooling,shower,stringing,beverage', 'Tổ hợp 10 sân cầu lông quy mô lớn, sàn lót gỗ bên dưới thảm chống sốc, máy lạnh hỗ trợ các khung giờ cao điểm, phòng VIP máy lạnh riêng biệt.', 'active'),
+(5, 15, 'Sân quận 10', '354 cao thắng', 'Quận 10', 'TP.HCM', 10.80000000, 106.70000000, 'Thảm PVC Tiêu Chuẩn BWF', 16, 70000.00, 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?w=800&q=80', 'parking,lighting,cooling,beverage', 'Cụm sân cầu lông quy mô 16 sân thảm BWF tiêu chuẩn, trần cao thoáng đãng, đèn LED chống chói.', 'active'),
+(6, 15, 'Sân Gò Vấp', '1122 Quang Trung', 'Quận Gò Vấp', 'Thành phố Hồ Chí Minh', 10.83807800, 106.65211000, 'Thảm PVC Tiêu Chuẩn BWF', 6, 70000.00, 'https://images.unsplash.com/photo-1613918108466-292b78a8ef95?w=800&q=80', 'parking,cooling,stringing', 'Cụm 6 sân thảm PVC Yonex cao cấp, không gian rộng rãi, bãi gửi xe thuận tiện.', 'active'),
+(7, 16, 'Sân Cầu Lông Tân Phú Arena (BWF Standards)', '88 Tân Sơn Nhì, Phường Tân Sơn Nhì', 'Tân Phú', 'TP.HCM', 10.79500000, 106.63500000, 'Thảm PVC Tiêu Chuẩn BWF', 6, 100000.00, 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=800&q=80', 'parking,lighting,cooling,shower,stringing', 'Cụm 6 sân thảm BWF chuẩn thi đấu quốc tế. Máy lạnh công nghiệp, đèn LED dịu mắt, bãi giữ xe ô tô rộng rãi.', 'active');
 
 -- --------------------------------------------------------
 -- Table `bookings`
@@ -163,6 +165,7 @@ CREATE TABLE `matchmaking` (
   `noshow_target_user_id` int DEFAULT NULL,
   `noshow_status` enum('none','pending','confirmed_noshow','rejected') COLLATE utf8mb4_unicode_ci DEFAULT 'none',
   `noshow_reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `booking_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   KEY `pitch_id` (`pitch_id`)
