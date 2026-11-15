@@ -27,20 +27,35 @@ class Ranking {
     public function processMatchResult($host_id, $guest_id, $result) {
         $season = self::getCurrentSeason();
         
-        $host_points = 0;
-        $guest_points = 0;
-        
-        if ($result == 'host_won') {
-            $host_points = 30;
-            $guest_points = -15;
-        } elseif ($result == 'guest_won') {
-            $host_points = -15;
-            $guest_points = 30;
-        } elseif ($result == 'draw') {
-            $host_points = 10;
-            $guest_points = 10;
+        // Chuẩn hóa kết quả theo chuẩn Elo hệ số K=32
+        $hostRating = (int)$this->getSeasonPoints($host_id, $season);
+        $guestRating = $guest_id ? (int)$this->getSeasonPoints($guest_id, $season) : $hostRating;
+        if ($hostRating <= 0) $hostRating = 100;
+        if ($guestRating <= 0) $guestRating = 100;
+
+        // Tính xác suất thắng kỳ vọng theo công thức Elo
+        $expectedHost = 1 / (1 + pow(10, ($guestRating - $hostRating) / 400));
+        $expectedGuest = 1 / (1 + pow(10, ($hostRating - $guestRating) / 400));
+
+        $K = 32; // Hệ số K-factor chuẩn
+        if ($result == 'host_won' || $result == 'host_win') {
+            $actualHost = 1.0;
+            $actualGuest = 0.0;
+        } elseif ($result == 'guest_won' || $result == 'guest_win') {
+            $actualHost = 0.0;
+            $actualGuest = 1.0;
+        } else { // draw
+            $actualHost = 0.5;
+            $actualGuest = 0.5;
         }
-        
+
+        $host_points = (int)round($K * ($actualHost - $expectedHost));
+        $guest_points = (int)round($K * ($actualGuest - $expectedGuest));
+
+        // Đảm bảo mức tối thiểu khi thắng/thua để giữ động lực thi đấu
+        if ($actualHost == 1.0 && $host_points < 10) $host_points = 15;
+        if ($actualGuest == 1.0 && $guest_points < 10) $guest_points = 15;
+
         $this->updatePoints($host_id, $season, $host_points);
         if ($guest_id) {
             $this->updatePoints($guest_id, $season, $guest_points);

@@ -77,11 +77,20 @@ class BookingController {
                  exit;
             }
 
-            // 2. Chặn đặt ngày hoặc giờ trong quá khứ
+            // 2. Chặn đặt ngày hoặc giờ trong quá khứ và bắt buộc đặt trước tối thiểu 60 phút
             $today = date('Y-m-d');
             $nowTime = date('H:i:s');
-            if ($booking_date < $today || ($booking_date === $today && $start_time <= $nowTime)) {
+            $nowTimestamp = time();
+            $bookingStartTimestamp = strtotime($booking_date . ' ' . $start_time);
+
+            if ($booking_date < $today || ($bookingStartTimestamp < $nowTimestamp)) {
                 header("Location: index.php?action=book&id={$pitch_id}&error=past_time");
+                exit;
+            }
+
+            // Quy tắc hệ thống: Đặt trước tối thiểu 60 phút để sân chuẩn bị
+            if (($bookingStartTimestamp - $nowTimestamp) < 3600) {
+                header("Location: index.php?action=book&id={$pitch_id}&error=advance_booking_60min");
                 exit;
             }
 

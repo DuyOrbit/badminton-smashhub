@@ -58,13 +58,15 @@ class User {
     }
 
     public function login() {
+        // Hỗ trợ đăng nhập linh hoạt bằng Tên đăng nhập (username) HOẶC Số điện thoại (phone)
         $query = "SELECT id, username, password, role, name, phone, owner_id, assigned_pitch_id 
                   FROM " . $this->table_name . " 
-                  WHERE username = ? 
+                  WHERE username = ? OR phone = ?
                   LIMIT 0,1";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->username);
+        $stmt->bindParam(2, $this->username);
         $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);

@@ -120,7 +120,30 @@ class MatchTicket {
         return ['success' => false];
     }
 
+    public function cleanupExpiredMatchedTickets() {
+        try {
+            // Quét các vé ghép ở trạng thái 'matched' nhưng đã quá thời hạn 15 phút mà chưa xác nhận đủ 2 bên
+            $q = "SELECT id, matched_ticket_id, user_id FROM " . $this->table_name . " 
+                  WHERE status = 'matched' AND expires_at IS NOT NULL AND expires_at < NOW() AND (user_confirmed = 0 OR matched_user_confirmed = 0)";
+            $stmt = $this->conn->query($q);
+            $expiredTickets = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+
+            foreach ($expiredTickets as $t) {
+                // Đưa vé về lại trạng thái 'waiting' để tiếp tục tìm đối khác
+                $this->conn->prepare("UPDATE " . $this->table_name . " 
+                    SET status = 'waiting', matched_ticket_id = NULL, matched_pitch_id = NULL, 
+                        user_confirmed = 0, matched_user_confirmed = 0, expires_at = NULL 
+                    WHERE id = ? AND status = 'matched'")->execute([$t['id']]);
+            }
+        } catch (\Exception $e) {
+            // Không ngắt tiến trình
+        }
+    }
+
     public function autoMatch($ticketId) {
+        // Tự động giải phóng các phòng ghép đã hết hạn 15 phút (Hold Expired Cleanup)
+        $this->cleanupExpiredMatchedTickets();
+
         $ticket = $this->getTicketById($ticketId);
         if (!$ticket || $ticket['status'] != 'waiting') {
             return false;
@@ -270,7 +293,8 @@ class MatchTicket {
         }
 
         // 5. Khớp lệnh thành công: Cập nhật cả 2 ticket sang trạng thái 'matched'
-        $expiresAt = date('Y-m-d H:i:s', strtotime('+2 hours'));
+        // Quy tắc phòng ghép: Thời hạn xác nhận và thanh toán 50/50 là 15 phút (giữ chỗ tạm thời)
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
         // Cập nhật ticket hiện tại
         $up1 = "UPDATE " . $this->table_name . " 
@@ -741,19 +765,22 @@ class MatchTicket {
         }
 
         if ($ticket['status'] == 'matched') {
-            // Trừ điểm uy tín khi hủy kèo đã khớp
+            // Trừ điểm uy tín khi hủy kèo đã khớp theo các mốc thời gian quy chuẩn Fair-Play
             require_once __DIR__ . '/Reputation.php';
             $repModel = new Reputation($this->conn);
 
             $matchTimestamp = strtotime($ticket['play_date'] . ' ' . $ticket['start_time']);
             $diffHours = ($matchTimestamp - time()) / 3600;
 
-            if ($diffHours <= 2 && $diffHours >= 0) {
-                // Hủy cận giờ (< 2 tiếng): phạt -15 điểm uy tín
-                $repModel->changeScore($userId, -15, "Hủy kèo cận giờ thi đấu (< 2 tiếng)", null, $ticketId);
+            if ($diffHours <= 1 && $diffHours >= 0) {
+                // Hủy sát giờ (< 1 tiếng): phạt nặng -25 điểm uy tín
+                $repModel->changeScore($userId, -25, "Hủy kèo sát giờ thi đấu (< 1 tiếng)", null, $ticketId);
+            } elseif ($diffHours <= 2 && $diffHours > 1) {
+                // Hủy cận giờ (1 - 2 tiếng): phạt -15 điểm uy tín
+                $repModel->changeScore($userId, -15, "Hủy kèo cận giờ thi đấu (1 - 2 tiếng)", null, $ticketId);
             } else {
-                // Hủy sớm: phạt nhẹ -5 điểm uy tín
-                $repModel->changeScore($userId, -5, "Hủy kèo sau khi đã khớp đối thủ", null, $ticketId);
+                // Hủy sớm (> 2 tiếng): phạt nhẹ -5 điểm uy tín
+                $repModel->changeScore($userId, -5, "Hủy kèo sau khi đã khớp đối thủ (> 2 tiếng)", null, $ticketId);
             }
 
             // Người này hủy

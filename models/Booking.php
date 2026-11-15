@@ -284,12 +284,21 @@ class Booking {
 
         // Chỉ cho phép check-in đơn có trạng thái 'confirmed' hoặc 'pending'
         // Tuyệt đối không cho phép check-in lại đơn đã 'completed' hoặc 'cancelled' (chống lạm dụng +2 điểm uy tín)
-        $chk = $this->conn->prepare("SELECT id, status, user_id FROM " . $this->table_name . " WHERE id = ?");
+        $chk = $this->conn->prepare("SELECT id, status, user_id, booking_date, start_time FROM " . $this->table_name . " WHERE id = ?");
         $chk->execute([$id]);
         $b = $chk->fetch(PDO::FETCH_ASSOC);
 
         if (!$b || in_array($b['status'], ['completed', 'cancelled'])) {
             return false;
+        }
+
+        // Quy chuẩn nghiệp vụ check-in: Chỉ cho phép check-in sớm tối đa 15 phút so với giờ bắt đầu thi đấu
+        if (!empty($b['booking_date']) && !empty($b['start_time'])) {
+            $slotStart = strtotime($b['booking_date'] . ' ' . $b['start_time']);
+            // Cho phép check-in sớm tối đa 15 phút (900 giây)
+            if (time() < ($slotStart - 900)) {
+                return false;
+            }
         }
 
         $query = "UPDATE " . $this->table_name . " 

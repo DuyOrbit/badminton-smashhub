@@ -24,8 +24,8 @@
 
         <form action="index.php?action=login" method="POST" class="space-y-5">
             <div>
-                <label for="username" class="block text-[11px] font-black uppercase tracking-wider text-[#84939b] mb-1.5 ml-1">Tên đăng nhập</label>
-                <input id="username" name="username" type="text" required class="appearance-none block w-full px-4 py-3 bg-[#0b1116] border border-white/10 rounded-xl text-white placeholder-[#50606a] focus:outline-none focus:border-[#d8ff3e] text-sm font-medium transition" placeholder="Nhập username của bạn">
+                <label for="username" class="block text-[11px] font-black uppercase tracking-wider text-[#84939b] mb-1.5 ml-1">Tên đăng nhập hoặc Số điện thoại</label>
+                <input id="username" name="username" type="text" required class="appearance-none block w-full px-4 py-3 bg-[#0b1116] border border-white/10 rounded-xl text-white placeholder-[#50606a] focus:outline-none focus:border-[#d8ff3e] text-sm font-medium transition" placeholder="Nhập username hoặc SĐT đã đăng ký">
             </div>
 
             <div>
