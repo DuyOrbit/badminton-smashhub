@@ -1,200 +1,195 @@
 # 🏸 SMASHHUB - Nền Tảng Đặt Sân Cầu Lông & Ghép Trận AI (Smart Matchmaking)
 
-[![PHP Version](https://img.shields.io/badge/PHP-7.3%2B%20%2F%208.x-blue.svg)](https://www.php.net/)
+[![PHP Version](https://img.shields.io/badge/PHP-7.4%2B%20%2F%208.x-blue.svg)](https://www.php.net/)
 [![Database](https://img.shields.io/badge/Database-MySQL%20%2F%20MariaDB-orange.svg)](https://www.mysql.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Style-Tailwind%20CSS-38bdf8.svg)](https://tailwindcss.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**SMASHHUB** là hệ thống quản lý đặt sân cầu lông và kết nối cộng đồng lông thủ toàn diện. Nền tảng tích hợp thuật toán **Ghép trận thông minh (Smart Match)** độc quyền theo trình độ Elo và bán kính định vị GPS, giải quyết triệt để bài toán thiếu người đánh, chênh lệch trình độ và bùng kèo (No-Show).
+**SMASHHUB** là nền tảng quản lý đặt sân cầu lông và kết nối cộng đồng lông thủ thông minh. Hệ thống tích hợp thuật toán **Ghép trận thông minh (Smart Match AI)** độc quyền theo trình độ Elo quốc tế và vị trí địa lý GPS Haversine, giải quyết triệt để bài toán thiếu người đánh, chênh lệch trình độ, chia tiền sân minh bạch (Split Bill 50/50) và chống bùng kèo (No-Show Fair-Play).
 
 ---
 
-## 🌟 Tính Năng Nổi Bật
+## 🌟 Tính Năng Cốt Lõi
 
-### 1. 🎯 Ghép Trận Thông Minh (Smart Matchmaking AI) & Chia Đôi Hóa Đơn (Split Bill 50/50)
-* **2 Chế độ linh hoạt**: *"Nhờ Hệ Thống Đặt Hộ"* (tìm sân trống tự động) hoặc *"Tôi Đã Có Sân Sẵn"*.
-* **Phòng ghép sân & Chia đôi 50/50**: Khi ghép trận thành công, hệ thống mở phòng chờ ghép sân. Host trả 50% và Joiner trả 50% tiền sân trong thời hạn **15 phút giữ chỗ tạm thời**. Sau 15 phút nếu một trong hai bên không hoàn tất xác nhận, phòng ghép sẽ tự động giải phóng để tiếp tục tìm đối thủ mới.
-* **Đàm phán đổi sân (Switch Pitch)**: Cả hai bên có thể đề xuất chuyển sang cụm sân trung tâm tiện hơn cho cả hai dựa trên khoảng cách GPS và chấp thuận đổi sân theo thời gian thực (Zero-Reload AJAX).
-* **Bản đồ Leaflet & GPS tương tác**: Định vị vị trí hiện tại hoặc tìm địa chỉ toàn quốc, tự động chọn sân gần nhất.
-* **Cơ chế phân cấp ưu tiên vị trí rõ ràng**:
-  * 🥇 **Ưu tiên 1**: Định vị GPS & Bán kính quét (quét sân thực tế trong $X$ km theo công thức Haversine).
-  * 🥈 **Ưu tiên 2**: Lọc theo Quận/Huyện dự phòng khi không bật GPS.
-* **Thuật toán cân trình theo Elo chuẩn (K-factor = 32)**: Tự động tính điểm kỳ vọng và cập nhật điểm Elo sau trận dựa trên kết quả thi đấu hai bên xác nhận hoặc do chủ sân làm trọng tài nhập kết quả.
-* **Nhắn tin trực tiếp giữa hai cơ thủ (Chat Box)**: Trò chuyện và thông báo tự động (thông báo ghép trận, nhắc thanh toán 50%, chúc mừng nhận mã check-in) qua bảng tin nhắn nội bộ `messages`.
+### 1. 🎯 Ghép Trận Thông Minh (Smart Match AI) & Chia Đôi Hóa Đơn (Split Bill 50/50)
+* **2 Chế độ linh hoạt**: *"Nhờ Hệ Thống Đặt Hộ"* (tự tìm sân trống trung tâm tiện nhất cho cả hai) hoặc *"Tôi Đã Có Sân Sẵn"*.
+* **Phòng ghép sân & Giữ chỗ 15 phút**: Khi hai cơ thủ được ghép nối, hệ thống mở phòng đàm phán với thời hạn giữ chỗ 15 phút. Mỗi bên hoàn tất xác nhận và thanh toán 50% tiền sân (VietQR hoặc Tiền mặt tại sân).
+* **Đàm phán đổi sân thời gian thực (Switch Pitch - Zero-Reload AJAX)**: Cho phép đề xuất đổi sang cụm sân trung tâm tiện hơn dựa trên khoảng cách GPS; đối thủ có thể Chấp thuận hoặc Từ chối tức thì mà không cần tải lại trang.
+* **Thuật toán đa mục tiêu (Multi-objective Scoring)**:
+  * 🥇 **Điểm Elo (50%)**: Ưu tiên ghép đối thủ có trình độ tương đương, biên độ lệch $\Delta\text{Elo} \le 100$.
+  * 🥈 **Điểm Vị trí GPS (30%)**: Quét bán kính thực tế theo công thức Haversine (hoặc cùng Quận/Huyện dự phòng).
+  * 🥉 **Thể thức thi đấu (20%)**: Khớp thể thức Đơn hoặc Đôi.
+* **Trò chuyện nội bộ (Internal Chat Box)**: Nhắn tin trao đổi trực tiếp giữa hai bên và nhận thông báo tiến trình tự động.
 
-### 2. 🛡️ Hệ Thống Điểm Uy Tín Fair-Play & Cơ Chế Chống Bùng Kèo (No-Show)
-* Điểm uy tín cơ bản: **100/100 PTS**.
-* Cộng điểm thưởng Fair-Play khi hoàn tất trận đấu đúng hẹn (**+2 PTS**).
-* **Quy chuẩn trừ điểm uy tín khi tự ý hủy kèo**:
-  * 🟢 Hủy sớm (> 2 tiếng trước giờ đấu): Phạt nhẹ **-5 PTS**.
-  * 🟡 Hủy cận giờ (1 - 2 tiếng trước giờ đấu): Phạt **-15 PTS**.
-  * 🔴 Hủy sát giờ (< 1 tiếng trước giờ đấu): Phạt nặng **-25 PTS**.
-* **Xử phạt bùng kèo (No-Show)**: Đối thủ vắng mặt bị chủ sân xác nhận sẽ bị trừ **-30 PTS Uy Tín**, phạt **-50 Điểm Elo** và tạm khóa tìm trận.
-* **Lịch sử biến động uy tín (`reputation_logs`)**: Ghi chép minh bạch từng lần cộng/trừ điểm kèm lý do và mã trận/đơn đặt.
-* Tự động cảnh báo và **khóa tính năng tìm trận** nếu điểm uy tín dưới 50 PTS.
-
-### 3. 👥 Cộng Đồng Câu Lạc Bộ & Nhóm Cố Định (Badminton Clubs)
-* **Thành lập & Quản lý CLB**: Tự tạo CLB cho nhóm bạn, thiết lập lịch đánh định kỳ (ví dụ: Tối 2-4-6 hoặc cuối tuần), chọn sân nhà và yêu cầu trình độ Elo.
-* **Bảng tin nội bộ & Tuyển Vãng Lai**: Khi nhóm thiếu chân, Trưởng nhóm / thành viên đăng tin *"Tuyển X Slot Vãng Lai"* kèm phí chia tiền sân, người chơi tự do có thể vào xin slot giao lưu tức thì.
-* **Danh sách thành viên**: Theo dõi danh sách lông thủ, cấp quyền Trưởng nhóm / Thành viên.
-
-### 4. 🏟️ Phân Hệ Dành Cho Chủ Sân (Court Owner) & POS Bán Hàng Tại Quầy
-* **Quản lý cụm sân**: Thêm/Sửa/Xóa sân, định vị GPS, tải ảnh sân, cấu hình số lượng sân con và giá theo giờ.
-* **POS Bán Hàng & Đặt Sân Tại Quầy (Walk-in Booking)**: 
-  * Tạo đơn nhanh tại quầy lễ tân cho khách vãng lai.
-  * Tích hợp bán các mặt hàng dịch vụ phụ trợ: nước suối, Revive chanh muối, thuê vợt thi đấu, ống cầu Hải Yến S90...
-  * Tự động cộng tiền dịch vụ vào tổng hóa đơn thanh toán tiền mặt/VietQR.
-* **Biểu Đồ Trực Quan Doanh Thu & Công Suất (Chart.js Analytics)**: 
-  * 📈 Biểu đồ Doanh thu 7 ngày gần nhất (Line Chart Gradient) cập nhật tự động theo thời gian thực.
-  * ⏰ Biểu đồ Doughnut phân tích tỷ lệ đặt sân theo các khung giờ (Sáng, Trưa, Chiều, Giờ Vàng cao điểm 18h-22h).
-* **Quản lý & Duyệt đánh giá sân (`reviews`)**: Xem và quản lý các đánh giá sao, nhận xét của khách hàng sau khi chơi xong.
-* **Phân quyền nhân viên**: Tạo tài khoản thu ngân/lễ tân và gán vào cụm sân phụ trách cụ thể (`assigned_pitch_id`).
-* **Xuất báo cáo doanh thu**: Xuất file CSV thống kê chi tiết theo đơn đặt.
-
-### 5. 💳 Thanh Toán VietQR, Ưu Đãi Hạng Elo & Quy Chuẩn Đặt Sân
-* **Tự động sinh mã VietQR**: Mã QR ngân hàng động kèm mã đơn `CKIN...` và số tiền chính xác sau khi áp dụng giảm giá Rank Elo.
-* **Ưu đãi theo Hạng Elo (Elo-based Promotions)**:
-  * 💎 **Hạng Kim Cương** (Elo $\ge$ 1000): Giảm ngay **20%** tiền sân.
+### 2. 🏆 Hệ Thống Xếp Hạng Elo & 4 Bậc Rank Ưu Đãi
+* **Mức khởi điểm tân thủ**: Đăng ký tài khoản nhận ngay **`100 Elo`** (Bậc **Rank Đồng**).
+* **Thuật toán chuẩn quốc tế ($K\text{-factor} = 32$)**:
+  * Tự động tính xác suất thắng kỳ vọng $E$ dựa trên chênh lệch Elo giữa 2 bên.
+  * Thắng trận: Nhận điểm cộng theo hiệu số trình độ (bảo vệ động lực thi đấu: thắng luôn nhận tối thiểu **+15 Elo**).
+  * Thua trận: Bị trừ điểm tương ứng (sàn an toàn không bao giờ âm dưới 0).
+  * Hòa trận: Biến động nhẹ tùy theo kỳ vọng trước trận.
+  * Cập nhật điểm và thông báo tức thì đến chuông thông báo cá nhân sau khi Chủ sân xác nhận kết quả.
+* **Chính sách ưu đãi giảm giá tiền sân theo Rank**:
+  * 💎 **Hạng Kim Cương** (Elo $\ge$ 1000): Giảm ngay **20%** tiền sân khi đặt và ghép kèo.
   * 🥇 **Hạng Vàng** (Elo $\ge$ 600): Giảm ngay **10%** tiền sân.
   * 🥈 **Hạng Bạc** (Elo $\ge$ 300): Giảm ngay **5%** tiền sân.
-  * 🥉 **Hạng Đồng**: Giá niêm yết chuẩn.
-* **Nút Mô Phỏng Thanh Toán (Sandbox Demo Mode)**: Cho phép chuyển trạng thái đơn đặt từ `unpaid` sang `paid` và xác nhận lịch tức thì trên giao diện mà không cần chờ tài khoản ngân hàng thật, tối ưu cho buổi demo bảo vệ đồ án.
-* **Quy chuẩn thời gian đặt sân & check-in**:
-  * ⏱️ Đặt trước tối thiểu **60 phút** so với giờ thi đấu để sân kịp chuẩn bị.
-  * ⏱️ Khách chỉ được phép check-in sớm tối đa **15 phút** so với giờ bắt đầu ca đặt.
-* **Bảo đảm toàn vẹn giao dịch (ACID & Concurrency Safe)**: Bọc toàn bộ quá trình kiểm tra trùng lịch và tạo đơn vào **Database Transaction** kết hợp khóa `SELECT ... FOR UPDATE`, giải quyết triệt để lỗi tranh chấp đặt sân cùng thời điểm (Race Condition).
+  * 🥉 **Hạng Đồng** (100 - 299 Elo): Giá niêm yết chuẩn cho tân thủ.
 
-### 6. 🎟️ Phân Hệ Bàn Trực Tiếp Đón (Staff / Receptionist)
-* Giao diện tối ưu hóa cho màn hình cảm ứng / máy tính bảng lễ tân.
-* **Check-in 1-Click**: Tìm kiếm theo Mã Check-in (ví dụ: `CKIN...`), SĐT hoặc tên khách.
-* Hỗ trợ check-in riêng biệt từng người (Host/Guest) trong đơn cáp kèo thông minh AI.
-* Ràng buộc bảo mật: Nhân viên chỉ được phép check-in các đơn thuộc Cụm sân mình phụ trách.
+### 3. 🛡️ Điểm Uy Tín Fair-Play & Cơ Chế Chống Bùng Kèo (No-Show)
+* **Điểm uy tín chuẩn**: **100/100 PTS**.
+* **Thưởng Fair-Play**: **+2 PTS** khi đến sân hoàn tất trận đấu đúng hẹn.
+* **Chế tài xử phạt hủy kèo minh bạch**:
+  * 🟢 Hủy sớm (> 2 tiếng trước giờ đấu): Phạt nhẹ **-5 PTS**.
+  * 🟡 Hủy cận giờ (1 - 2 tiếng trước giờ đấu): Phạt **-15 PTS**.
+  * 🟠 Hủy sát giờ (< 1 tiếng trước giờ đấu): Phạt nặng **-25 PTS** và tạm khóa tìm trận 3 ngày.
+  * 🔴 Bùng kèo (No-Show): Bị Chủ sân xác nhận vắng mặt sẽ phạt **-30 PTS Uy Tín**, **-50 Điểm Elo** và tạm khóa tìm trận 3 ngày.
+* **Bảo vệ quyền lợi**: Nếu bị đối thủ bùng kèo, người chơi có mặt được bảo toàn điểm uy tín, bảo lưu tiền sân hoặc hỗ trợ nhận sân thi đấu.
+* Tài khoản có điểm uy tín dưới **50 PTS** sẽ tự động bị tước quyền tham gia tính năng Ghép trận.
+
+### 4. 👥 Cộng Đồng Câu Lạc Bộ (Badminton Clubs)
+* **Quản lý CLB**: Thành lập câu lạc bộ, quản lý danh sách thành viên, cấu hình lịch sinh hoạt định kỳ và phân loại trình độ theo 4 bậc Rank.
+* **Bảng tin nội bộ & Tuyển Slot Vãng Lai**: Đăng tin tuyển người giao lưu kèm mức phí đóng góp; người chơi tự do có thể xin gia nhập slot chỉ bằng 1 thao tác.
+
+### 5. 🏟️ Phân Hệ Chủ Sân (Court Owner) & POS Bán Hàng Tại Quầy
+* **Quản lý cụm sân**: Thêm/Sửa thông tin cụm sân, tọa độ GPS, số lượng sân con tiêu chuẩn BWF, đơn giá theo giờ.
+* **POS Đặt Sân Tại Quầy (Walk-in)**: Tạo đơn trực tiếp cho khách vãng lai, tích hợp dịch vụ phụ trợ (nước suối, Revive, thuê vợt, cầu Hải Yến S90) và tính tổng hóa đơn tự động.
+* **Lịch đặt sân dạng lưới (Court Schedule Grid)**: Giám sát toàn bộ trạng thái sân con theo khung giờ 06:00 - 22:00, check-in và duyệt thanh toán không tải lại trang.
+* **Biểu Đồ Trực Quan (Chart.js Analytics)**:
+  * 📈 Biểu đồ Doanh thu 7 ngày gần nhất (Line Chart Gradient).
+  * ⏰ Biểu đồ Doughnut phân tích công suất và khung giờ cao điểm (Giờ vàng 18h - 22h).
+* **Trọng tài trận đấu**: Duyệt thu 50% tiền mặt, xác nhận kết quả thi đấu cập nhật Elo, xử lý khiếu nại vắng mặt (No-Show).
+
+### 6. 🎟️ Phân Hệ Bàn Trực Lễ Tân (Staff / Receptionist)
+* Giao diện tối ưu cảm ứng cho máy tính bảng / POS tại quầy lễ tân.
+* **Check-in 1-Click**: Tra cứu theo Mã đặt sân (`CKIN...`), Số điện thoại hoặc tên khách hàng.
+* Hỗ trợ check-in riêng biệt từng người (Host/Guest) trong các đơn cáp kèo đôi.
+* Phân quyền chi nhánh: Nhân viên chỉ được phép xem và check-in các đơn thuộc cụm sân mình phụ trách.
 
 ### 7. 👑 Phân Hệ Quản Trị Hệ Thống (Super Admin)
-* Thống kê toàn cảnh doanh thu, số lượng sân, người dùng trên toàn hệ thống.
-* Quản lý & khóa/mở cụm sân, phân quyền vai trò người dùng (Admin, Owner, Staff, User).
-* Cấp tài khoản Thu ngân trực tiếp cho các cụm sân trong hệ thống.
+* Dashboard thống kê tổng quan doanh thu toàn sàn, số lượng sân đấu, đơn đặt và thành viên.
+* Quản lý người dùng, phân quyền RBAC (`admin`, `owner`, `staff`, `user`), khóa/mở sân đấu.
+* Cấp và gán tài khoản nhân viên lễ tân vào các cụm sân trực thuộc.
 
-### 8. 🔐 Tài Khoản & Bảo Mật Người Dùng
-* **Đăng nhập linh hoạt**: Đăng nhập bằng **Tên đăng nhập (Username)** HOẶC **Số điện thoại (Phone)** đã đăng ký.
-* **Đặt lại mật khẩu**: Xác minh thông tin tài khoản hợp lệ, mật khẩu tối thiểu 6 ký tự kèm xác nhận mật khẩu an toàn.
-* **Bảo vệ CSRF & XSS**: Token CSRF cho các tác vụ thay đổi trạng thái và mã hóa đầu ra giao diện.
-
----
-
-## 📸 Hình Ảnh Giao Diện Hệ Thống (Báo Cáo Đồ Án)
-
-> Toàn bộ ảnh chụp màn hình độ phân giải cao (Full HD, 1.5x Retina) phục vụ báo cáo đồ án được lưu trữ tại thư mục [`docs/screenshots/`](docs/screenshots/).
-
-### 1. Trang Chủ & Hệ Thống Nhận Diện Thương Hiệu
-![Trang chủ hệ thống](docs/screenshots/01_trang_chu_he_thong.png)
-
-### 2. Danh Sách Cụm Sân Tiêu Chuẩn BWF & Bộ Lọc Bán Kính GPS
-![Danh sách cụm sân BWF](docs/screenshots/03_danh_sach_cum_san_bwf.png)
-
-### 3. Album Ảnh Thực Tế Sân Đấu Đa Góc Nhìn (Interactive Court Gallery)
-![Album ảnh thực tế sân](docs/screenshots/02_album_anh_thuc_te_san.png)
-
-### 4. Sơ Đồ Lưới Khung Giờ Trống (06:00–22:00) & Chọn Vị Trí Sân Con BWF
-![Sơ đồ lưới khung giờ và chọn sân con BWF](docs/screenshots/11_luoi_gio_va_so_do_san_con.png)
-
-### 5. Ghép Trận Thông Minh AI (Smart Matchmaking) & Điểm Uy Tín Fair-Play
-![Ghép trận thông minh Smart Match AI](docs/screenshots/04_ghep_tran_smart_match_ai.png)
-
-### 6. Thanh Toán Trực Tuyến VietQR & Mô Phỏng Giao Dịch Tức Thì (Sandbox Mode)
-![Thanh toán VietQR Sandbox](docs/screenshots/05_thanh_toan_vietqr_sandbox.png)
-
-### 6. Cộng Đồng Câu Lạc Bộ & Bảng Tin Tuyển Giao Lưu Vãng Lai
-![Cộng đồng Câu Lạc Bộ](docs/screenshots/06_cong_dong_cau_lac_bo.png)
-
-### 7. Bàn Trực Lễ Tân & Check-in 1-Click (Phân Hệ Nhân Viên Sân)
-![Bàn trực tiếp đón Staff](docs/screenshots/07_ban_truc_tiep_don_staff.png)
-
-### 8. Dashboard Chủ Sân & Biểu Đồ Phân Tích Doanh Thu / Khung Giờ (Chart.js)
-![Dashboard Chủ sân Chart.js](docs/screenshots/08_dashboard_chu_san_chartjs.png)
-
-### 9. Phân Hệ Quản Trị Hệ Thống Toàn Diện (Super Admin Panel)
-![Quản trị hệ thống Admin](docs/screenshots/09_quan_tri_he_thong_admin.png)
-
-### 10. Giao Diện Tương Thích Thiết Bị Di Động (Mobile Responsive)
-<p align="center">
-  <img src="docs/screenshots/10_giao_dien_mobile_responsive.png" alt="Giao diện Mobile Responsive" width="380" />
-</p>
+### 8. 🔒 Bảo Mật & Toàn Vẹn Hệ Thống (Security & Concurrency Safe)
+* **Chống tranh chấp đặt sân (Concurrency-safe)**: Bọc toàn bộ quy trình kiểm tra và lưu đơn trong **InnoDB Database Transaction** kết hợp khóa bi quan `SELECT ... FOR UPDATE`, triệt tiêu hoàn toàn lỗi đặt trùng sân con (Race Condition).
+* **Cơ chế giữ chỗ có hạn (Pending Timeout)**: Đơn đặt sân và vé chờ quá hạn 10-15 phút không hoàn tất thanh toán sẽ tự động được giải phóng dung lượng.
+* **Bảo vệ CSRF & IDOR**: Mọi thao tác thay đổi dữ liệu đều chạy qua phương thức POST kèm xác thực `csrf_token`; phân quyền kiểm tra quyền sở hữu sân và đơn đặt nghiêm ngặt.
+* **Cơ chế Quên Mật Khẩu an toàn**: Sinh mật khẩu tạm ngẫu nhiên, giới hạn số lần thử (tối đa 5 lần trong 15 phút) chống tấn công Brute Force.
+* **An toàn Upload**: Kiểm tra MIME Type thực tế bằng `finfo`, giới hạn dung lượng, đổi tên tệp ngẫu nhiên và chặn thực thi PHP trong thư mục tải lên bằng `.htaccess`.
+* **Chuẩn hóa UTF-8 toàn diện**: Hỗ trợ 100% tiếng Việt có dấu, DSN utf8mb4, `SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci`, miễn nhiễm lỗi Mojibake.
 
 ---
 
-## 🛠️ Yêu Cầu Hệ Thống & Cài Đặt
+## 📸 Hình Ảnh Giao Diện Hệ Thống
+
+> Các ảnh chụp giao diện chất lượng cao phục vụ báo cáo đồ án được lưu tại thư mục [`docs/screenshots/`](docs/screenshots/).
+
+| Chức Năng | Hình Ảnh Minh Họa |
+| :--- | :--- |
+| **Trang Chủ Hệ Thống** | ![Trang chủ](docs/screenshots/01_trang_chu_he_thong.png) |
+| **Album Ảnh & Chi Tiết Sân BWF** | ![Chi tiết sân](docs/screenshots/02_album_anh_thuc_te_san.png) |
+| **Bộ Lọc Cụm Sân & Bản Đồ GPS** | ![Danh sách sân](docs/screenshots/03_danh_sach_cum_san_bwf.png) |
+| **Ghép Kèo Thông Minh AI** | ![Smart Match AI](docs/screenshots/04_ghep_tran_smart_match_ai.png) |
+| **Thanh Toán VietQR Sandbox** | ![VietQR Sandbox](docs/screenshots/05_thanh_toan_vietqr_sandbox.png) |
+| **Cộng Đồng Câu Lạc Bộ** | ![CLB Cầu Lông](docs/screenshots/06_cong_dong_cau_lac_bo.png) |
+| **Bàn Lễ Tân Check-in 1-Click** | ![Staff POS](docs/screenshots/07_ban_truc_tiep_don_staff.png) |
+| **Dashboard Chủ Sân (Chart.js)** | ![Owner Dashboard](docs/screenshots/08_dashboard_chu_san_chartjs.png) |
+| **Quản Trị Toàn Sàn (Super Admin)** | ![Admin Panel](docs/screenshots/09_quan_tri_he_thong_admin.png) |
+| **Sơ Đồ Khung Giờ & Chọn Sân Con** | ![Lưới giờ](docs/screenshots/11_luoi_gio_va_so_do_san_con.png) |
+
+---
+
+## 🛠️ Yêu Cầu Kỹ Thuật & Cài Đặt
 
 ### 1. Yêu Cầu Môi Trường
-* **Web Server**: Apache hoặc Nginx (Hỗ trợ tốt trên WAMP, XAMPP, Laragon, Docker).
-* **PHP**: Phiên bản 7.3 trở lên (Hỗ trợ PHP 8.x).
-* **Database**: MySQL 5.7+ hoặc MariaDB 10.3+.
-* **Extensions PHP**: `pdo`, `pdo_mysql`, `mbstring`.
+* **PHP**: Phiên bản 7.4 trở lên (Tương thích tốt trên PHP 7.4 và PHP 8.x).
+* **Database**: MySQL 5.7+ hoặc MariaDB 10.3+ (Hỗ trợ InnoDB Engine).
+* **Web Server**: Apache hoặc Nginx (Hỗ trợ WAMP, XAMPP, Docker).
+* **PHP Extensions**: `pdo`, `pdo_mysql`, `mbstring`, `fileinfo`.
 
 ### 2. Hướng Dẫn Cài Đặt Nhanh
 
-#### Bước 1: Tải mã nguồn về thư mục Web Server
-Đặt thư mục dự án vào thư mục gốc của Web Server:
-* WAMP: `C:\wamp64\www\badminton` (hoặc `F:\wamp\www\badminton`)
-* XAMPP: `C:\xampp\htdocs\badminton`
+#### Cách 1: Chạy bằng WAMP / XAMPP
+1. Đặt thư mục dự án vào thư mục web server:
+   - WAMP: `C:\wamp64\www\badminton` (hoặc `D:\wamp\www\badminton`)
+   - XAMPP: `C:\xampp\htdocs\badminton`
+2. Mở **phpMyAdmin** (`http://localhost/phpmyadmin`), tạo cơ sở dữ liệu mới:
+   - Tên CSDL: `badminton_booking`
+   - Bảng mã (Collation): `utf8mb4_unicode_ci`
+3. Nhập (Import) tệp tin: [`badminton_booking.sql`](badminton_booking.sql).
+4. Kiểm tra tệp cấu hình [`config/database.php`](config/database.php):
+   ```php
+   define('DB_HOST', '127.0.0.1');
+   define('DB_PORT', '3306');
+   define('DB_USER', 'root');
+   define('DB_PASS', '');
+   define('DB_NAME', 'badminton_booking');
+   ```
+5. Mở trình duyệt và truy cập: `http://localhost/badminton`
 
-#### Bước 2: Khởi tạo Cơ sở dữ liệu
-1. Mở **phpMyAdmin** (`http://localhost/phpmyadmin`).
-2. Tạo cơ sở dữ liệu mới có tên: `badminton_booking` (Collation: `utf8mb4_unicode_ci`).
-3. Chọn tab **Import** và tải lên file: `badminton_booking.sql`.
-
-#### Bước 3: Cấu hình kết nối Database
-Mở file `config/database.php` và điều chỉnh thông số nếu cần:
-```php
-private $host = "localhost";
-private $db_name = "badminton_booking";
-private $username = "root";
-private $password = ""; // Mặc định trên WAMP/XAMPP là rỗng
+#### Cách 2: Chạy bằng Docker
+```bash
+docker-compose up -d
 ```
+Ứng dụng sẽ tự động chạy tại địa chỉ: `http://localhost:8080` (CSDL port 33066).
 
-#### Bước 4: Khởi chạy ứng dụng
-Mở trình duyệt web và truy cập:
-```
-http://localhost/badminton/index.php
-```
+---
 
-> **Lưu ý bảng mã Windows CLI**: Chạy `chcp 65001` hoặc sử dụng Windows Terminal để hiển thị tiếng Việt UTF-8 chuẩn xác khi chạy các script PHP CLI hoặc kiểm thử tự động.
+## 🧪 Bộ Kiểm Thử Tự Động (Automated Testing)
+
+> **Lưu ý Windows CLI:** Khi chạy kiểm thử trên Command Prompt hoặc PowerShell, hãy chuyển bảng mã sang UTF-8 bằng lệnh `chcp 65001` để hiển thị tiếng Việt chính xác.
+
+Hệ thống tích hợp bộ kịch bản kiểm thử tự động toàn diện trong thư mục `tests/`:
+
+```bash
+# 1. Kiểm tra toàn vẹn bảng mã tiếng Việt UTF-8 và kết nối CSDL:
+php tests/utf8_check.php
+
+# 2. Kiểm thử an toàn tranh chấp Concurrency (giả lập 20 yêu cầu đặt sân cùng mili-giây):
+php tests/concurrent_booking_test.php
+
+# 3. Kiểm thử tích hợp toàn bộ luồng Smart Match AI (Ghép đôi -> Xác nhận 50/50 -> Báo kết quả -> Cập nhật Elo):
+php tests/smart_match_flow_test.php
+
+# 4. Kiểm thử Unit Test logic Matching (Node.js/Jest nếu có):
+npm test
+
+# 5. Kiểm thử chịu tải Stress Test Concurrency (k6):
+k6 run tests/concurrent_join.js
+```
 
 ---
 
 ## 👥 Danh Sách Tài Khoản Demo
 
-| Vai trò (Role) | Tên đăng nhập (Username) | Mật khẩu (Password) | Chức năng kiểm thử |
+| Vai trò (Role) | Tên đăng nhập (Username) | Mật khẩu (Password) | Chức năng kiểm thử chính |
 | :--- | :--- | :--- | :--- |
-| **Quản Trị Viên (Admin)** | `admin` | `123456` | Dashboard hệ thống, quản lý người dùng, duyệt sân |
-| **Chủ Sân (Owner)** | `chusan_demo` | `123456` | Quản lý sân, đặt tại quầy, quản lý thu ngân |
-| **Chủ Sân Bình Thạnh** | `chusan1` | `123456` | Quản lý cụm sân Bình Thạnh, duyệt lịch, duyệt thu 50% |
-| **Nhân Viên (Staff)** | `nhanvien_demo` | `123456` | Bàn trực lễ tân, kiểm tra mã check-in |
-| **Thu Ngân (Staff)** | `thungan` | `123456` | Bàn lễ tân cụm sân Bình Thạnh, check-in 1-Click |
-| **Khách Hàng (User)** | `khach_alpha` | `123456` | Đặt sân trực tuyến, lập lệnh Smart Match AI |
-| **Khách Hàng (User)** | `khach_beta` | `123456` | Đối thủ bắt cặp Smart Match AI, đàm phán đổi sân |
-| **Khách Hàng (User)** | `user` | `123456` | Đặt sân và tham gia CLB |
+| **Quản Trị Viên (Admin)** | `admin` | `123456` | Toàn quyền quản trị, duyệt sân, quản lý tài khoản |
+| **Chủ Sân Demo** | `chusan_demo` | `123456` | Quản lý cụm sân, POS bán hàng, lịch lưới |
+| **Chủ Sân Bình Thạnh** | `chusan1` | `123456` | Quản lý sân Bình Thạnh, duyệt thu 50% tiền mặt, xử phạt bùng kèo |
+| **Nhân Viên Sân (Staff)** | `nhanvien1` | `123456` | Bàn lễ tân, check-in 1-Click bằng Mã đơn / SĐT |
+| **Khách Hàng (User 1)** | `tiendung` | `123456` | Lập lệnh tìm trận Smart Match AI, đàm phán đổi sân |
+| **Khách Hàng (User 2)** | `user` | `123456` | Đối thủ được AI bắt cặp, xác nhận thanh toán 50/50 |
+| **Khách Hàng Mới** | `khach_alpha` | `123456` | Kiểm tra tài khoản tân thủ nhận 100 Elo (Rank Đồng) |
 
 ---
 
-## 🗄️ Cấu Trúc Cơ Sở Dữ Liệu (14 Bảng Chuẩn)
+## 🗄️ Cấu Trúc Cơ Sở Dữ Liệu (14 Bảng Dữ Liệu Chuẩn)
 
-Hệ thống được thiết kế trên mô hình quan hệ chuẩn hóa gồm **14 bảng dữ liệu** trong tệp `badminton_booking.sql`:
-
-1. `users`: Tài khoản người dùng, phân quyền RBAC (`admin`, `owner`, `staff`, `user`), tọa độ GPS, điểm uy tín và liên kết quản lý.
-2. `pitches`: Cụm sân cầu lông, thông tin địa chỉ, tọa độ GPS, số lượng sân con BWF, loại thảm và giá thuê theo giờ.
-3. `bookings`: Đơn đặt sân, mã check-in (`CKIN...`), số sân con (`court_number`), phương thức và trạng thái thanh toán.
-4. `matchmaking`: Thông tin các trận cáp kèo, kết quả trận đấu, trạng thái thanh toán chia đôi và check-in của 2 bên.
-5. `match_tickets`: Lệnh tìm trận Smart Match AI, bán kính quét GPS, thời hạn phòng ghép (`expires_at`), trạng thái xác nhận 50%.
-6. `messages`: Hệ thống trò chuyện nội bộ và gửi thông báo tự động giữa các thành viên.
-7. `notifications`: Thông báo hệ thống, thông báo kết quả duyệt đơn và biến động lịch thi đấu.
-8. `reputation_logs`: Nhật ký biến động điểm Uy Tín Fair-Play (+2 khi hoàn thành, -5, -15, -25 khi hủy, -30 khi No-Show).
-9. `reviews`: Đánh giá chất lượng cụm sân (số sao từ 1 - 5 và nhận xét) của khách hàng sau khi chơi.
-10. `services`: Danh mục mặt hàng dịch vụ & tiện ích phụ trợ (nước suối, nước tăng lực Revive, thuê vợt, ống cầu Hải Yến).
+1. `users`: Tài khoản thành viên, phân quyền RBAC, tọa độ GPS, điểm uy tín và liên kết quản lý cụm sân.
+2. `pitches`: Cụm sân cầu lông, địa chỉ, kinh độ/vĩ độ GPS, số lượng sân con BWF, loại thảm và đơn giá theo giờ.
+3. `bookings`: Đơn đặt sân, mã check-in (`CKIN...`), số sân con được cấp (`court_number`), phương thức và trạng thái thanh toán.
+4. `matchmaking`: Hồ sơ trận cáp kèo, kết quả thi đấu, trạng thái thanh toán chia đôi và check-in riêng 2 bên.
+5. `match_tickets`: Lệnh tìm trận Smart Match AI, bán kính quét GPS, thời hạn phòng ghép (`expires_at`), trạng thái xác nhận.
+6. `messages`: Hộp thư trò chuyện trực tiếp và thông báo tự động giữa các cơ thủ.
+7. `notifications`: Chuông thông báo hệ thống, thông báo biến động lịch đặt và kết quả điểm $\pm\text{Elo}$.
+8. `reputation_logs`: Nhật ký biến động điểm Uy Tín Fair-Play (+2 hoàn thành, -5, -15, -25 khi hủy, -30 khi No-Show).
+9. `reviews`: Đánh giá xếp hạng sao và nhận xét của khách hàng đối với từng cụm sân.
+10. `services`: Danh mục mặt hàng dịch vụ phụ trợ (nước suối, Revive, thuê vợt, cầu thi đấu).
 11. `user_scores`: Điểm tích lũy và bảng xếp hạng Elo cá nhân theo từng mùa giải (`season`).
-12. `clubs`: Danh sách các Câu Lạc Bộ cầu lông và nhóm sinh hoạt định kỳ.
-13. `club_members`: Danh sách thành viên CLB kèm vai trò (`leader`, `admin`, `member`) và trạng thái duyệt.
-14. `club_posts`: Bảng tin nội bộ CLB và tin tuyển slot giao lưu vãng lai kèm chi phí chia sẻ.
+12. `clubs`: Danh sách các Câu Lạc Bộ cầu lông và nhóm sinh hoạt thể thao định kỳ.
+13. `club_members`: Thành viên CLB, vai trò (`leader`, `admin`, `member`) và trạng thái xét duyệt.
+14. `club_posts`: Bảng tin nội bộ CLB và tin đăng tuyển slot vãng lai kèm chi phí chia sẻ.
 
 ---
 
@@ -202,24 +197,51 @@ Hệ thống được thiết kế trên mô hình quan hệ chuẩn hóa gồm 
 
 ```
 badminton/
-├── assets/                  # CSS, JS, hình ảnh tải lên
-├── config/                  # Cấu hình kết nối cơ sở dữ liệu
+├── assets/                  # CSS, JS, hình ảnh giao diện, thư mục uploads bảo mật
+├── config/                  # Kết nối PDO Database & cơ chế Auto-migration
 │   └── database.php
-├── controllers/             # Bộ điều khiển MVC (Admin, Owner, Staff, Booking, Matchmaking...)
-├── models/                  # Các lớp thực thể (User, Pitch, Booking, MatchTicket, Reputation...)
-├── views/                   # Giao diện người dùng
-│   ├── admin/               # Màn hình quản trị
-│   ├── owner/               # Màn hình chủ sân
-│   ├── staff/               # Màn hình bàn trực thu ngân
-│   ├── matchmaking/         # Màn hình tìm kèo Smart Match AI
-│   ├── layout.php           # Khung layout chính
-│   └── home.php             # Trang chủ
-├── badminton_booking.sql    # File sao lưu cơ sở dữ liệu
-├── index.php                # Router điều hướng chính
-└── README.md                # Tài liệu dự án
+├── controllers/             # Bộ điều khiển mô hình MVC thuần
+│   ├── AdminController.php
+│   ├── AuthController.php
+│   ├── BookingController.php
+│   ├── ClubController.php
+│   ├── HomeController.php
+│   ├── MatchmakingController.php
+│   ├── MessageController.php
+│   ├── NotificationController.php
+│   ├── OwnerController.php
+│   ├── StaffController.php
+│   └── UserController.php
+├── models/                  # Các lớp thực thể và thuật toán nghiệp vụ
+│   ├── Booking.php          # Quản lý đơn đặt, chống trùng lịch Race Condition
+│   ├── Club.php             # Quản lý Câu lạc bộ & slot vãng lai
+│   ├── MatchTicket.php      # Thuật toán Matching AI, Haversine, đàm phán đổi sân
+│   ├── Matchmaking.php      # Quản lý trận đấu, cập nhật kết quả
+│   ├── Pitch.php            # Cụm sân, định vị GPS, đơn giá
+│   ├── Ranking.php          # Thuật toán xếp hạng Elo K=32, ưu đãi theo Rank
+│   ├── Reputation.php       # Điểm Uy Tín Fair-Play, xử lý bùng kèo (No-Show)
+│   └── User.php             # Người dùng, phân quyền RBAC
+├── views/                   # Giao diện người dùng thuần HTML5/Tailwind/Vanilla JS
+│   ├── admin/               # Quản trị toàn sàn
+│   ├── auth/                # Đăng nhập, đăng ký, quên mật khẩu an toàn
+│   ├── clubs/               # Danh sách CLB, bảng tin giao lưu
+│   ├── matchmaking/         # Màn hình cáp kèo Smart Match AI real-time
+│   ├── owner/               # Dashboard chủ sân, biểu đồ Chart.js, lịch lưới
+│   ├── staff/               # Bàn trực lễ tân màn hình cảm ứng
+│   ├── layout.php           # Khung sườn giao diện chung
+│   └── home.php             # Trang chủ, tìm kiếm bán kính bản đồ
+├── tests/                   # Bộ kịch bản kiểm thử tự động (Concurrency, Flow, UTF-8)
+├── docs/screenshots/        # Ảnh chụp màn hình phục vụ báo cáo đồ án
+├── .editorconfig            # Quy chuẩn định dạng tệp tin UTF-8
+├── .htaccess                # Cấu hình bảo vệ thư mục & chuẩn hóa charset UTF-8
+├── Dockerfile               # Cấu hình container PHP 8.2 Apache
+├── docker-compose.yml       # Điều phối container web và MariaDB
+├── badminton_booking.sql    # Bản sao lưu cơ sở dữ liệu mẫu chuẩn hóa UTF-8
+├── index.php                # Router điều hướng chính, CSRF Middleware
+└── README.md                # Tài liệu hướng dẫn sử dụng và triển khai dự án
 ```
 
 ---
 
-## 📄 Bản Quyền
-Dự án được phát triển phục vụ mục đích học tập, nghiên cứu và quản lý sân thể thao. Mọi đóng góp (Pull Request) đều được chào đón!
+## 📄 Bản Quyền & Học Thuật
+Dự án được xây dựng phục vụ nghiên cứu, đồ án tốt nghiệp và ứng dụng thực tiễn trong chuyển đổi số thể thao phong trào. Mọi đóng góp và đề xuất cải tiến đều được hoan nghênh!
