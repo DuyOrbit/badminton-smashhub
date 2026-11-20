@@ -40,7 +40,7 @@ if ($is_logged_in && isset($db_b)) {
 }
 
 // Fallback defaults for user metrics
-$user_elo_pts = $user_elo_pts ?? 600;
+$user_elo_pts = $user_elo_pts ?? 100;
 $user_badge_text = $user_badge_text ?? 'GUEST PLAYER';
 $user_rep_val = $user_rep_val ?? 100;
 
@@ -202,7 +202,7 @@ $accents = [
                     <div class="mt-4 pt-3 border-t border-white/5 flex flex-wrap items-center gap-3">
                         <a href="index.php?action=register"
                             class="inline-flex items-center gap-1.5 rounded-xl bg-[#d8ff3e] px-4 py-2.5 text-xs font-black uppercase text-[#10181e] shadow-[3px_3px_0_#6d8a16] transition hover:translate-x-0.5 hover:translate-y-0.5">
-                            <span>⚡</span> Đăng Ký Nhận 600 Elo Khởi Điểm
+                            <span>⚡</span> Đăng Ký Nhận 100 Elo Khởi Điểm
                         </a>
                         <a href="index.php?action=smart_match"
                             class="inline-flex items-center gap-1 text-xs font-bold text-white/70 hover:text-white transition">

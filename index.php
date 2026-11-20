@@ -4,6 +4,9 @@ date_default_timezone_set('Asia/Ho_Chi_Minh');
 
 // Simple MVC Router for Demo
 session_start();
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
+}
 require_once 'config/database.php';
 
 // Autoload controllers and models
@@ -22,10 +25,29 @@ if (empty($_SESSION['csrf_token'])) {
 
 // Hàm kiểm tra CSRF Token cho các thao tác quan trọng
 function verifyCsrfToken() {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        if (!isset($_POST['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $_POST['csrf_token'])) {
-            die('Lỗi Bảo Mật: CSRF Token không hợp lệ. Hành động bị từ chối.');
+    $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) 
+           || isset($_REQUEST['is_ajax']) 
+           || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode(['success' => false, 'message' => 'Lỗi: Phương thức yêu cầu phải là POST.'], JSON_UNESCAPED_UNICODE);
+            exit;
         }
+        die('Lỗi Bảo Mật: Phương thức yêu cầu phải là POST.');
+    }
+
+    $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (empty($token) || empty($_SESSION['csrf_token']) || !hash_equals($_SESSION['csrf_token'], $token)) {
+        http_response_code(403);
+        if ($isAjax) {
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode(['success' => false, 'message' => 'Lỗi Bảo Mật: CSRF Token không hợp lệ. Hành động bị từ chối.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+        die('Lỗi Bảo Mật: CSRF Token không hợp lệ. Hành động bị từ chối.');
     }
 }
 
@@ -114,11 +136,13 @@ switch ($action) {
         break;
     case 'club_join':
         requireAuth();
+        verifyCsrfToken();
         $controller = new ClubController();
         $controller->join();
         break;
     case 'club_leave':
         requireAuth();
+        verifyCsrfToken();
         $controller = new ClubController();
         $controller->leave();
         break;
@@ -162,16 +186,19 @@ switch ($action) {
         break;
     case 'close_match':
         requireAuth();
+        verifyCsrfToken();
         $controller = new MatchmakingController();
         $controller->closeMatch();
         break;
     case 'accept_match':
         requireAuth();
+        verifyCsrfToken();
         $controller = new MatchmakingController();
         $controller->acceptMatch();
         break;
     case 'cancel_match':
         requireAuth();
+        verifyCsrfToken();
         $controller = new MatchmakingController();
         $controller->cancelMatch();
         break;
@@ -200,6 +227,7 @@ switch ($action) {
         break;
     case 'cancel_ticket':
         requireAuth();
+        verifyCsrfToken();
         $controller = new MatchmakingController();
         $controller->cancelTicket();
         break;
@@ -454,6 +482,7 @@ switch ($action) {
         break;
     case 'owner_update_booking':
         requireRole('owner');
+        verifyCsrfToken();
         $controller = new OwnerController();
         $controller->updateBookingStatus();
         break;
@@ -462,8 +491,10 @@ switch ($action) {
         $controller = new OwnerController();
         $controller->reviews();
         break;
+    case 'approve_match_booking':
     case 'owner_approve_match_booking':
         requireRole('owner');
+        verifyCsrfToken();
         $controller = new OwnerController();
         $controller->approveMatchBooking();
         break;
@@ -474,16 +505,19 @@ switch ($action) {
         break;
     case 'owner_approve_host_payment':
         requireRole('owner');
+        verifyCsrfToken();
         $controller = new OwnerController();
         $controller->approveHostPayment();
         break;
     case 'owner_approve_guest_payment':
         requireRole('owner');
+        verifyCsrfToken();
         $controller = new OwnerController();
         $controller->approveGuestPayment();
         break;
     case 'owner_cancel_match':
         requireRole('owner');
+        verifyCsrfToken();
         $controller = new OwnerController();
         $controller->cancelMatch();
         break;
@@ -494,6 +528,7 @@ switch ($action) {
         break;
     case 'owner_confirm_noshow':
         requireRole(['owner', 'staff', 'admin']);
+        verifyCsrfToken();
         $controller = new OwnerController();
         $controller->confirmNoShow();
         break;

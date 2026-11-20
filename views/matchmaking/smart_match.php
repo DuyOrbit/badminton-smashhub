@@ -28,13 +28,13 @@ if (!isset($season)) {
     $season = '2026-H1';
 }
 if (!isset($currentElo)) {
-    $currentElo = 600;
+    $currentElo = 100;
 }
 if (!isset($rankName)) {
-    $rankName = 'Vàng';
+    $rankName = 'Đồng';
 }
 if (!isset($discount)) {
-    $discount = 10;
+    $discount = 0;
 }
 if (!isset($allPitches) || !is_array($allPitches)) {
     $allPitches = [];
@@ -520,11 +520,13 @@ $allDistrictsList = [
                                         </div>
                                     </div>
 
-                                    <a href="index.php?action=cancel_ticket&id=<?php echo $t['id']; ?>" 
-                                       onclick="return confirm('Bạn có chắc chắn muốn hủy lệnh tìm trận này?');"
-                                       class="text-xs text-red-500 hover:text-red-700 font-bold px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors self-start sm:self-center">
-                                        ✕ Hủy Lệnh
-                                    </a>
+                                    <form action="index.php?action=cancel_ticket" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn hủy lệnh tìm trận này?');" class="self-start sm:self-center">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                        <input type="hidden" name="id" value="<?php echo $t['id']; ?>">
+                                        <button type="submit" class="text-xs text-red-500 hover:text-red-700 font-bold px-3 py-1.5 rounded-lg border border-red-200 hover:bg-red-50 transition-colors">
+                                            ✕ Hủy Lệnh
+                                        </button>
+                                    </form>
                                 </div>
 
                                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 py-4 text-xs">
@@ -805,11 +807,13 @@ $allDistrictsList = [
                                     <!-- Nút từ chối kèo -->
                                     <div class="flex justify-between items-center pt-2">
                                         <span class="text-[11px] text-white/50">Mã lệnh: #TICK-<?php echo $t['id']; ?></span>
-                                        <a href="index.php?action=cancel_ticket&id=<?php echo $t['id']; ?>" 
-                                           onclick="return confirm('Bạn có chắc chắn muốn từ chối kèo này? Hệ thống sẽ hủy và tiếp tục tìm đối thủ khác.');"
-                                           class="text-xs text-red-400 hover:text-red-300 font-bold transition-colors">
-                                            ✕ Hủy & Tìm Đối Thủ Khác
-                                        </a>
+                                        <form action="index.php?action=cancel_ticket" method="POST" onsubmit="return confirm('Bạn có chắc chắn muốn từ chối kèo này? Hệ thống sẽ hủy và tiếp tục tìm đối thủ khác.');" class="inline">
+                                            <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                            <input type="hidden" name="id" value="<?php echo $t['id']; ?>">
+                                            <button type="submit" class="text-xs text-red-400 hover:text-red-300 font-bold transition-colors">
+                                                ✕ Hủy & Tìm Đối Thủ Khác
+                                            </button>
+                                        </form>
                                     </div>
                                 </div>
 
@@ -1026,8 +1030,9 @@ $allDistrictsList = [
             </h4>
             <ul class="space-y-1.5 list-disc list-inside">
                 <li><strong class="text-emerald-700">+2 điểm</strong> khi hoàn thành trận đấu đúng hẹn tại sân.</li>
-                <li><strong class="text-amber-700">-5 điểm</strong> khi hủy kèo sau khi đã khớp đối thủ.</li>
-                <li><strong class="text-rose-700">-15 điểm</strong> khi hủy kèo cận giờ thi đấu (&lt; 2 tiếng).</li>
+                <li><strong class="text-amber-700">-5 điểm</strong> khi hủy kèo sớm (> 2 tiếng trước giờ đấu).</li>
+                <li><strong class="text-rose-700">-15 điểm</strong> khi hủy kèo cận giờ (1 - 2 tiếng trước giờ đấu).</li>
+                <li><strong class="text-rose-900">-25 điểm & khóa tìm trận 3 ngày</strong> khi hủy kèo sát giờ (< 1 tiếng trước giờ đấu).</li>
                 <li><strong class="text-red-700 font-bold">-30 điểm, -50 Elo & khóa tìm trận 3 ngày</strong> nếu bỏ trận không đến (No-Show).</li>
                 <li>Dưới <strong class="text-red-600">50 điểm</strong>: Bị tước quyền dùng tính năng Ghép Trận Tự Động.</li>
             </ul>

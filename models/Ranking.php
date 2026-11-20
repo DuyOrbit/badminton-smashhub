@@ -1,5 +1,6 @@
 <?php
 class Ranking {
+    const DEFAULT_ELO = 100;
     private $conn;
 
     public function __construct($db) {
@@ -30,8 +31,8 @@ class Ranking {
         // Chuẩn hóa kết quả theo chuẩn Elo hệ số K=32
         $hostRating = (int)$this->getSeasonPoints($host_id, $season);
         $guestRating = $guest_id ? (int)$this->getSeasonPoints($guest_id, $season) : $hostRating;
-        if ($hostRating <= 0) $hostRating = 100;
-        if ($guestRating <= 0) $guestRating = 100;
+        if ($hostRating <= 0) $hostRating = self::DEFAULT_ELO;
+        if ($guestRating <= 0) $guestRating = self::DEFAULT_ELO;
 
         // Tính xác suất thắng kỳ vọng theo công thức Elo
         $expectedHost = 1 / (1 + pow(10, ($guestRating - $hostRating) / 400));
@@ -60,6 +61,26 @@ class Ranking {
         if ($guest_id) {
             $this->updatePoints($guest_id, $season, $guest_points);
         }
+
+        // Gui thong bao chinh xac so diem cong/tru Elo den 2 co thu
+        try {
+            $notifSql = "INSERT INTO notifications (user_id, title, content, link) VALUES (?, ?, ?, 'index.php?action=smart_match')";
+            $notifStmt = $this->conn->prepare($notifSql);
+
+            $hostSign = $host_points >= 0 ? "+{$host_points}" : "{$host_points}";
+            $hostTitle = ($actualHost == 1.0) ? "Chiến Thắng Trận Đấu ({$hostSign} Elo)" : (($actualHost == 0.0) ? "Kết Thúc Trận Đấu ({$hostSign} Elo)" : "Trận Đấu Hòa ({$hostSign} Elo)");
+            $hostContent = "Trọng tài / Chủ sân đã xác nhận kết quả trận đấu. Điểm Elo của bạn đã thay đổi: {$hostSign} Elo.";
+            $notifStmt->execute([$host_id, $hostTitle, $hostContent]);
+
+            if ($guest_id) {
+                $guestSign = $guest_points >= 0 ? "+{$guest_points}" : "{$guest_points}";
+                $guestTitle = ($actualGuest == 1.0) ? "Chiến Thắng Trận Đấu ({$guestSign} Elo)" : (($actualGuest == 0.0) ? "Kết Thúc Trận Đấu ({$guestSign} Elo)" : "Trận Đấu Hòa ({$guestSign} Elo)");
+                $guestContent = "Trọng tài / Chủ sân đã xác nhận kết quả trận đấu. Điểm Elo của bạn đã thay đổi: {$guestSign} Elo.";
+                $notifStmt->execute([$guest_id, $guestTitle, $guestContent]);
+            }
+        } catch (Exception $e) {
+            // Khong lam gian doan luong neu loi ghi thong bao
+        }
     }
 
     public function updateScore($host_id, $guest_id, $result) {
@@ -86,9 +107,9 @@ class Ranking {
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$user_id, $season]);
         if($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            return $row['points'];
+            return (int)$row['points'];
         }
-        return 0;
+        return self::DEFAULT_ELO;
     }
 
     public function getSeasonHighestPoints($user_id, $season) {
@@ -98,7 +119,7 @@ class Ranking {
         if($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             return max((int)$row['highest_points'], (int)$row['points']);
         }
-        return 0;
+        return self::DEFAULT_ELO;
     }
 
     public function calculateDiscount($points) {

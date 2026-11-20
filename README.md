@@ -158,6 +158,8 @@ Mở trình duyệt web và truy cập:
 http://localhost/badminton/index.php
 ```
 
+> **Lưu ý bảng mã Windows CLI**: Chạy `chcp 65001` hoặc sử dụng Windows Terminal để hiển thị tiếng Việt UTF-8 chuẩn xác khi chạy các script PHP CLI hoặc kiểm thử tự động.
+
 ---
 
 ## 👥 Danh Sách Tài Khoản Demo

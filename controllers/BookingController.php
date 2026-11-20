@@ -226,10 +226,10 @@ class BookingController {
     }
 
     public function simulatePayment() {
-        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Type: application/json; charset=UTF-8');
         $booking_id = $_POST['booking_id'] ?? $_GET['booking_id'] ?? null;
         if (!$booking_id) {
-            echo json_encode(['success' => false, 'message' => 'Vui lòng cung cấp mã đơn đặt sân (booking_id).']);
+            echo json_encode(['success' => false, 'message' => 'Vui lòng cung cấp mã đơn đặt sân (booking_id).'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -240,7 +240,13 @@ class BookingController {
 
         if (!$bData) {
             http_response_code(404);
-            echo json_encode(['success' => false, 'message' => 'Không tìm thấy đơn đặt sân trên hệ thống.']);
+            echo json_encode(['success' => false, 'message' => 'Không tìm thấy đơn đặt sân trên hệ thống.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        if (($bData['status'] ?? '') === 'cancelled') {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Đơn đặt sân đã bị hủy, không thể thực hiện thanh toán.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -253,7 +259,7 @@ class BookingController {
 
         if (!$isOwnerOfBooking && !$isStaffOrOwner && !$isRecentSessionBooking) {
             http_response_code(403);
-            echo json_encode(['success' => false, 'message' => 'Lỗi bảo mật (403 Forbidden): Bạn không có quyền thao tác thanh toán trên đơn đặt sân này.']);
+            echo json_encode(['success' => false, 'message' => 'Lỗi bảo mật (403 Forbidden): Bạn không có quyền thao tác thanh toán trên đơn đặt sân này.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -268,9 +274,9 @@ class BookingController {
                 'payment_status' => 'paid',
                 'booking_id' => $booking_id,
                 'paid_at' => date('H:i:s d/m/Y')
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Lỗi khi cập nhật trạng thái đơn đặt.']);
+            echo json_encode(['success' => false, 'message' => 'Lỗi khi cập nhật trạng thái đơn đặt.'], JSON_UNESCAPED_UNICODE);
         }
         exit;
     }
@@ -380,9 +386,9 @@ class BookingController {
     }
 
     public function apiCheckAvailability() {
-        header('Content-Type: application/json; charset=utf-8');
+        header('Content-Type: application/json; charset=UTF-8');
         if(!isset($_GET['pitch_id']) || !isset($_GET['date'])) {
-            echo json_encode(['error' => 'Missing parameters']);
+            echo json_encode(['error' => 'Missing parameters'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -392,7 +398,7 @@ class BookingController {
         $pitch = new Pitch($db);
         $pitchData = $pitch->readOne($_GET['pitch_id']);
         if(!$pitchData) {
-            echo json_encode(['error' => 'Pitch not found']);
+            echo json_encode(['error' => 'Pitch not found'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -410,14 +416,14 @@ class BookingController {
                 'available' => $available,
                 'occupied_courts' => $occupiedCourts,
                 'slots' => $slots
-            ]);
+            ], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
         echo json_encode([
             'total' => $totalCourts,
             'slots' => $slots
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
 }

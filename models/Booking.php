@@ -168,7 +168,9 @@ class Booking {
     }
 
     public function getConfirmedOverlappingCount($pitch_id, $booking_date, $start_time, $end_time, $include_pending = true) {
-        $status_condition = $include_pending ? "status IN ('confirmed', 'pending', 'completed')" : "status IN ('confirmed', 'completed')";
+        $status_condition = $include_pending 
+            ? "(status IN ('confirmed', 'completed') OR (status = 'pending' AND created_at >= NOW() - INTERVAL 10 MINUTE))" 
+            : "status IN ('confirmed', 'completed')";
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " 
                   WHERE pitch_id = :pitch_id 
                   AND booking_date = :booking_date 
@@ -186,11 +188,37 @@ class Booking {
         return (int)$row['total'];
     }
 
+    public function getOccupiedCourtNumbers($pitch_id, $booking_date, $start_time, $end_time) {
+        $query = "SELECT DISTINCT court_number FROM " . $this->table_name . "
+                  WHERE pitch_id = :pitch_id
+                    AND booking_date = :booking_date
+                    AND (status IN ('confirmed', 'completed') OR (status = 'pending' AND created_at >= NOW() - INTERVAL 10 MINUTE))
+                    AND (start_time < :end_time AND end_time > :start_time)
+                    AND court_number IS NOT NULL
+                  ORDER BY court_number ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":pitch_id", $pitch_id);
+        $stmt->bindParam(":booking_date", $booking_date);
+        $stmt->bindParam(":start_time", $start_time);
+        $stmt->bindParam(":end_time", $end_time);
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        $occupied = [];
+        foreach ($rows as $cNum) {
+            $c = (int)$cNum;
+            if ($c > 0 && !in_array($c, $occupied, true)) {
+                $occupied[] = $c;
+            }
+        }
+        return $occupied;
+    }
+
     public function getOccupiedCourts($pitch_id, $booking_date, $start_time, $end_time, $total_courts) {
         $query = "SELECT court_number FROM " . $this->table_name . "
                   WHERE pitch_id = :pitch_id
                     AND booking_date = :booking_date
-                    AND status IN ('confirmed', 'pending', 'completed')
+                    AND (status IN ('confirmed', 'completed') OR (status = 'pending' AND created_at >= NOW() - INTERVAL 10 MINUTE))
                     AND (start_time < :end_time AND end_time > :start_time)
                   ORDER BY id ASC";
         $stmt = $this->conn->prepare($query);
@@ -332,7 +360,11 @@ class Booking {
         return false;
     }
 
-    public function readAllForStaff($date = null, $keyword = null, $assigned_pitch_id = null, $owner_id = null) {
+    public function readAllForStaff($date = null, $keyword = null, $assigned_pitch_id = null, $owner_id = null, $role = '') {
+        if (empty($assigned_pitch_id) && empty($owner_id) && $role !== 'admin') {
+            return [];
+        }
+
         $query = "SELECT b.*, p.name as pitch_name, p.type as pitch_type,
                          m.id as match_id, m.user_id as match_host_id, m.opponent_id as match_guest_id,
                          u_host.name as match_host_name, u_host.phone as match_host_phone,
@@ -344,28 +376,32 @@ class Booking {
                   LEFT JOIN pitches p ON b.pitch_id = p.id
                   LEFT JOIN matchmaking m ON b.pitch_id = m.pitch_id AND b.booking_date = m.play_date AND b.start_time = m.start_time
                   LEFT JOIN users u_host ON m.user_id = u_host.id
-                  LEFT JOIN users u_guest ON m.opponent_id = u_guest.id
-                  WHERE 1=1";
+                  LEFT JOIN users u_guest ON m.opponent_id = u_guest.id";
+        
+        $whereClauses = [];
         $params = [];
 
         if (!empty($assigned_pitch_id)) {
-            $query .= " AND b.pitch_id = :assigned_pitch_id";
+            $whereClauses[] = "b.pitch_id = :assigned_pitch_id";
             $params[':assigned_pitch_id'] = $assigned_pitch_id;
         } elseif (!empty($owner_id)) {
-            $query .= " AND p.owner_id = :owner_id";
+            $whereClauses[] = "p.owner_id = :owner_id";
             $params[':owner_id'] = $owner_id;
         }
 
         if (!empty($date)) {
-            $query .= " AND b.booking_date = :bdate";
+            $whereClauses[] = "b.booking_date = :bdate";
             $params[':bdate'] = $date;
         }
 
         if (!empty($keyword)) {
-            $query .= " AND (b.checkin_code LIKE :kw OR b.customer_phone LIKE :kw OR b.customer_name LIKE :kw 
-                             OR b.id IN (SELECT booking_id FROM match_tickets WHERE checkin_code LIKE :kw_t))";
+            $whereClauses[] = "(b.checkin_code LIKE :kw OR b.customer_phone LIKE :kw OR b.customer_name LIKE :kw OR b.id IN (SELECT booking_id FROM match_tickets WHERE checkin_code LIKE :kw_t))";
             $params[':kw'] = "%$keyword%";
             $params[':kw_t'] = "%$keyword%";
+        }
+
+        if (!empty($whereClauses)) {
+            $query .= " WHERE " . implode(" AND ", $whereClauses);
         }
 
         $query .= " ORDER BY b.booking_date DESC, b.start_time ASC";

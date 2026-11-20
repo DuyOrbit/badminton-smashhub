@@ -145,6 +145,14 @@ docker-compose up -d
 ```
 
 ### Chạy Bộ Kiểm Thử (Tests)
+> **Lưu ý Windows CLI:** Chạy lệnh `chcp 65001` hoặc dùng Windows Terminal để hiển thị tiếng Việt UTF-8 đúng chuẩn khi chạy script console.
+
+- **PHP Integration & Concurrency Tests:**
+  ```bash
+  php tests/concurrent_booking_test.php
+  php tests/smart_match_flow_test.php
+  php tests/utf8_check.php
+  ```
 - **Unit test logic Matching:**
   ```bash
   npm test

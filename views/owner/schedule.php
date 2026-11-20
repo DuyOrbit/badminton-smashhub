@@ -518,14 +518,17 @@ if (isset($pitch_schedules) && is_array($pitch_schedules)) {
                     <span>⚖️</span> <span>Cảnh Báo Bùng Kèo Cần Phán Quyết</span>
                 </div>
                 <p class="text-[11px] text-white/90" id="sm_noshow_desc"></p>
-                <div class="flex gap-2 pt-1">
-                    <a id="sm_btn_confirm_noshow" href="#" onclick="return confirm('Xác nhận bùng kèo? Hệ thống sẽ phạt -30 Uy Tín, -50 Elo người vắng và giải phóng sân.');" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
+                <form id="sm_noshow_form" action="index.php?action=owner_confirm_noshow" method="POST" class="flex gap-2 pt-1">
+                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                    <input type="hidden" name="match_id" id="sm_noshow_match_id" value="">
+                    <input type="hidden" name="decision" id="sm_noshow_decision" value="confirm">
+                    <button type="submit" id="sm_btn_confirm_noshow" onclick="document.getElementById('sm_noshow_decision').value='confirm'; return confirm('Xác nhận bùng kèo? Hệ thống sẽ phạt -30 Uy Tín, -50 Elo người vắng và giải phóng sân.');" class="bg-red-600 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs">
                         ⚖️ Xác Nhận Phạt Bùng Kèo
-                    </a>
-                    <a id="sm_btn_reject_noshow" href="#" onclick="return confirm('Bác bỏ báo cáo vắng mặt?');" class="bg-white/10 hover:bg-white/20 text-white font-medium px-3 py-1.5 rounded-lg text-xs">
+                    </button>
+                    <button type="submit" id="sm_btn_reject_noshow" onclick="document.getElementById('sm_noshow_decision').value='reject'; return confirm('Bác bỏ báo cáo vắng mặt?');" class="bg-white/10 hover:bg-white/20 text-white font-medium px-3 py-1.5 rounded-lg text-xs">
                         ✕ Bác Bỏ
-                    </a>
-                </div>
+                    </button>
+                </form>
             </div>
 
             <!-- 2 Player Cards Grid -->
@@ -688,8 +691,8 @@ function openDetailModal(b) {
             const safeTarget = escapeHtml(target);
             const safeReason = escapeHtml(b.match_noshow_reason || 'Không đến sân');
             document.getElementById('sm_noshow_desc').innerHTML = '<strong>' + safeReporter + '</strong> báo đối thủ <strong class="text-red-300 underline">' + safeTarget + '</strong> vắng mặt.<br>Lý do: <em>"' + safeReason + '"</em>';
-            document.getElementById('sm_btn_confirm_noshow').href = 'index.php?action=owner_confirm_noshow&match_id=' + encodeURIComponent(b.match_id) + '&decision=confirm';
-            document.getElementById('sm_btn_reject_noshow').href = 'index.php?action=owner_confirm_noshow&match_id=' + encodeURIComponent(b.match_id) + '&decision=reject';
+            const noshowMatchInput = document.getElementById('sm_noshow_match_id');
+            if (noshowMatchInput) noshowMatchInput.value = b.match_id;
         } else {
             noShowAlert.classList.add('hidden');
         }
@@ -768,8 +771,15 @@ function ajaxOwnerApprovePayment(event, btn, matchId, party, priceStr, bookingId
     btn.innerHTML = '<span class="inline-block animate-spin mr-1">⏳</span> Đang duyệt...';
 
     const action = (party === 'host') ? 'owner_approve_host_payment' : 'owner_approve_guest_payment';
-    fetch('index.php?action=' + action + '&id=' + matchId + '&is_ajax=1', {
-        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+    const formData = new FormData();
+    formData.append('id', matchId);
+    formData.append('is_ajax', '1');
+    formData.append('csrf_token', window.csrfToken || '');
+
+    fetch('index.php?action=' + action, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        body: formData
     })
     .then(r => r.json())
     .then(data => {

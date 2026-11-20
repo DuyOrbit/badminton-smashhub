@@ -1,4 +1,4 @@
-﻿<div class="max-w-3xl mx-auto">
+<div class="max-w-3xl mx-auto">
     <div class="mb-8 flex items-center justify-between">
         <div>
             <h1 class="text-3xl font-extrabold text-white">Thêm Sân Mới</h1>

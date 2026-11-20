@@ -105,13 +105,15 @@ class Reputation {
         ]);
 
         // Gửi tin nhắn thông báo nội bộ
-        $icon = $delta > 0 ? "🎉" : "⚠️";
         $sign = $delta > 0 ? "+{$delta}" : "{$delta}";
-        $msg = "{$icon} [BIẾN ĐỘNG ĐIỂM UY TÍN FAIR-PLAY] Điểm uy tín của bạn vừa thay đổi {$sign} điểm. Lý do: {$reason}. Điểm hiện tại: {$newScore}/100.";
+        $msg = "[BIEN DONG DIEM UY TIN FAIR-PLAY] Diem uy tin cua ban vua thay doi {$sign} diem. Ly do: {$reason}. Diem hien tai: {$newScore}/100.";
         
+        $adminStmt = $this->conn->query("SELECT id FROM users WHERE role = 'admin' ORDER BY id ASC LIMIT 1");
+        $adminId = $adminStmt ? $adminStmt->fetchColumn() : null;
+        $senderId = $adminId ? (int)$adminId : (int)$userId;
+
         $msgSql = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
-        // Giả lập sender là ID = 5 (Admin Quản trị hệ thống)
-        $this->conn->prepare($msgSql)->execute([5, $userId, $msg]);
+        $this->conn->prepare($msgSql)->execute([$senderId, $userId, $msg]);
 
         return $newScore;
     }
@@ -155,23 +157,58 @@ class Reputation {
             return ['success' => false, 'message' => 'Lỗi phân quyền: Bạn không có quyền báo cáo đơn đặt sân này.'];
         }
 
-        // Thực hiện xử phạt
         $reason = "Bỏ trận không đến sân (No-Show / Bùng kèo) tại đơn đặt sân #{$bookingId}";
         if (!empty($detail)) {
             $reason .= " - Chi tiết: " . htmlspecialchars(strip_tags($detail));
         }
 
-        $newScore = $this->changeScore($violatorId, -30, $reason, $bookingId);
+        // Nếu là Chủ sân hoặc Admin trực tiếp xử lý: thực hiện trừ điểm ngay
+        if ($isPitchOwner || $isAdmin) {
+            $newScore = $this->changeScore($violatorId, -30, $reason, $bookingId);
+            if ($booking['status'] != 'completed') {
+                $this->conn->prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?")->execute([$bookingId]);
+            }
+            return [
+                'success' => true,
+                'message' => 'Đã xác nhận bùng kèo và xử phạt đối thủ thành công.',
+                'new_score' => $newScore
+            ];
+        }
 
-        // Đổi trạng thái booking thành cancelled nếu chưa hoàn tất
-        if ($booking['status'] != 'completed') {
-            $this->conn->prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?")->execute([$bookingId]);
+        // Nếu là người chơi báo cáo: tạo yêu cầu chờ chủ sân duyệt, không tự phạt ngay
+        $upMatch = "UPDATE matchmaking 
+                    SET noshow_reported_by = ?, noshow_target_user_id = ?, noshow_status = 'pending', noshow_reason = ? 
+                    WHERE (user_id = ? AND opponent_id = ?) OR (user_id = ? AND opponent_id = ?)";
+        $this->conn->prepare($upMatch)->execute([
+            $reporterId,
+            $violatorId,
+            $reason,
+            $reporterId,
+            $violatorId,
+            $violatorId,
+            $reporterId
+        ]);
+
+        // Đồng bộ vé match_tickets nếu có
+        $this->conn->prepare("UPDATE match_tickets SET noshow_status = 'pending', noshow_reason = ? WHERE booking_id = ?")
+                   ->execute([$reason, $bookingId]);
+
+        // Gửi thông báo tới Chủ sân
+        if (!empty($booking['pitch_owner_id'])) {
+            require_once __DIR__ . '/Notification.php';
+            $notif = new Notification($this->conn);
+            $notif->create(
+                (int)$booking['pitch_owner_id'],
+                "[YEU CAU XAC NHAN BUNG KEO] Co thu bao doi thu vang mat",
+                "Co thu bao doi thu vang mat tai don dat san #{$bookingId}. Ly do: {$detail}. Vui long kiem tra va xac nhan.",
+                "index.php?action=owner_dashboard"
+            );
         }
 
         return [
             'success' => true,
-            'message' => 'Đã ghi nhận báo cáo bùng kèo thành công! Đối thủ đã bị trừ 30 điểm uy tín, trừ 50 Elo và tạm khóa tìm trận trong 3 ngày.',
-            'new_score' => $newScore
+            'status' => 'pending_owner_approval',
+            'message' => 'Đã gửi báo cáo bùng kèo tới Chủ Sân! Chủ sân sẽ kiểm tra thực tế và xác nhận xử phạt.'
         ];
     }
 }

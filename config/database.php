@@ -31,6 +31,10 @@ define('DB_USER', $defaultUser);
 define('DB_PASS', $defaultPass);
 define('DB_NAME', $defaultName);
 
+if (!defined('PAYMENT_SANDBOX')) {
+    define('PAYMENT_SANDBOX', true);
+}
+
 class Database {
     private $host = DB_HOST;
     private $port = DB_PORT;
@@ -47,7 +51,7 @@ class Database {
             PDO::ATTR_PERSISTENT => false,
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci"
         );
 
         // If connecting to remote cloud host (not localhost), configure SSL/TLS encryption
@@ -73,7 +77,7 @@ class Database {
                 $options[PDO::MYSQL_ATTR_SSL_CA] = true;
             }
             if (defined('PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT')) {
-                $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+                $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = true;
             }
         }
 
@@ -87,6 +91,9 @@ class Database {
             $this->autoInitializeIfMissing();
         } catch (PDOException $e) {
             $this->error = $e->getMessage();
+            error_log("Database Connection Error: " . $this->error);
+            http_response_code(500);
+            die("He thong tam thoi khong the ket noi CSDL. Vui long kiem tra nhat ky he thong hoac thu lai sau.");
             
             // Helpful Diagnostic UI for Cloud Deployments (e.g. Render, Railway, VPS)
             $isRender = !empty(getenv('RENDER')) || !empty(getenv('RENDER_SERVICE_ID'));
@@ -168,21 +175,33 @@ class Database {
             $stmt = $this->dbh->query("SHOW TABLES LIKE 'pitches'");
             if ($stmt && $stmt->rowCount() === 0) {
                 $sqlFiles = [
-                    __DIR__ . '/../tidb_import.sql',
-                    __DIR__ . '/../badminton_booking.sql'
+                    __DIR__ . '/../badminton_booking.sql',
+                    __DIR__ . '/../tidb_import.sql'
                 ];
                 $sqlContent = null;
+                $chosenFile = '';
                 foreach ($sqlFiles as $file) {
                     if (file_exists($file)) {
                         $sqlContent = file_get_contents($file);
+                        $chosenFile = $file;
                         break;
                     }
                 }
                 if ($sqlContent) {
-                    $cleaned = preg_replace('/^--.*$/m', '', $sqlContent);
-                    $statements = array_filter(array_map('trim', explode(';', $cleaned)));
+                    if (!mb_check_encoding($sqlContent, 'UTF-8')) {
+                        error_log("Loi: Tep SQL [{$chosenFile}] khong phai dinh dang UTF-8 hop le.");
+                        die("Loi: Tep CSDL khong phai dinh dang UTF-8 hop le. Vui long kiem tra bang ma truoc khi khoi tao.");
+                    }
+
+                    $this->dbh->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;");
                     $this->dbh->exec("SET FOREIGN_KEY_CHECKS = 0;");
+
+                    $cleaned = preg_replace('/^--.*$/m', '', $sqlContent);
+                    $cleaned = preg_replace('/^\/\*.*?\*\//ms', '', $cleaned);
+                    $statements = preg_split('/;\s*[\r\n]+/m', $cleaned);
+
                     foreach ($statements as $s) {
+                        $s = trim($s);
                         if (!empty($s)) {
                             try {
                                 $this->dbh->exec($s);
@@ -205,7 +224,7 @@ class Database {
                 $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN split_price DECIMAL(10,2) DEFAULT 0.00");
             } catch (\Exception $e) {}
             try {
-                $this->dbh->exec("ALTER TABLE match_tickets MODIFY COLUMN district VARCHAR(100) DEFAULT 'Tất cả'");
+                $this->dbh->exec("ALTER TABLE match_tickets MODIFY COLUMN district VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Tất cả'");
             } catch (\Exception $e) {}
             try {
                 $this->dbh->exec("ALTER TABLE match_tickets ADD COLUMN checkin_code VARCHAR(30) DEFAULT NULL");

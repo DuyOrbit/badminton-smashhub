@@ -99,12 +99,13 @@ class MatchmakingController {
     }
 
     public function closeMatch() {
-        if (isset($_GET['id'])) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        if ($id) {
             $database = new Database();
             $db = $database->getConnection();
             
             $match = new Matchmaking($db);
-            if ($match->completeMatch($_GET['id'], $_SESSION['user_id'])) {
+            if ($match->completeMatch($id, $_SESSION['user_id'])) {
                 header("Location: index.php?action=matchmaking&msg=closed");
             }
             exit;
@@ -112,7 +113,8 @@ class MatchmakingController {
     }
 
     public function acceptMatch() {
-        if (isset($_GET['id']) && isset($_SESSION['user_id'])) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        if ($id && isset($_SESSION['user_id'])) {
             $database = new Database();
             $db = $database->getConnection();
             
@@ -120,7 +122,7 @@ class MatchmakingController {
 
             $query = "SELECT m.*, p.name as pitch_name, p.price_per_hour FROM matchmaking m INNER JOIN pitches p ON m.pitch_id = p.id WHERE m.id = ?";
             $stmt = $db->prepare($query);
-            $stmt->execute([$_GET['id']]);
+            $stmt->execute([$id]);
             $mData = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($mData && $mData['user_id'] == $_SESSION['user_id']) {
@@ -128,7 +130,7 @@ class MatchmakingController {
                 exit;
             }
             
-            if ($matchModel->acceptMatch($_GET['id'], $_SESSION['user_id'])) {
+            if ($matchModel->acceptMatch($id, $_SESSION['user_id'])) {
                 $start = strtotime($mData['start_time']);
                 $end = strtotime($mData['end_time']);
                 $hours = ($end - $start) / 3600;
@@ -167,17 +169,18 @@ class MatchmakingController {
     }
 
     public function cancelMatch() {
-        if (isset($_GET['id']) && isset($_SESSION['user_id'])) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        if ($id && isset($_SESSION['user_id'])) {
             $database = new Database();
             $db = $database->getConnection();
             
             $query = "SELECT m.*, p.price_per_hour FROM matchmaking m INNER JOIN pitches p ON m.pitch_id = p.id WHERE m.id = ?";
             $stmt = $db->prepare($query);
-            $stmt->execute([$_GET['id']]);
+            $stmt->execute([$id]);
             $mData = $stmt->fetch(PDO::FETCH_ASSOC);
 
             $match = new Matchmaking($db);
-            if ($match->cancelMatchByUser($_GET['id'], $_SESSION['user_id'])) {
+            if ($match->cancelMatchByUser($id, $_SESSION['user_id'])) {
                 if ($mData) {
                     $start = strtotime($mData['start_time']);
                     $end = strtotime($mData['end_time']);
@@ -253,7 +256,7 @@ class MatchmakingController {
         }
         $season = Ranking::getCurrentSeason();
         $currentElo = $ranking->getSeasonPoints($_SESSION['user_id'], $season);
-        if ($currentElo <= 0) $currentElo = 100;
+        if ($currentElo <= 0) $currentElo = Ranking::DEFAULT_ELO;
         $rankName = $ranking->getRankName($currentElo);
         $discount = $ranking->getActiveDiscount($_SESSION['user_id']);
 
@@ -346,8 +349,8 @@ class MatchmakingController {
     public function confirmSplitPayment() {
         if (!isset($_SESSION['user_id'])) {
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_POST['is_ajax']))) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
             header("Location: index.php?action=login");
@@ -375,8 +378,8 @@ class MatchmakingController {
                   || (isset($_POST['is_ajax']) && $_POST['is_ajax'] == '1');
 
         if ($isAjax) {
-            header('Content-Type: application/json');
-            echo json_encode($res);
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode($res, JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -422,7 +425,8 @@ class MatchmakingController {
     }
 
     public function cancelTicket() {
-        if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        if (!isset($_SESSION['user_id']) || !$id) {
             header("Location: index.php?action=smart_match");
             exit;
         }
@@ -433,16 +437,16 @@ class MatchmakingController {
         require_once 'models/MatchTicket.php';
         $ticketModel = new MatchTicket($db);
 
-        $ticketModel->cancelTicket($_GET['id'], $_SESSION['user_id']);
+        $ticketModel->cancelTicket($id, $_SESSION['user_id']);
         header("Location: index.php?action=smart_match&msg=cancelled");
         exit;
     }
 
     public function apiCheckTicket() {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=UTF-8');
         if (!isset($_SESSION['user_id']) || !isset($_GET['id'])) {
             http_response_code(401);
-            echo json_encode(['error' => 'Unauthorized']);
+            echo json_encode(['error' => 'Unauthorized'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -458,19 +462,20 @@ class MatchmakingController {
 
         $ticket = $ticketModel->getTicketById($ticketId);
         if (!$ticket) {
-            echo json_encode(['status' => 'not_found']);
+            echo json_encode(['status' => 'not_found'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
         // BẢO VỆ CHỐNG IDOR: Chỉ cho phép người tạo vé, đối thủ được ghép, chủ sân của sân đó hoặc admin xem thông tin vé
-        $isOwner = ($ticket['user_id'] == $currentUserId);
-        $isOpponent = (!empty($ticket['matched_user_id']) && $ticket['matched_user_id'] == $currentUserId);
+        $isOwner = ((int)$ticket['user_id'] === $currentUserId);
+        $isOpponent = (!empty($ticket['opp_user_id']) && (int)$ticket['opp_user_id'] === $currentUserId) 
+                   || (!empty($ticket['matched_user_id']) && (int)$ticket['matched_user_id'] === $currentUserId);
         $isPitchOwner = (!empty($ticket['pitch_owner_id']) && $ticket['pitch_owner_id'] == $currentUserId);
         $isAdmin = ($currentUserRole === 'admin');
 
         if (!$isOwner && !$isOpponent && !$isPitchOwner && !$isAdmin) {
             http_response_code(403);
-            echo json_encode(['error' => 'Forbidden: Bạn không có quyền truy cập thông tin vé này.']);
+            echo json_encode(['error' => 'Forbidden: Bạn không có quyền truy cập thông tin vé này.'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -480,7 +485,7 @@ class MatchmakingController {
             $ticket = $ticketModel->getTicketById($ticketId); // lấy lại sau khi quét
         }
 
-        echo json_encode($ticket ?: ['status' => 'not_found']);
+        echo json_encode($ticket ?: ['status' => 'not_found'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -558,8 +563,8 @@ class MatchmakingController {
     public function switchPitch() {
         if (!isset($_SESSION['user_id'])) {
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax'])) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
             header("Location: index.php?action=login");
@@ -572,8 +577,8 @@ class MatchmakingController {
 
         if (!$ticketId || !$pitchId) {
             if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Thiếu thông tin sân hoặc vé.']);
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(['success' => false, 'message' => 'Thiếu thông tin sân hoặc vé.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
             header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu thông tin sân hoặc vé."));
@@ -588,7 +593,7 @@ class MatchmakingController {
         $res = $ticketModel->proposeSwitchPitch($ticketId, $pitchId, $_SESSION['user_id']);
 
         if ($isAjax) {
-            header('Content-Type: application/json');
+            header('Content-Type: application/json; charset=UTF-8');
             echo json_encode($res, JSON_UNESCAPED_UNICODE);
             exit;
         }
@@ -604,8 +609,8 @@ class MatchmakingController {
     public function acceptSwitchPitch() {
         if (!isset($_SESSION['user_id'])) {
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax'])) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
             header("Location: index.php?action=login");
@@ -617,8 +622,8 @@ class MatchmakingController {
 
         if (!$ticketId) {
             if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Thiếu mã vé.']);
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(['success' => false, 'message' => 'Thiếu mã vé.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
             header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu mã vé."));
@@ -633,7 +638,7 @@ class MatchmakingController {
         $res = $ticketModel->acceptSwitchPitch($ticketId, $_SESSION['user_id']);
 
         if ($isAjax) {
-            header('Content-Type: application/json');
+            header('Content-Type: application/json; charset=UTF-8');
             echo json_encode($res, JSON_UNESCAPED_UNICODE);
             exit;
         }
@@ -649,8 +654,8 @@ class MatchmakingController {
     public function rejectSwitchPitch() {
         if (!isset($_SESSION['user_id'])) {
             if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax'])) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.']);
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
             header("Location: index.php?action=login");
@@ -662,8 +667,8 @@ class MatchmakingController {
 
         if (!$ticketId) {
             if ($isAjax) {
-                header('Content-Type: application/json');
-                echo json_encode(['success' => false, 'message' => 'Thiếu mã vé.']);
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(['success' => false, 'message' => 'Thiếu mã vé.'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
             header("Location: index.php?action=smart_match&error=" . urlencode("Thiếu mã vé."));
@@ -678,7 +683,7 @@ class MatchmakingController {
         $res = $ticketModel->rejectSwitchPitch($ticketId, $_SESSION['user_id']);
 
         if ($isAjax) {
-            header('Content-Type: application/json');
+            header('Content-Type: application/json; charset=UTF-8');
             echo json_encode($res, JSON_UNESCAPED_UNICODE);
             exit;
         }

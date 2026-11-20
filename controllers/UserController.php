@@ -45,16 +45,24 @@ class UserController {
 
             // Handle avatar upload safely
             if (isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] == 0) {
+                $max_size = 5 * 1024 * 1024; // 5MB limit
                 $allowed_extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                $allowed_mimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+                $file_size = $_FILES['avatar_file']['size'];
                 $ext = strtolower(pathinfo($_FILES['avatar_file']['name'], PATHINFO_EXTENSION));
 
-                if (in_array($ext, $allowed_extensions)) {
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mime = finfo_file($finfo, $_FILES['avatar_file']['tmp_name']);
+                finfo_close($finfo);
+
+                if ($file_size <= $max_size && in_array($ext, $allowed_extensions) && in_array($mime, $allowed_mimes)) {
                     $upload_dir = 'assets/uploads/avatars/';
                     if (!file_exists($upload_dir)) {
-                        mkdir($upload_dir, 0777, true);
+                        mkdir($upload_dir, 0755, true);
                     }
                     
-                    $file_name = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
+                    $file_name = bin2hex(random_bytes(16)) . '.' . $ext;
                     $target_file = $upload_dir . $file_name;
                     
                     if (move_uploaded_file($_FILES['avatar_file']['tmp_name'], $target_file)) {

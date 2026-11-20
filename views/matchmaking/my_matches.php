@@ -144,11 +144,13 @@
                                 Trận đấu đã bị hủy. Lịch đã dọn và tiền đã hoàn vào thẻ.
                             </div>
                         <?php elseif($m['status'] == 'open' && $is_host): ?>
-                            <div class="flex gap-3">
-                                <button onclick="if(confirm('Bạn có chắc chắn muốn Hủy Kèo này? Sân sẽ được giải phóng và hoàn tiền.')) window.location.href='index.php?action=cancel_match&id=<?php echo $m['id']; ?>'" class="flex-1 border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-center py-2.5 rounded-xl text-xs font-bold transition">
+                            <form action="index.php?action=cancel_match" method="POST" class="flex gap-3" onsubmit="return confirm('Bạn có chắc chắn muốn Hủy Kèo này? Sân sẽ được giải phóng và hoàn tiền.');">
+                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                <input type="hidden" name="id" value="<?php echo $m['id']; ?>">
+                                <button type="submit" class="flex-1 border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-center py-2.5 rounded-xl text-xs font-bold transition">
                                     Hủy Kèo (Chưa Có Khách)
                                 </button>
-                            </div>
+                            </form>
                         <?php else: ?>
                             <div class="flex gap-3">
                                 <a href="index.php?action=chat&user=<?php echo $is_host ? ($m['opponent_id'] ?? $m['user_id']) : $m['user_id']; ?>" class="flex-1 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 text-center py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition flex justify-center items-center gap-2">

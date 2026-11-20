@@ -71,9 +71,10 @@
             <div>
                 <label for="level_requirement" class="block text-xs font-bold text-white/80 uppercase tracking-wider mb-2">Yêu Cầu Trình Độ Lông Thủ</label>
                 <select name="level_requirement" id="level_requirement" class="w-full px-4 py-3 bg-[#0b1116] rounded-xl border border-white/15 text-white font-bold focus:border-[#d8ff3e] focus:outline-none text-xs cursor-pointer">
-                    <option value="Mọi trình độ (Giao lưu học hỏi)">🟢 Mọi trình độ (Giao lưu thể thao vui vẻ)</option>
-                    <option value="Cơ bản - Trung bình (500 - 700 Elo)">🟡 Cơ bản - Trung bình (500 - 700 Elo)</option>
-                    <option value="Trung bình - Khá (700 - 900 Elo)">🟠 Trung bình - Khá (700 - 900 Elo)</option>
+                    <option value="Mọi trình độ (Giao lưu thể thao vui vẻ)">🟢 Mọi trình độ (Giao lưu thể thao vui vẻ)</option>
+                    <option value="Tân thủ - Phong trào (100 - 300 Elo)">⚪ Tân thủ - Phong trào (100 - 300 Elo)</option>
+                    <option value="Cơ bản - Trung bình (300 - 600 Elo)">🟡 Cơ bản - Trung bình (300 - 600 Elo)</option>
+                    <option value="Trung bình - Khá (600 - 900 Elo)">🟠 Trung bình - Khá (600 - 900 Elo)</option>
                     <option value="Bán Chuyên / Nâng Cao (900+ Elo)">🔴 Bán Chuyên / Nâng Cao (900+ Elo)</option>
                 </select>
             </div>

@@ -21,7 +21,12 @@ class StaffController {
             }
         }
 
-        $bookings = $bookingModel->readAllForStaff($date, $keyword, $assigned_pitch_id, $owner_id);
+        $role = $_SESSION['user_role'] ?? '';
+        if ($role === 'staff' && empty($assigned_pitch_id)) {
+            $bookings = [];
+        } else {
+            $bookings = $bookingModel->readAllForStaff($date, $keyword, $assigned_pitch_id, $owner_id, $role);
+        }
 
         // Stats for selected date
         $total_today = count($bookings);
@@ -64,7 +69,7 @@ class StaffController {
 
             $respond = function($success, $message, $extra = []) use ($isAjax, $redirectTo) {
                 if ($isAjax) {
-                    header('Content-Type: application/json');
+                    header('Content-Type: application/json; charset=UTF-8');
                     echo json_encode(array_merge(['success' => $success, 'message' => $message], $extra), JSON_UNESCAPED_UNICODE);
                     exit;
                 }
@@ -80,30 +85,48 @@ class StaffController {
             $owner_id = $_SESSION['owner_id'] ?? null;
             $role = $_SESSION['user_role'] ?? '';
 
+            if ($role === 'staff' && empty($assigned_pitch_id)) {
+                $respond(false, 'Nhân viên chưa được phân công cụm sân quản lý.', [
+                    'error_code' => 'unassigned_staff'
+                ]);
+            }
+
             // Scope filter: Admin bypasses scope, staff/owner scoped to assigned pitch or owner's pitches
             $filter_pitch_id = ($role === 'admin') ? null : $assigned_pitch_id;
             $filter_owner_id = ($role === 'admin') ? null : $owner_id;
 
             // 1. Xử lý Check-in theo ticket_id trực tiếp (của từng người chơi Smart Match AI)
             if ($ticket_id) {
+                $tCheck = $db->prepare("SELECT t.*, p.owner_id as pitch_owner_id FROM match_tickets t LEFT JOIN pitches p ON t.matched_pitch_id = p.id WHERE t.id = ?");
+                $tCheck->execute([$ticket_id]);
+                $tRow = $tCheck->fetch(PDO::FETCH_ASSOC);
+                if (!$tRow) {
+                    $respond(false, 'Không tìm thấy thông tin vé tìm trận.', ['error_code' => 'ticket_not_found']);
+                }
+
+                if ($role !== 'admin') {
+                    if (!empty($filter_pitch_id) && $tRow['matched_pitch_id'] != $filter_pitch_id) {
+                        $respond(false, 'Vé trận đấu không thuộc cụm sân bạn quản lý.', ['error_code' => 'unauthorized_pitch']);
+                    }
+                    if (!empty($filter_owner_id) && $tRow['pitch_owner_id'] != $filter_owner_id) {
+                        $respond(false, 'Vé trận đấu không thuộc cụm sân của bạn.', ['error_code' => 'unauthorized_owner']);
+                    }
+                }
+
                 require_once 'models/MatchTicket.php';
                 $mt = new MatchTicket($db);
                 $res = $mt->checkinPlayer($ticket_id, $_SESSION['user_id'] ?? null);
 
                 $bothChecked = false;
-                $tCheck = $db->prepare("SELECT booking_id, matched_ticket_id FROM match_tickets WHERE id = ?");
-                $tCheck->execute([$ticket_id]);
-                if ($tRow = $tCheck->fetch(PDO::FETCH_ASSOC)) {
-                    if (!empty($tRow['booking_id']) && !empty($tRow['matched_ticket_id'])) {
-                        $oppCheck = $db->prepare("SELECT is_checked_in FROM match_tickets WHERE id = ?");
-                        $oppCheck->execute([$tRow['matched_ticket_id']]);
-                        $oppChecked = $oppCheck->fetchColumn();
-                        if ($oppChecked == 1) {
-                            $bothChecked = true;
-                            $db->prepare("UPDATE bookings SET status = 'completed', payment_status = 'paid' WHERE id = ?")->execute([$tRow['booking_id']]);
-                        } else {
-                            $db->prepare("UPDATE bookings SET payment_status = 'deposited' WHERE id = ? AND payment_status != 'paid'")->execute([$tRow['booking_id']]);
-                        }
+                if (!empty($tRow['booking_id']) && !empty($tRow['matched_ticket_id'])) {
+                    $oppCheck = $db->prepare("SELECT is_checked_in FROM match_tickets WHERE id = ?");
+                    $oppCheck->execute([$tRow['matched_ticket_id']]);
+                    $oppChecked = $oppCheck->fetchColumn();
+                    if ($oppChecked == 1) {
+                        $bothChecked = true;
+                        $db->prepare("UPDATE bookings SET status = 'completed', payment_status = 'paid' WHERE id = ?")->execute([$tRow['booking_id']]);
+                    } else {
+                        $db->prepare("UPDATE bookings SET payment_status = 'deposited' WHERE id = ? AND payment_status != 'paid'")->execute([$tRow['booking_id']]);
                     }
                 }
 
@@ -117,9 +140,18 @@ class StaffController {
 
             // 2. Xử lý Check-in theo mã Code (nhập từ ô tìm kiếm hoặc quét barcode)
             if ($code) {
-                $tCheck = $db->prepare("SELECT id, booking_id, matched_ticket_id FROM match_tickets WHERE checkin_code = ? LIMIT 1");
+                $tCheck = $db->prepare("SELECT t.id, t.matched_pitch_id, t.booking_id, t.matched_ticket_id, p.owner_id as pitch_owner_id FROM match_tickets t LEFT JOIN pitches p ON t.matched_pitch_id = p.id WHERE t.checkin_code = ? LIMIT 1");
                 $tCheck->execute([$code]);
                 if ($ticketRow = $tCheck->fetch(PDO::FETCH_ASSOC)) {
+                    if ($role !== 'admin') {
+                        if (!empty($filter_pitch_id) && $ticketRow['matched_pitch_id'] != $filter_pitch_id) {
+                            $respond(false, 'Vé trận đấu không thuộc cụm sân bạn quản lý.', ['error_code' => 'unauthorized_pitch']);
+                        }
+                        if (!empty($filter_owner_id) && $ticketRow['pitch_owner_id'] != $filter_owner_id) {
+                            $respond(false, 'Vé trận đấu không thuộc cụm sân của bạn.', ['error_code' => 'unauthorized_owner']);
+                        }
+                    }
+
                     require_once 'models/MatchTicket.php';
                     $mt = new MatchTicket($db);
                     $res = $mt->checkinPlayer($ticketRow['id'], $_SESSION['user_id'] ?? null);

@@ -1,9 +1,9 @@
 <?php
 class MessageController {
         public function apiGetUnreadCount() {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=UTF-8');
         if (!isset($_SESSION['user_id'])) {
-            echo json_encode(['count' => 0]);
+            echo json_encode(['count' => 0], JSON_UNESCAPED_UNICODE);
             exit;
         }
         $database = new Database();
@@ -63,9 +63,9 @@ class MessageController {
     }
 
     public function apiSend() {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=UTF-8');
         if (!isset($_SESSION['user_id']) || !isset($_POST['receiver_id']) || empty($_POST['content'])) {
-            echo json_encode(['error' => 'Invalid request']);
+            echo json_encode(['error' => 'Invalid request'], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -86,21 +86,21 @@ class MessageController {
             $contentStr = htmlspecialchars($contentStr, ENT_QUOTES, 'UTF-8');
             $notif->create(
                 $_POST['receiver_id'], 
-                "💬 Tin nhắn mới từ " . $senderName, 
+                "Tin nhắn mới từ " . $senderName, 
                 $contentStr, 
                 "index.php?action=chat&user=" . $_SESSION['user_id']
             );
-            echo json_encode(['success' => true]);
+            echo json_encode(['success' => true], JSON_UNESCAPED_UNICODE);
         } else {
-            echo json_encode(['error' => 'Failed to send']);
+            echo json_encode(['error' => 'Failed to send'], JSON_UNESCAPED_UNICODE);
         }
         exit;
     }
 
     public function apiGet() {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=UTF-8');
         if (!isset($_SESSION['user_id']) || !isset($_GET['user'])) {
-            echo json_encode([]);
+            echo json_encode([], JSON_UNESCAPED_UNICODE);
             exit;
         }
 
@@ -110,7 +110,7 @@ class MessageController {
         $msgModel = new Message($db);
         $messages = $msgModel->getConversation($_SESSION['user_id'], $_GET['user'])->fetchAll(PDO::FETCH_ASSOC);
         
-        echo json_encode($messages);
+        echo json_encode($messages, JSON_UNESCAPED_UNICODE);
         exit;
     }
 }

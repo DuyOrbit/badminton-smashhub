@@ -82,6 +82,7 @@
                         Đã là thành viên
                     </span>
                     <form action="index.php?action=club_leave" method="POST" onsubmit="return confirm('Bạn có chắc muốn rời CLB này?');">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
                         <input type="hidden" name="club_id" value="<?php echo $club['id']; ?>">
                         <button type="submit" class="text-xs text-red-400 hover:text-red-300 underline font-bold">
                             Rời CLB
@@ -89,6 +90,7 @@
                     </form>
                 <?php else: ?>
                     <form action="index.php?action=club_join" method="POST">
+                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
                         <input type="hidden" name="club_id" value="<?php echo $club['id']; ?>">
                         <button type="submit" class="bg-[#d8ff3e] text-[#10181e] font-black px-6 py-3 rounded-2xl text-xs uppercase tracking-wider shadow-[4px_4px_0_#6d8a16] transition hover:translate-x-0.5 hover:translate-y-0.5">
                             ➕ Gia Nhập CLB Ngay

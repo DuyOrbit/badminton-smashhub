@@ -108,17 +108,27 @@
                     <!-- Action Buttons -->
                     <div class="mt-auto pt-2 flex gap-2">
                         <?php if(isset($_SESSION['user_id']) && $_SESSION['user_role'] == 'user' && $_SESSION['user_id'] != $m['user_id']): ?>
-                            <a href="index.php?action=accept_match&id=<?php echo $m['id']; ?>" onclick="return confirm('Bạn có chắc chắn muốn CHỐT KÈO trận cầu này?');" class="flex-1 bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] text-center py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-[2px_2px_0_#73940f] transition flex justify-center items-center gap-1.5">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                <span>Nhận Kèo</span>
-                            </a>
+                            <form action="index.php?action=accept_match" method="POST" class="flex-1" onsubmit="return confirm('Bạn có chắc chắn muốn CHỐT KÈO trận cầu này?');">
+                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                <input type="hidden" name="id" value="<?php echo $m['id']; ?>">
+                                <button type="submit" class="w-full bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] text-center py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-[2px_2px_0_#73940f] transition flex justify-center items-center gap-1.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Nhận Kèo</span>
+                                </button>
+                            </form>
                             <a href="index.php?action=chat&user=<?php echo $m['user_id']; ?>" class="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20 py-2.5 px-3 rounded-xl transition flex justify-center items-center" title="Nhắn Tin Trực Tiếp">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
                             </a>
                         <?php elseif(!isset($_SESSION['user_id'])): ?>
                             <a href="index.php?action=login" class="flex-1 bg-[#0b1116]/5 hover:bg-[#0b1116]/10 text-white text-center py-2.5 rounded-xl text-xs font-bold transition">Đăng nhập để nhận kèo</a>
                         <?php elseif(isset($_SESSION['user_id']) && $_SESSION['user_id'] == $m['user_id']): ?>
-                            <a href="index.php?action=close_match&id=<?php echo $m['id']; ?>" onclick="return confirm('Bạn muốn gỡ bài đăng tìm đối này?');" class="flex-1 border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-center py-2.5 rounded-xl text-xs font-bold transition">Gỡ Bài Đăng</a>
+                            <form action="index.php?action=close_match" method="POST" class="flex-1" onsubmit="return confirm('Bạn muốn gỡ bài đăng tìm đối này?');">
+                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                <input type="hidden" name="id" value="<?php echo $m['id']; ?>">
+                                <button type="submit" class="w-full border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-center py-2.5 rounded-xl text-xs font-bold transition">
+                                    Gỡ Bài Đăng
+                                </button>
+                            </form>
                         <?php endif; ?>
                     </div>
                 </div>

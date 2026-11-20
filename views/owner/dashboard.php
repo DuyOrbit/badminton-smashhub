@@ -361,16 +361,22 @@
                                 <?php endif; ?>
                                 <p class="text-[11px] text-white/60 mb-3">Vui lòng kiểm tra thực tế tại sân. Nếu đối phương thực sự không đến, bấm "Xác Nhận Bùng Kèo" để phạt -30 Điểm Uy Tín, -50 Elo và giải phóng sân.</p>
                                 <div class="flex flex-wrap gap-2">
-                                    <a href="index.php?action=owner_confirm_noshow&match_id=<?php echo $m['id']; ?>&decision=confirm" 
-                                       onclick="return confirm('XÁC NHẬN BÙNG KÈO:\nBạn đã kiểm tra thực tế và xác nhận người này không đến sân?\nHệ thống sẽ:\n- Trừ 30 điểm Uy Tín người vi phạm\n- Trừ 50 điểm Elo xếp hạng\n- Tạm khóa tìm trận\n- Bảo lưu quyền lợi cho người có mặt\n- Hủy trận và giải phóng sân.');"
-                                       class="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all shadow-md">
-                                        ⚖️ Xác Nhận Bùng Kèo (Xử Phạt)
-                                    </a>
-                                    <a href="index.php?action=owner_confirm_noshow&match_id=<?php echo $m['id']; ?>&decision=reject"
-                                       onclick="return confirm('BÁC BỎ BÁO CÁO:\nBạn xác nhận người này có đến sân hoặc hai bên vẫn thi đấu bình thường?');"
-                                       class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all border border-white/10">
-                                        ✕ Bác Bỏ Báo Cáo
-                                    </a>
+                                    <form action="index.php?action=owner_confirm_noshow" method="POST" class="inline" onsubmit="return confirm('XÁC NHẬN BÙNG KÈO:\nBạn đã kiểm tra thực tế và xác nhận người này không đến sân?\nHệ thống sẽ:\n- Trừ 30 điểm Uy Tín người vi phạm\n- Trừ 50 điểm Elo xếp hạng\n- Tạm khóa tìm trận\n- Bảo lưu quyền lợi cho người có mặt\n- Hủy trận và giải phóng sân.');">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                        <input type="hidden" name="match_id" value="<?php echo $m['id']; ?>">
+                                        <input type="hidden" name="decision" value="confirm">
+                                        <button type="submit" class="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all shadow-md">
+                                            ⚖️ Xác Nhận Bùng Kèo (Xử Phạt)
+                                        </button>
+                                    </form>
+                                    <form action="index.php?action=owner_confirm_noshow" method="POST" class="inline" onsubmit="return confirm('BÁC BỎ BÁO CÁO:\nBạn xác nhận người này có đến sân hoặc hai bên vẫn thi đấu bình thường?');">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                        <input type="hidden" name="match_id" value="<?php echo $m['id']; ?>">
+                                        <input type="hidden" name="decision" value="reject">
+                                        <button type="submit" class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all border border-white/10">
+                                            ✕ Bác Bỏ Báo Cáo
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         <?php elseif(!empty($m['noshow_status']) && $m['noshow_status'] == 'confirmed_noshow'): ?>
@@ -386,7 +392,13 @@
                                 <div class="relative z-10">
                                     <h4 class="text-orange-800 font-black flex items-center mb-1"><svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> Phê Duyệt Chốt Sân Thức Thì</h4>
                                     <p class="text-sm text-orange-700 mb-3">Lịch của trận thi đấu này vẫn đang lơ lửng, chưa khóa trên Lịch Đặt Sân. Bạn cần duyệt để xác nhận khóa giờ.</p>
-                                    <a href="index.php?action=owner_approve_match_booking&match_id=<?php echo $m['id']; ?>" class="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg shadow-none text-sm" onclick="return confirm('Khóa khung giờ này trên Lịch chung cho 2 đội thi đấu?');">Duyệt Chốt Lịch Sân Trận Này</a>
+                                    <form action="index.php?action=owner_approve_match_booking" method="POST" onsubmit="return confirm('Khóa khung giờ này trên Lịch chung cho 2 đội thi đấu?');" class="inline-block">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                        <input type="hidden" name="match_id" value="<?php echo $m['id']; ?>">
+                                        <button type="submit" class="inline-block bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-lg shadow-none text-sm">
+                                            Duyệt Chốt Lịch Sân Trận Này
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -445,9 +457,13 @@
                                         <button type="submit" name="match_result" value="guest_won" onclick="return confirm('Chắc chắn ĐỘI KHÁCH Thắng?');" class="flex-1 bg-[#121b21] text-red-700 hover:bg-red-600 hover:text-white font-black py-3 rounded-lg border-2 border-red-200 transition-all focus:ring-4 focus:ring-red-100 uppercase tracking-wider text-[11px]">Khách Thắng</button>
                                     </div>
                                 </form>
-                                <button onclick="if(confirm('Chú ý: Hành động này HỦY kèo, giải phóng Sân và báo hoàn tiền cho cả 2 Đội. Bạn có chắc không?')) window.location.href='index.php?action=owner_cancel_match&id=<?php echo $m['id']; ?>'" class="w-full bg-[#121b21] border border-red-300 text-red-600 hover:bg-red-500/20 text-center py-2.5 rounded-xl text-sm font-bold transition-all">
-                                    Hủy Kèo Khẩn Cấp (Sự Cố/Bùng Kèo)
-                                </button>
+                                <form action="index.php?action=owner_cancel_match" method="POST" onsubmit="return confirm('Chú ý: Hành động này HỦY kèo, giải phóng Sân và báo hoàn tiền cho cả 2 Đội. Bạn có chắc không?');">
+                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                    <input type="hidden" name="id" value="<?php echo $m['id']; ?>">
+                                    <button type="submit" class="w-full bg-[#121b21] border border-red-300 text-red-600 hover:bg-red-500/20 text-center py-2.5 rounded-xl text-sm font-bold transition-all">
+                                        Hủy Kèo Khẩn Cấp (Sự Cố/Bùng Kèo)
+                                    </button>
+                                </form>
                             <?php else: ?>
                                 <div class="bg-gray-800 text-white rounded-xl p-4 text-center border-b-4 border-yellow-500">
                                     <p class="font-bold uppercase tracking-widest text-xs mb-1 text-white/40">Kết Quả Đã Được Duyệt</p>
@@ -609,8 +625,16 @@ async function ajaxDashboardUpdateStatus(event, btn, bookingId, newStatus) {
     btn.innerHTML = '<span class="animate-spin inline-block">⏳</span>';
 
     try {
-        const response = await fetch(`index.php?action=owner_update_booking&id=${bookingId}&status=${newStatus}&is_ajax=1`, {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        const formData = new FormData();
+        formData.append('id', bookingId);
+        formData.append('status', newStatus);
+        formData.append('is_ajax', '1');
+        formData.append('csrf_token', window.csrfToken || '');
+
+        const response = await fetch('index.php?action=owner_update_booking', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
         });
         const data = await response.json();
         if (data.success) {
@@ -715,8 +739,15 @@ async function ajaxOwnerDashboardPayment(event, btn, party, matchId, amountStr) 
 
     const action = party === 'host' ? 'owner_approve_host_payment' : 'owner_approve_guest_payment';
     try {
-        const response = await fetch(`index.php?action=${action}&id=${matchId}&is_ajax=1`, {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        const formData = new FormData();
+        formData.append('id', matchId);
+        formData.append('is_ajax', '1');
+        formData.append('csrf_token', window.csrfToken || '');
+
+        const response = await fetch(`index.php?action=${action}`, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
         });
         const data = await response.json();
         if (data.success) {

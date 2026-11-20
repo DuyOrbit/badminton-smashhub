@@ -81,7 +81,7 @@ class HomeController {
     }
 
     public function apiPitchesMap() {
-        header('Content-Type: application/json');
+        header('Content-Type: application/json; charset=UTF-8');
         $database = new Database();
         $db = $database->getConnection();
         $pitch = new Pitch($db);
@@ -100,7 +100,7 @@ class HomeController {
             'radius_km' => $radius,
             'total_found' => count($pitches),
             'pitches' => $pitches
-        ]);
+        ], JSON_UNESCAPED_UNICODE);
         exit;
     }
 }

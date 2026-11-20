@@ -4,7 +4,7 @@ $clean_user_name = '';
 $user_role = $_SESSION['user_role'] ?? 'guest';
 $user_initials = 'KH';
 $user_badge_text = 'GUEST PLAYER';
-$user_elo_pts = 600;
+$user_elo_pts = 100;
 $user_rep_val = 100;
 $current_action = $_GET['action'] ?? 'home';
 
@@ -30,10 +30,10 @@ if (isset($_SESSION['user_id'])) {
                 if ($pts > 0) $user_elo_pts = $pts;
                 $rk_name = $rk_inst->getRankName($user_elo_pts);
                 if ($user_role === 'user') {
-                    $user_badge_text = strtoupper($rk_name) . ' · ' . $user_elo_pts . ' ELO';
+                    $user_badge_text = mb_strtoupper($rk_name, 'UTF-8') . ' · ' . $user_elo_pts . ' ELO';
                 } else {
                     $role_names = ['staff' => 'NHÂN VIÊN SÂN', 'owner' => 'CHỦ CỤM SÂN', 'admin' => 'ADMIN TỔNG'];
-                    $user_badge_text = $role_names[$user_role] ?? strtoupper($user_role);
+                    $user_badge_text = $role_names[$user_role] ?? mb_strtoupper($user_role, 'UTF-8');
                 }
             }
             if (class_exists('Reputation')) {
@@ -50,6 +50,8 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
+    <script>window.csrfToken = "<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>";</script>
     <title><?php echo htmlspecialchars($page_title ?? 'Trang Chủ'); ?> - SMASHHUB Badminton</title>
     
     <!-- Google Fonts Inter -->

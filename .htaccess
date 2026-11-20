@@ -1,12 +1,23 @@
+# Thiet lap bang ma mac dinh UTF-8
+AddDefaultCharset UTF-8
+<IfModule mod_php7.c>
+    php_value default_charset "UTF-8"
+</IfModule>
+<IfModule mod_php.c>
+    php_value default_charset "UTF-8"
+</IfModule>
+
 # Chặn truy cập trực tiếp vào các tệp tin nhạy cảm
 <FilesMatch "(^#.*#|\.(bak|config|dist|fla|inc|ini|log|psd|sh|sql|sw[op]|docx|md|env|yml|yaml))$">
     Require all denied
 </FilesMatch>
 
-# Chặn truy cập thư mục .git
+# Chặn truy cập thư mục .git và thư mục tests
 RedirectMatch 404 /\.git
+RedirectMatch 403 ^/tests(/.*)?$
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    RewriteRule ^tests(/.*)?$ - [F,L]
 </IfModule>
 

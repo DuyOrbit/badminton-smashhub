@@ -1,4 +1,4 @@
-﻿<div class="max-w-7xl mx-auto">
+<div class="max-w-7xl mx-auto">
     <div class="mb-8 flex items-center justify-between">
         <h1 class="text-3xl font-extrabold text-white">Dashboard Quản Trị Hệ Thống</h1>
         <div class="flex space-x-3">

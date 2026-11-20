@@ -114,6 +114,15 @@ class User {
         return false;
     }
 
+    public function phoneExists($phone = null) {
+        $checkPhone = $phone !== null ? $phone : $this->phone;
+        $query = "SELECT id FROM " . $this->table_name . " WHERE phone = ? LIMIT 0,1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $checkPhone);
+        $stmt->execute();
+        return ($stmt->rowCount() > 0);
+    }
+
     public function updateProfile($id, $data) {
         $query = "UPDATE " . $this->table_name . " 
                   SET name = :name, phone = :phone";

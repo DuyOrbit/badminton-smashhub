@@ -148,7 +148,9 @@ class Matchmaking {
     }
 
     public function reportResult($id, $result, $owner_id) {
-        $allowed = ['host_win', 'guest_win', 'draw'];
+        if ($result === 'host_win') $result = 'host_won';
+        if ($result === 'guest_win') $result = 'guest_won';
+        $allowed = ['host_won', 'guest_won', 'draw'];
         if (!in_array($result, $allowed, true)) {
             return false;
         }

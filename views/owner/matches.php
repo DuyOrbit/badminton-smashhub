@@ -119,12 +119,14 @@ $ranking = new Ranking((new Database())->getConnection());
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
                                                 Chưa Thu Tiền
                                             </span>
-                                            <a href="index.php?action=owner_approve_host_payment&id=<?php echo $m['id']; ?>" 
-                                               onclick="return confirm('Xác nhận đã nhận đủ <?php echo number_format($hostFinalPrice, 0, ',', '.'); ?>đ tiền mặt từ Chủ Nhà?');"
-                                               class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-2.5 py-1 rounded-lg shadow-none hover:shadow transition-all">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                                                Duyệt Thu Tiền
-                                            </a>
+                                            <form action="index.php?action=owner_approve_host_payment" method="POST" onsubmit="return confirm('Xác nhận đã nhận đủ <?php echo number_format($hostFinalPrice, 0, ',', '.'); ?>đ tiền mặt từ Chủ Nhà?');" class="inline">
+                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                                <input type="hidden" name="id" value="<?php echo $m['id']; ?>">
+                                                <button type="submit" class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-2.5 py-1 rounded-lg shadow-none hover:shadow transition-all">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                                    Duyệt Thu Tiền
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -165,12 +167,14 @@ $ranking = new Ranking((new Database())->getConnection());
                                                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
                                                 Chưa Thu Tiền
                                             </span>
-                                            <a href="index.php?action=owner_approve_guest_payment&id=<?php echo $m['id']; ?>" 
-                                               onclick="return confirm('Xác nhận đã nhận đủ <?php echo number_format($guestFinalPrice, 0, ',', '.'); ?>đ tiền mặt từ Đội Khách?');"
-                                               class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-2.5 py-1 rounded-lg shadow-none hover:shadow transition-all">
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                                                Duyệt Thu Tiền
-                                            </a>
+                                            <form action="index.php?action=owner_approve_guest_payment" method="POST" onsubmit="return confirm('Xác nhận đã nhận đủ <?php echo number_format($guestFinalPrice, 0, ',', '.'); ?>đ tiền mặt từ Đội Khách?');" class="inline">
+                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                                <input type="hidden" name="id" value="<?php echo $m['id']; ?>">
+                                                <button type="submit" class="inline-flex items-center gap-1 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white px-2.5 py-1 rounded-lg shadow-none hover:shadow transition-all">
+                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                                                    Duyệt Thu Tiền
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                     </div>
                                 </div>
@@ -207,16 +211,22 @@ $ranking = new Ranking((new Database())->getConnection());
                                 <?php endif; ?>
                                 <p class="text-[11px] text-white/60 mb-3">Vui lòng kiểm tra thực tế tại sân. Nếu đối phương thực sự không đến, bấm "Xác Nhận Bùng Kèo" để phạt -30 Điểm Uy Tín, -50 Elo và giải phóng sân.</p>
                                 <div class="flex flex-wrap gap-2">
-                                    <a href="index.php?action=owner_confirm_noshow&match_id=<?php echo $m['id']; ?>&decision=confirm" 
-                                       onclick="return confirm('XÁC NHẬN BÙNG KÈO:\nBạn đã kiểm tra thực tế và xác nhận người này không đến sân?\nHệ thống sẽ:\n- Trừ 30 điểm Uy Tín người vi phạm\n- Trừ 50 điểm Elo xếp hạng\n- Tạm khóa tìm trận\n- Bảo lưu quyền lợi cho người có mặt\n- Hủy trận và giải phóng sân.');"
-                                       class="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all shadow-md">
-                                        ⚖️ Xác Nhận Bùng Kèo (Xử Phạt)
-                                    </a>
-                                    <a href="index.php?action=owner_confirm_noshow&match_id=<?php echo $m['id']; ?>&decision=reject"
-                                       onclick="return confirm('BÁC BỎ BÁO CÁO:\nBạn xác nhận người này có đến sân hoặc hai bên vẫn thi đấu bình thường?');"
-                                       class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all border border-white/10">
-                                        ✕ Bác Bỏ Báo Cáo
-                                    </a>
+                                    <form action="index.php?action=owner_confirm_noshow" method="POST" class="inline" onsubmit="return confirm('XÁC NHẬN BÙNG KÈO:\nBạn đã kiểm tra thực tế và xác nhận người này không đến sân?\nHệ thống sẽ:\n- Trừ 30 điểm Uy Tín người vi phạm\n- Trừ 50 điểm Elo xếp hạng\n- Tạm khóa tìm trận\n- Bảo lưu quyền lợi cho người có mặt\n- Hủy trận và giải phóng sân.');">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                        <input type="hidden" name="match_id" value="<?php echo $m['id']; ?>">
+                                        <input type="hidden" name="decision" value="confirm">
+                                        <button type="submit" class="inline-flex items-center gap-1.5 bg-red-600 hover:bg-red-700 text-white font-black px-4 py-2 rounded-xl text-xs uppercase tracking-wider transition-all shadow-md">
+                                            ⚖️ Xác Nhận Bùng Kèo (Xử Phạt)
+                                        </button>
+                                    </form>
+                                    <form action="index.php?action=owner_confirm_noshow" method="POST" class="inline" onsubmit="return confirm('BÁC BỎ BÁO CÁO:\nBạn xác nhận người này có đến sân hoặc hai bên vẫn thi đấu bình thường?');">
+                                        <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                        <input type="hidden" name="match_id" value="<?php echo $m['id']; ?>">
+                                        <input type="hidden" name="decision" value="reject">
+                                        <button type="submit" class="inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-xl text-xs transition-all border border-white/10">
+                                            ✕ Bác Bỏ Báo Cáo
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         <?php elseif(!empty($m['noshow_status']) && $m['noshow_status'] == 'confirmed_noshow'): ?>
@@ -283,9 +293,13 @@ $ranking = new Ranking((new Database())->getConnection());
                                         <button type="submit" name="match_result" value="guest_won" onclick="return confirm('Chắc chắn ĐỘI KHÁCH Thắng?');" class="flex-1 bg-[#121b21] text-red-700 hover:bg-red-600 hover:text-white font-black py-3 rounded-lg border-2 border-red-200 transition-all focus:ring-4 focus:ring-red-100 uppercase tracking-wider text-[11px]">Khách Thắng</button>
                                     </div>
                                 </form>
-                                <button onclick="if(confirm('Chú ý: Hành động này HỦY sạch tiền sử trận đấu, giải phóng Sân và báo hoàn tiền cho cả 2 Đội. Bạn có chắc không?')) window.location.href='index.php?action=owner_cancel_match&id=<?php echo $m['id']; ?>'" class="w-full bg-[#121b21] border border-red-300 text-red-600 hover:bg-red-500/20 text-center py-2.5 rounded-xl text-sm font-bold transition-all">
-                                    Hủy Trận Đấu Này (Sự Cố/Bùng Kèo)
-                                </button>
+                                <form action="index.php?action=owner_cancel_match" method="POST" onsubmit="return confirm('Chú ý: Hành động này HỦY sạch tiền sử trận đấu, giải phóng Sân và báo hoàn tiền cho cả 2 Đội. Bạn có chắc không?');">
+                                    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token'] ?? ''; ?>">
+                                    <input type="hidden" name="id" value="<?php echo $m['id']; ?>">
+                                    <button type="submit" class="w-full bg-[#121b21] border border-red-300 text-red-600 hover:bg-red-500/20 text-center py-2.5 rounded-xl text-sm font-bold transition-all">
+                                        Hủy Trận Đấu Này (Sự Cố/Bùng Kèo)
+                                    </button>
+                                </form>
                             <?php else: ?>
                                 <div class="bg-gray-800 text-white rounded-xl p-4 text-center border-b-4 border-yellow-500">
                                     <p class="font-bold uppercase tracking-widest text-xs mb-1 text-white/40">Kết Quả Đã Được Bạn Duyệt</p>

@@ -82,7 +82,7 @@ class MatchTicket {
         $season = Ranking::getCurrentSeason();
         $elo = $ranking->getSeasonPoints($user_id, $season);
         if ($elo <= 0) {
-            $elo = 100; // Mốc điểm cơ bản tân thủ
+            $elo = Ranking::DEFAULT_ELO;
         }
         $rankName = $ranking->getRankName($elo);
 
@@ -149,12 +149,17 @@ class MatchTicket {
             return false;
         }
 
+        if (!empty($ticket['expires_at']) && strtotime($ticket['expires_at']) < time()) {
+            return false;
+        }
+
         // 1. Quét tìm các Ticket khác đang ở trạng thái 'waiting'
         // Tiêu chí bắt buộc: Khác user_id, cùng play_date, có giao thoa khung giờ
         $query = "SELECT t.*, u.name as user_name, u.avatar_url
                   FROM " . $this->table_name . " t
                   INNER JOIN users u ON t.user_id = u.id
                   WHERE t.status = 'waiting' 
+                    AND (t.expires_at IS NULL OR t.expires_at >= NOW())
                     AND t.user_id != :user_id
                     AND t.play_date = :play_date
                     AND (t.start_time < :end_time AND t.end_time > :start_time)";
@@ -399,8 +404,17 @@ class MatchTicket {
             $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$ticket || $ticket['user_id'] != $userId || $ticket['status'] != 'matched') {
-                $this->conn->rollBack();
+                if ($this->conn->inTransaction()) {
+                    $this->conn->rollBack();
+                }
                 return ['success' => false, 'message' => 'Lệnh tìm trận không hợp lệ hoặc đã thay đổi trạng thái.'];
+            }
+
+            if (!empty($ticket['expires_at']) && strtotime($ticket['expires_at']) < time()) {
+                if ($this->conn->inTransaction()) {
+                    $this->conn->rollBack();
+                }
+                return ['success' => false, 'message' => 'Lệnh tìm trận đã hết thời hạn xác nhận.'];
             }
 
             $oppTicketId = (int)$ticket['matched_ticket_id'];
@@ -409,15 +423,56 @@ class MatchTicket {
             $oppTicket = $stmtOpp->fetch(PDO::FETCH_ASSOC);
 
             if (!$oppTicket) {
-                $this->conn->rollBack();
+                if ($this->conn->inTransaction()) {
+                    $this->conn->rollBack();
+                }
                 return ['success' => false, 'message' => 'Không tìm thấy thông tin đối thủ.'];
+            }
+
+            if (!empty($oppTicket['expires_at']) && strtotime($oppTicket['expires_at']) < time()) {
+                if ($this->conn->inTransaction()) {
+                    $this->conn->rollBack();
+                }
+                return ['success' => false, 'message' => 'Lệnh tìm trận của đối thủ đã hết thời hạn xác nhận.'];
+            }
+
+            // Kiem tra cau hinh Sandbox cho thanh toan truc tuyen
+            $isSandbox = defined('PAYMENT_SANDBOX') ? (bool)PAYMENT_SANDBOX : true;
+            if ($paymentMethod === 'vietqr') {
+                $paymentStatus = $isSandbox ? 'paid' : 'unpaid';
+            } else {
+                $paymentStatus = 'unpaid';
+            }
+
+            $oppUserId = (int)$oppTicket['user_id'];
+            $uStmt = $this->conn->prepare("SELECT id, name, phone FROM users WHERE id IN (?, ?)");
+            $uStmt->execute([$userId, $oppUserId]);
+            $usersMap = [];
+            while ($uRow = $uStmt->fetch(PDO::FETCH_ASSOC)) {
+                $usersMap[(int)$uRow['id']] = $uRow;
+            }
+            $userName = $usersMap[$userId]['name'] ?? 'Người chơi 1';
+            $userPhone = $usersMap[$userId]['phone'] ?? '0900000000';
+            $oppName = $usersMap[$oppUserId]['name'] ?? 'Người chơi 2';
+
+            // Khoa san de kiem tra gia va suc chua
+            $pitchStmt = $this->conn->prepare("SELECT id, name, quantity, status, location, price_per_hour FROM pitches WHERE id = ? FOR UPDATE");
+            $pitchStmt->execute([(int)$ticket['matched_pitch_id']]);
+            $pitch = $pitchStmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$pitch || ($pitch['status'] ?? '') === 'locked') {
+                if ($this->conn->inTransaction()) {
+                    $this->conn->rollBack();
+                }
+                return ['success' => false, 'message' => 'Sân thi đấu hiện đang bảo trì hoặc tạm khóa. Vui lòng chọn sân khác.'];
             }
 
             // Tính toán chi phí 50% của người này (áp dụng giảm giá theo Rank cá nhân)
             $start = strtotime($ticket['start_time']);
             $end = strtotime($ticket['end_time']);
             $hours = max(1, ($end - $start) / 3600);
-            $totalBase = $hours * $ticket['price_per_hour'];
+            $pricePerHour = !empty($pitch['price_per_hour']) ? (float)$pitch['price_per_hour'] : 100000;
+            $totalBase = $hours * $pricePerHour;
             $halfBase = $totalBase / 2;
 
             require_once __DIR__ . '/Ranking.php';
@@ -444,16 +499,6 @@ class MatchTicket {
             // Kiểm tra đối phương đã xác nhận trước đó chưa (đã được khóa bởi FOR UPDATE)
             if ($oppTicket['user_confirmed'] == 1) {
                 // --- CẢ 2 BÊN ĐÃ XÁC NHẬN & THANH TOÁN 50% -> TIẾN HÀNH KHÓA SÂN VÀ TẠO HÓA ĐƠN CHIA ĐÔI ---
-                // Khóa sân để kiểm tra sức chứa và trạng thái hoạt động
-                $pitchStmt = $this->conn->prepare("SELECT id, name, quantity, status, location FROM pitches WHERE id = ? FOR UPDATE");
-                $pitchStmt->execute([(int)$ticket['matched_pitch_id']]);
-                $pitch = $pitchStmt->fetch(PDO::FETCH_ASSOC);
-
-                if (!$pitch || ($pitch['status'] ?? '') === 'locked') {
-                    $this->conn->rollBack();
-                    return ['success' => false, 'message' => 'Sân thi đấu hiện đang bảo trì hoặc tạm khóa. Vui lòng chọn sân khác.'];
-                }
-
                 // Kiểm tra sức chứa sân con thực tế (tránh race condition vượt số sân con)
                 require_once __DIR__ . '/Booking.php';
                 $bookingModel = new Booking($this->conn);
@@ -466,7 +511,9 @@ class MatchTicket {
 
                 $courtQuantity = !empty($pitch['quantity']) ? (int)$pitch['quantity'] : 1;
                 if ($overlappingCount >= $courtQuantity) {
-                    $this->conn->rollBack();
+                    if ($this->conn->inTransaction()) {
+                        $this->conn->rollBack();
+                    }
                     return ['success' => false, 'message' => 'Rất tiếc! Cụm sân đã hết sân con trống trong khung giờ này. Vui lòng thỏa thuận đổi sân khác.'];
                 }
 
@@ -485,7 +532,7 @@ class MatchTicket {
                     }
                 }
 
-                $oppDiscount = $ranking->getActiveDiscount($ticket['opp_user_id']);
+                $oppDiscount = $ranking->getActiveDiscount($oppUserId);
                 $oppPay = $halfBase * ((100 - $oppDiscount) / 100);
                 $finalTotalPrice = $userPay + $oppPay;
 
@@ -505,22 +552,23 @@ class MatchTicket {
                 $this->conn->prepare("UPDATE " . $this->table_name . " SET checkin_code = ? WHERE id = ?")->execute([$userCheckinCode, $ticketId]);
                 $this->conn->prepare("UPDATE " . $this->table_name . " SET checkin_code = ? WHERE id = ?")->execute([$oppCheckinCode, $oppTicketId]);
 
-                // 2. Tạo Booking chính thức
+                // 2. Tạo Booking chính thức (neu sandbox tat thi de pending cho chu san duyet)
+                $bookingInitialStatus = $isSandbox ? 'confirmed' : 'pending';
                 $bookSql = "INSERT INTO bookings 
                             (pitch_id, court_number, user_id, customer_name, customer_phone, booking_date, start_time, end_time, total_price, payment_method, payment_status, services_note, checkin_code, status)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')";
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 
                 $bStmt = $this->conn->prepare($bookSql);
                 $userPayDesc = ($paymentMethod === 'vietqr') ? 'VietQR Đã Trả' : 'Tiền mặt';
                 $oppPayDesc = (($oppTicket['payment_status'] ?? 'cash') === 'vietqr') ? 'VietQR Đã Trả' : 'Tiền mặt';
-                $servicesNote = "Kèo Ghép Thông Minh Elo (Sân {$assignedCourt}): {$ticket['user_name']} [Mã: {$userCheckinCode}] ({$userPayDesc} 50%: " . number_format($userPay,0,',','.') . "đ) vs {$ticket['opp_name']} [Mã: {$oppCheckinCode}] ({$oppPayDesc} 50%: " . number_format($oppPay,0,',','.') . "đ)";
+                $servicesNote = "Kèo Ghép Thông Minh Elo (Sân {$assignedCourt}): {$userName} [Mã: {$userCheckinCode}] ({$userPayDesc} 50%: " . number_format($userPay,0,',','.') . "đ) vs {$oppName} [Mã: {$oppCheckinCode}] ({$oppPayDesc} 50%: " . number_format($oppPay,0,',','.') . "đ)";
 
                 $bStmt->execute([
                     $ticket['matched_pitch_id'],
                     $assignedCourt,
                     $userId,
-                    $ticket['user_name'] . ' vs ' . $ticket['opp_name'] . ' (Ghép Kèo AI)',
-                    !empty($ticket['user_phone']) ? $ticket['user_phone'] : '0900000000',
+                    $userName . ' vs ' . $oppName . ' (Ghép Kèo AI)',
+                    $userPhone,
                     $ticket['play_date'],
                     $ticket['start_time'],
                     $ticket['end_time'],
@@ -528,7 +576,8 @@ class MatchTicket {
                     $bookingPaymentMethod,
                     $overallPaymentStatus,
                     $servicesNote,
-                    $bookingCheckin
+                    $bookingCheckin,
+                    $bookingInitialStatus
                 ]);
                 $newBookingId = $this->conn->lastInsertId();
 
@@ -550,8 +599,8 @@ class MatchTicket {
                     $ticket['format'],
                     3, // level trung bình
                     $ticket['district'],
-                    "Ghép trận thông minh tự động (Split 50/50): {$ticket['user_name']} vs {$ticket['opp_name']}",
-                    $ticket['opp_user_id'],
+                    "Ghép trận thông minh tự động (Split 50/50): {$userName} vs {$oppName}",
+                    $oppUserId,
                     $hostPaid,
                     $guestPaid
                 ]);
@@ -565,8 +614,8 @@ class MatchTicket {
                 $congrats1 = "🎉 [KÈO ĐÃ ĐƯỢC CHỐT THÀNH CÔNG] Cả hai bên đã hoàn tất xác nhận & thanh toán chia đôi (50/50)! Sân {$pitch['name']} (Sân con #{$assignedCourt}) đã được đặt vào lúc " . substr($ticket['start_time'], 0, 5) . " - " . substr($ticket['end_time'], 0, 5) . " ngày " . date('d/m/Y', strtotime($ticket['play_date'])) . ". Mã Check-in riêng của bạn tại quầy: [{$userCheckinCode}]. Chúc bạn có trận đấu rực lửa!";
                 $congrats2 = "🎉 [KÈO ĐÃ ĐƯỢC CHỐT THÀNH CÔNG] Cả hai bên đã hoàn tất xác nhận & thanh toán chia đôi (50/50)! Sân {$pitch['name']} (Sân con #{$assignedCourt}) đã được đặt vào lúc " . substr($ticket['start_time'], 0, 5) . " - " . substr($ticket['end_time'], 0, 5) . " ngày " . date('d/m/Y', strtotime($ticket['play_date'])) . ". Mã Check-in riêng của bạn tại quầy: [{$oppCheckinCode}]. Chúc bạn có trận đấu rực lửa!";
                 $msgSql = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
-                $this->conn->prepare($msgSql)->execute([$ticket['opp_user_id'], $userId, $congrats1]);
-                $this->conn->prepare($msgSql)->execute([$userId, $ticket['opp_user_id'], $congrats2]);
+                $this->conn->prepare($msgSql)->execute([$oppUserId, $userId, $congrats1]);
+                $this->conn->prepare($msgSql)->execute([$userId, $oppUserId, $congrats2]);
 
                 $this->conn->commit();
 
@@ -577,7 +626,7 @@ class MatchTicket {
                     'court_number' => $assignedCourt,
                     'checkin_code' => $userCheckinCode,
                     'opp_checkin_code' => $oppCheckinCode,
-                    'opp_name' => $ticket['opp_name'],
+                    'opp_name' => $oppName,
                     'user_pay' => $userPay,
                     'payment_method' => $paymentMethod,
                     'payment_status' => $paymentStatus
@@ -585,9 +634,9 @@ class MatchTicket {
             }
 
             // Nếu đối thủ chưa xác nhận
-            $notifMsg = "🏸 [THÔNG BÁO GHÉP TRẬN] Đối thủ {$ticket['user_name']} đã xác nhận và chọn thanh toán 50% tiền sân! Hãy vào mục 'Ghép Trận Thông Minh' để hoàn tất phần thanh toán của bạn và chốt sân thi đấu.";
+            $notifMsg = "[THONG BAO GHEP TRAN] Doi thu {$userName} da xac nhan va chon thanh toan 50% tien san! Hay vao muc 'Ghep Tran Thong Minh' de hoan tat phan thanh toan cua ban va chot san thi dau.";
             $msgSql = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
-            $this->conn->prepare($msgSql)->execute([$userId, $ticket['opp_user_id'], $notifMsg]);
+            $this->conn->prepare($msgSql)->execute([$userId, $oppUserId, $notifMsg]);
 
             $this->conn->commit();
 
@@ -599,8 +648,10 @@ class MatchTicket {
                 'payment_status' => $paymentStatus,
                 'user_pay' => $userPay
             ];
-        } catch (Exception $e) {
-            $this->conn->rollBack();
+        } catch (Throwable $e) {
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
             return ['success' => false, 'message' => 'Lỗi xử lý xác nhận kèo: ' . $e->getMessage()];
         }
     }

@@ -84,12 +84,13 @@ class OwnerController {
     }
 
     public function approveMatchBooking() {
-        if(isset($_GET['match_id'])) {
+        $match_id = $_POST['match_id'] ?? $_GET['match_id'] ?? null;
+        if($match_id) {
             $database = new Database();
             $db = $database->getConnection();
             $query = "SELECT m.*, p.owner_id FROM matchmaking m INNER JOIN pitches p ON m.pitch_id = p.id WHERE m.id = ?";
             $s = $db->prepare($query);
-            $s->execute([$_GET['match_id']]);
+            $s->execute([$match_id]);
             if($m = $s->fetch(PDO::FETCH_ASSOC)) {
                 // Kiểm tra phân quyền chủ sân
                 if ($m['owner_id'] != $_SESSION['user_id'] && ($_SESSION['user_role'] ?? '') !== 'admin') {
@@ -139,19 +140,20 @@ class OwnerController {
     }
 
     public function approveHostPayment() {
-        if (isset($_GET['id'])) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        if ($id) {
             $database = new Database();
             $db = $database->getConnection();
 
             // Kiểm tra phân quyền chủ sân
             $mStmt = $db->prepare("SELECT m.*, p.owner_id FROM matchmaking m INNER JOIN pitches p ON m.pitch_id = p.id WHERE m.id = ?");
-            $mStmt->execute([$_GET['id']]);
+            $mStmt->execute([$id]);
             $m = $mStmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$m || ($m['owner_id'] != $_SESSION['user_id'] && ($_SESSION['user_role'] ?? '') !== 'admin')) {
-                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax'])) {
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => 'Lỗi phân quyền: Trận đấu không thuộc cụm sân bạn quản lý.']);
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax'])) {
+                    header('Content-Type: application/json; charset=UTF-8');
+                    echo json_encode(['success' => false, 'message' => 'Lỗi phân quyền: Trận đấu không thuộc cụm sân bạn quản lý.'], JSON_UNESCAPED_UNICODE);
                     exit;
                 }
                 header("Location: index.php?action=owner_dashboard&error=unauthorized");
@@ -160,7 +162,7 @@ class OwnerController {
 
             $query = "UPDATE matchmaking SET host_paid = 1, host_checkin = 1, host_checkin_time = NOW() WHERE id = ?";
             $stmt = $db->prepare($query);
-            $stmt->execute([$_GET['id']]);
+            $stmt->execute([$id]);
 
             // Đồng bộ trạng thái vé match_tickets
             $db->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE user_id = ? AND play_date = ? AND start_time = ?")
@@ -168,7 +170,7 @@ class OwnerController {
 
             $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
             if ($isAjax) {
-                header('Content-Type: application/json');
+                header('Content-Type: application/json; charset=UTF-8');
                 echo json_encode(['success' => true, 'message' => 'Xác nhận thu 50% tiền sân Chủ Nhà thành công!', 'party' => 'host'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
@@ -182,19 +184,20 @@ class OwnerController {
     }
 
     public function approveGuestPayment() {
-        if (isset($_GET['id'])) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        if ($id) {
             $database = new Database();
             $db = $database->getConnection();
 
             // Kiểm tra phân quyền chủ sân
             $mStmt = $db->prepare("SELECT m.*, p.owner_id FROM matchmaking m INNER JOIN pitches p ON m.pitch_id = p.id WHERE m.id = ?");
-            $mStmt->execute([$_GET['id']]);
+            $mStmt->execute([$id]);
             $m = $mStmt->fetch(PDO::FETCH_ASSOC);
 
             if (!$m || ($m['owner_id'] != $_SESSION['user_id'] && ($_SESSION['user_role'] ?? '') !== 'admin')) {
-                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax'])) {
-                    header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => 'Lỗi phân quyền: Trận đấu không thuộc cụm sân bạn quản lý.']);
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax'])) {
+                    header('Content-Type: application/json; charset=UTF-8');
+                    echo json_encode(['success' => false, 'message' => 'Lỗi phân quyền: Trận đấu không thuộc cụm sân bạn quản lý.'], JSON_UNESCAPED_UNICODE);
                     exit;
                 }
                 header("Location: index.php?action=owner_dashboard&error=unauthorized");
@@ -203,7 +206,7 @@ class OwnerController {
 
             $query = "UPDATE matchmaking SET guest_paid = 1, guest_checkin = 1, guest_checkin_time = NOW() WHERE id = ?";
             $stmt = $db->prepare($query);
-            $stmt->execute([$_GET['id']]);
+            $stmt->execute([$id]);
 
             // Đồng bộ trạng thái vé match_tickets
             $db->prepare("UPDATE match_tickets SET is_checked_in = 1, checked_in_at = NOW(), payment_status = 'paid' WHERE user_id = ? AND play_date = ? AND start_time = ?")
@@ -211,7 +214,7 @@ class OwnerController {
 
             $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
             if ($isAjax) {
-                header('Content-Type: application/json');
+                header('Content-Type: application/json; charset=UTF-8');
                 echo json_encode(['success' => true, 'message' => 'Xác nhận thu 50% tiền sân Đội Khách thành công!', 'party' => 'guest'], JSON_UNESCAPED_UNICODE);
                 exit;
             }
@@ -225,12 +228,13 @@ class OwnerController {
     }
 
     public function confirmNoShow() {
-        if (!isset($_SESSION['user_id']) || !isset($_GET['match_id'])) {
+        $matchId = isset($_POST['match_id']) ? (int)$_POST['match_id'] : (isset($_GET['match_id']) ? (int)$_GET['match_id'] : null);
+        $decision = $_POST['decision'] ?? $_GET['decision'] ?? 'confirm';
+
+        if (!isset($_SESSION['user_id']) || !$matchId) {
             header("Location: index.php?action=owner_dashboard");
             exit;
         }
-        $matchId = (int)$_GET['match_id'];
-        $decision = $_GET['decision'] ?? 'confirm';
 
         $database = new Database();
         $db = $database->getConnection();
@@ -252,11 +256,12 @@ class OwnerController {
     }
 
     public function cancelMatch() {
-        if (isset($_GET['id'])) {
+        $id = $_POST['id'] ?? $_GET['id'] ?? null;
+        if ($id) {
             $database = new Database();
             $db = $database->getConnection();
             $match = new Matchmaking($db);
-            if($match->cancelMatchByOwner($_GET['id'], $_SESSION['user_id'])) {
+            if($match->cancelMatchByOwner($id, $_SESSION['user_id'])) {
                 header("Location: index.php?action=owner_dashboard&msg=cancelled");
             } else {
                 header("Location: index.php?action=owner_dashboard&error=cancel_failed");
@@ -344,16 +349,24 @@ class OwnerController {
 
             // Handle file upload if provided safely
             if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
+                $max_size = 5 * 1024 * 1024; // 5MB limit
                 $allowed_extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                $allowed_mimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+                $file_size = $_FILES['image_file']['size'];
                 $ext = strtolower(pathinfo($_FILES['image_file']['name'], PATHINFO_EXTENSION));
+
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mime = finfo_file($finfo, $_FILES['image_file']['tmp_name']);
+                finfo_close($finfo);
                 
-                if (in_array($ext, $allowed_extensions)) {
+                if ($file_size <= $max_size && in_array($ext, $allowed_extensions) && in_array($mime, $allowed_mimes)) {
                     $upload_dir = 'assets/uploads/pitches/';
                     if (!file_exists($upload_dir)) {
-                        mkdir($upload_dir, 0777, true);
+                        mkdir($upload_dir, 0755, true);
                     }
                     
-                    $file_name = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
+                    $file_name = bin2hex(random_bytes(16)) . '.' . $ext;
                     $target_file = $upload_dir . $file_name;
                     
                     if (move_uploaded_file($_FILES['image_file']['tmp_name'], $target_file)) {
@@ -425,16 +438,24 @@ class OwnerController {
 
             // Handle file upload if provided safely
             if (isset($_FILES['image_file']) && $_FILES['image_file']['error'] == 0) {
+                $max_size = 5 * 1024 * 1024; // 5MB limit
                 $allowed_extensions = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+                $allowed_mimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
+                $file_size = $_FILES['image_file']['size'];
                 $ext = strtolower(pathinfo($_FILES['image_file']['name'], PATHINFO_EXTENSION));
+
+                $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                $mime = finfo_file($finfo, $_FILES['image_file']['tmp_name']);
+                finfo_close($finfo);
                 
-                if (in_array($ext, $allowed_extensions)) {
+                if ($file_size <= $max_size && in_array($ext, $allowed_extensions) && in_array($mime, $allowed_mimes)) {
                     $upload_dir = 'assets/uploads/pitches/';
                     if (!file_exists($upload_dir)) {
-                        mkdir($upload_dir, 0777, true);
+                        mkdir($upload_dir, 0755, true);
                     }
                     
-                    $file_name = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
+                    $file_name = bin2hex(random_bytes(16)) . '.' . $ext;
                     $target_file = $upload_dir . $file_name;
                     
                     if (move_uploaded_file($_FILES['image_file']['tmp_name'], $target_file)) {
@@ -476,13 +497,13 @@ class OwnerController {
     }
 
     public function updateBookingStatus() {
-        if(isset($_GET['id']) && isset($_GET['status'])) {
+        $bookingId = $_POST['id'] ?? $_GET['id'] ?? null;
+        $newStatus = $_POST['status'] ?? $_GET['status'] ?? null;
+        if($bookingId && $newStatus) {
             $database = new Database();
             $db = $database->getConnection();
             
             $booking = new Booking($db);
-            $bookingId = $_GET['id'];
-            $newStatus = $_GET['status'];
 
             if ($newStatus == 'confirmed') {
                 // Fetch current booking data to check overlapping
@@ -500,7 +521,7 @@ class OwnerController {
                     
                     if ($overlapping >= $pitchData['quantity']) {
                         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax'])) {
-                            header('Content-Type: application/json');
+                            header('Content-Type: application/json; charset=UTF-8');
                             echo json_encode(['success' => false, 'message' => "Không thể xác nhận: Sân đã đạt tối đa số lượng (Tối đa: {$pitchData['quantity']}) vào khung giờ này."], JSON_UNESCAPED_UNICODE);
                             exit;
                         }
@@ -517,7 +538,7 @@ class OwnerController {
             $isAuthorized = ($ownerRow && ($ownerRow['owner_id'] == $_SESSION['user_id'] || ($_SESSION['user_role'] ?? '') === 'admin'));
             if (!$isAuthorized) {
                 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax'])) {
-                    header('Content-Type: application/json');
+                    header('Content-Type: application/json; charset=UTF-8');
                     echo json_encode(['success' => false, 'message' => 'Lỗi phân quyền: Đơn đặt sân không thuộc cụm sân bạn quản lý.'], JSON_UNESCAPED_UNICODE);
                     exit;
                 }
@@ -542,7 +563,7 @@ class OwnerController {
 
             $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_GET['is_ajax']) || isset($_POST['is_ajax']) || (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false);
             if ($isAjax) {
-                header('Content-Type: application/json');
+                header('Content-Type: application/json; charset=UTF-8');
                 $msg = ($newStatus === 'confirmed') ? 'Đã duyệt đơn đặt sân thành công!' : 'Đã hủy đơn đặt sân thành công!';
                 echo json_encode(['success' => true, 'booking_id' => $bookingId, 'new_status' => $newStatus, 'message' => $msg], JSON_UNESCAPED_UNICODE);
                 exit;
@@ -576,7 +597,18 @@ class OwnerController {
         $ownerPitches = $pitch->readByOwner($owner_id)->fetchAll(PDO::FETCH_ASSOC);
 
         $service = new Service($db);
-        $services = $service->readByPitch();
+        if (($_SESSION['user_role'] ?? '') === 'admin') {
+            $services = $service->readByPitch();
+        } else {
+            $pitchIds = array_map('intval', array_column($ownerPitches, 'id'));
+            if (!empty($pitchIds)) {
+                $inClause = implode(',', $pitchIds);
+                $stmt = $db->query("SELECT * FROM services WHERE pitch_id IN ($inClause) ORDER BY id ASC");
+                $services = $stmt ? $stmt->fetchAll(PDO::FETCH_ASSOC) : [];
+            } else {
+                $services = [];
+            }
+        }
 
         $page_title = "Quản Lý Dịch Vụ Sân Cầu Lông";
         $content = 'owner/services.php';
@@ -588,9 +620,24 @@ class OwnerController {
             $database = new Database();
             $db = $database->getConnection();
 
+            $pitch_id = !empty($_POST['pitch_id']) ? (int)$_POST['pitch_id'] : null;
+            if (!$pitch_id) {
+                header("Location: index.php?action=owner_services&error=missing_pitch");
+                exit;
+            }
+
+            if (($_SESSION['user_role'] ?? '') !== 'admin') {
+                $chk = $db->prepare("SELECT id FROM pitches WHERE id = ? AND owner_id = ?");
+                $chk->execute([$pitch_id, $_SESSION['user_id']]);
+                if (!$chk->fetch()) {
+                    header("Location: index.php?action=owner_services&error=unauthorized_pitch");
+                    exit;
+                }
+            }
+
             $service = new Service($db);
             $data = [
-                'pitch_id' => !empty($_POST['pitch_id']) ? $_POST['pitch_id'] : null,
+                'pitch_id' => $pitch_id,
                 'name' => $_POST['name'],
                 'category' => $_POST['category'] ?? 'beverage',
                 'price' => $_POST['price'],
@@ -613,8 +660,18 @@ class OwnerController {
             $database = new Database();
             $db = $database->getConnection();
 
+            $service_id = (int)$_GET['id'];
+            if (($_SESSION['user_role'] ?? '') !== 'admin') {
+                $chk = $db->prepare("SELECT s.id FROM services s INNER JOIN pitches p ON s.pitch_id = p.id WHERE s.id = ? AND p.owner_id = ?");
+                $chk->execute([$service_id, $_SESSION['user_id']]);
+                if (!$chk->fetch()) {
+                    header("Location: index.php?action=owner_services&error=unauthorized_service");
+                    exit;
+                }
+            }
+
             $service = new Service($db);
-            $service->delete($_GET['id']);
+            $service->delete($service_id);
             header("Location: index.php?action=owner_services&msg=deleted");
             exit;
         }

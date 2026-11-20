@@ -1,4 +1,8 @@
 <?php
+if (PHP_OS_FAMILY === 'Windows' && function_exists('sapi_windows_cp_set')) {
+    @sapi_windows_cp_set(65001);
+}
+
 /**
  * 🏸 SMASHHUB — Concurrency & Race Condition Verification Test
  * 
