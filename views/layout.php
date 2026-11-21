@@ -508,5 +508,229 @@ function toggleGlobalAiModal() {
 }
 </script>
 
+<?php if (isset($_SESSION['user_id']) && ($_SESSION['user_role'] ?? 'user') === 'user'): ?>
+<!-- Nearby Player Radar Floating Widget -->
+<div id="nearbyRadarContainer" class="fixed bottom-6 left-6 z-40 max-w-sm w-full px-4 sm:px-0 pointer-events-none transition-all duration-500 transform -translate-x-full opacity-0">
+    <div id="nearbyRadarCard" class="pointer-events-auto bg-[#121b21]/95 border border-[#d8ff3e]/40 rounded-2xl p-4 shadow-[0_15px_35px_rgba(0,0,0,0.6)] backdrop-blur-xl relative overflow-hidden">
+        <div class="absolute -top-12 -left-12 w-28 h-28 bg-[#d8ff3e]/10 rounded-full blur-2xl pointer-events-none"></div>
+        <div id="radarContent">
+            <!-- Dynamically populated by JS -->
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let radarDismissed = false;
+
+    function initNearbyRadar() {
+        if (radarDismissed) return;
+        
+        let userLat = null, userLng = null;
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    userLat = pos.coords.latitude;
+                    userLng = pos.coords.longitude;
+                    checkRadar(userLat, userLng);
+                },
+                () => {
+                    checkRadar(null, null);
+                },
+                { timeout: 4000, maximumAge: 60000 }
+            );
+        } else {
+            checkRadar(null, null);
+        }
+    }
+
+    async function checkRadar(lat, lng) {
+        if (radarDismissed) return;
+        try {
+            let url = 'index.php?action=api_nearby_radar';
+            if (lat && lng) {
+                url += '&lat=' + encodeURIComponent(lat) + '&lng=' + encodeURIComponent(lng);
+            }
+            const res = await fetch(url, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            const data = await res.json();
+            if (data.success && data.has_nearby) {
+                renderRadar(data);
+            }
+        } catch (e) {
+            // Quiet fail
+        }
+    }
+
+    function renderRadar(data) {
+        const container = document.getElementById('nearbyRadarContainer');
+        const content = document.getElementById('radarContent');
+        if (!container || !content) return;
+
+        if (data.type === 'incoming_invite') {
+            const inv = data.invite;
+            content.innerHTML = `
+                <div class="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-white/10">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">Lời Mời Bắt Cặp Thi Đấu</span>
+                    </div>
+                    <button type="button" onclick="window.dismissRadarCard()" class="text-white/40 hover:text-white text-xs leading-none transition">&times;</button>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <img src="${inv.sender_avatar}" alt="${inv.sender_name}" class="w-11 h-11 rounded-full object-cover border border-emerald-500/50 shadow-md">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <h4 class="text-xs font-bold text-white truncate">${inv.sender_name}</h4>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold">${inv.sender_rank}</span>
+                        </div>
+                        <p class="text-[11px] text-[#d8ff3e] font-medium">Cách bạn ~${inv.distance_km} km</p>
+                        <p class="text-[10px] text-white/50 truncate">${inv.formatted_time} · ${inv.formatted_date}</p>
+                    </div>
+                </div>
+                <p class="text-[11px] text-white/80 mb-3 bg-black/30 p-2 rounded-lg border border-white/5 leading-snug">
+                    Ở gần bạn có đối thủ muốn rủ bạn bắt cặp đánh cầu lông! Bạn có muốn thử không?
+                </p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" onclick="window.respondRadarInvite(${inv.invite_id}, 'accept')" class="w-full py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-[#0b1116] font-bold text-xs text-center transition shadow-lg shadow-emerald-500/20 cursor-pointer">
+                        Đồng Ý Bắt Cặp
+                    </button>
+                    <button type="button" onclick="window.respondRadarInvite(${inv.invite_id}, 'reject')" class="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs text-center transition cursor-pointer">
+                        Từ Chối
+                    </button>
+                </div>
+            `;
+        } else if (data.type === 'nearby_player') {
+            const cand = data.candidate;
+            const sessionDismissed = sessionStorage.getItem('dismissed_radar_ticket_' + cand.ticket_id);
+            if (sessionDismissed) return;
+
+            content.innerHTML = `
+                <div class="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-white/10">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex h-3 w-3">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#d8ff3e] opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-3 w-3 bg-[#d8ff3e]"></span>
+                        </span>
+                        <span class="text-[10px] font-black uppercase tracking-wider text-[#d8ff3e]">Radar Bạn Đấu Lân Cận</span>
+                    </div>
+                    <button type="button" onclick="window.dismissRadarCard(${cand.ticket_id})" class="text-white/40 hover:text-white text-xs leading-none transition">&times;</button>
+                </div>
+                <div class="flex items-center gap-3 mb-3">
+                    <img src="${cand.avatar_url}" alt="${cand.user_name}" class="w-11 h-11 rounded-full object-cover border border-[#d8ff3e]/40 shadow-md">
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5">
+                            <h4 class="text-xs font-bold text-white truncate">${cand.user_name}</h4>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#d8ff3e]/20 text-[#d8ff3e] font-semibold">${cand.rank_name}</span>
+                        </div>
+                        <p class="text-[11px] text-volt font-medium">Cách bạn ~${cand.distance_km} km (${cand.district})</p>
+                        <p class="text-[10px] text-white/50 truncate">${cand.formatted_time} · ${cand.formatted_date}</p>
+                    </div>
+                </div>
+                <p class="text-[11px] text-white/80 mb-3 bg-black/30 p-2 rounded-lg border border-white/5 leading-snug">
+                    Đang tìm đối thủ ${cand.format} tương đương trình độ. Bạn có muốn gửi lời mời bắt cặp không?
+                </p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button type="button" id="btnRadarSendInvite" onclick="window.sendRadarInvite(${cand.ticket_id})" class="w-full py-2 px-3 rounded-xl bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] font-bold text-xs text-center transition shadow-lg shadow-[#d8ff3e]/20 cursor-pointer">
+                        Rủ Bắt Cặp Ngay
+                    </button>
+                    <button type="button" onclick="window.dismissRadarCard(${cand.ticket_id})" class="w-full py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs text-center transition cursor-pointer">
+                        Bỏ Qua
+                    </button>
+                </div>
+            `;
+        }
+
+        container.classList.remove('-translate-x-full', 'opacity-0');
+        container.classList.add('translate-x-0', 'opacity-100');
+    }
+
+    window.dismissRadarCard = function(ticketId = null) {
+        if (ticketId) {
+            sessionStorage.setItem('dismissed_radar_ticket_' + ticketId, '1');
+        }
+        const container = document.getElementById('nearbyRadarContainer');
+        if (container) {
+            container.classList.add('-translate-x-full', 'opacity-0');
+            container.classList.remove('translate-x-0', 'opacity-100');
+        }
+    };
+
+    window.sendRadarInvite = async function(ticketId) {
+        const btn = document.getElementById('btnRadarSendInvite');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Đang gửi...';
+        }
+
+        const formData = new FormData();
+        formData.append('target_ticket_id', ticketId);
+        formData.append('csrf_token', window.csrfToken || '');
+
+        try {
+            const res = await fetch('index.php?action=api_send_nearby_invite', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (window.showToast) window.showToast(data.message, 'success');
+                window.dismissRadarCard(ticketId);
+            } else {
+                if (window.showToast) window.showToast(data.message || 'Lỗi khi gửi lời mời.', 'warning');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = 'Rủ Bắt Cặp Ngay';
+                }
+            }
+        } catch (e) {
+            if (window.showToast) window.showToast('Lỗi kết nối máy chủ.', 'warning');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = 'Rủ Bắt Cặp Ngay';
+            }
+        }
+    };
+
+    window.respondRadarInvite = async function(inviteId, action) {
+        const formData = new FormData();
+        formData.append('invite_id', inviteId);
+        formData.append('response_action', action);
+        formData.append('csrf_token', window.csrfToken || '');
+
+        try {
+            const res = await fetch('index.php?action=api_respond_nearby_invite', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (window.showToast) window.showToast(data.message, 'success');
+                window.dismissRadarCard();
+                if (action === 'accept') {
+                    setTimeout(() => {
+                        window.location.href = 'index.php?action=smart_match';
+                    }, 1000);
+                }
+            } else {
+                if (window.showToast) window.showToast(data.message || 'Có lỗi xảy ra.', 'warning');
+            }
+        } catch (e) {
+            if (window.showToast) window.showToast('Lỗi kết nối máy chủ.', 'warning');
+        }
+    };
+
+    setTimeout(initNearbyRadar, 3500);
+    setInterval(initNearbyRadar, 45000);
+})();
+</script>
+<?php endif; ?>
+
 </body>
 </html>

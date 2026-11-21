@@ -31,6 +31,18 @@ class MatchTicket {
                     ADD COLUMN `location_address` VARCHAR(255) DEFAULT '' AFTER `longitude`
                 ");
             }
+            $this->conn->exec("CREATE TABLE IF NOT EXISTS radar_invites (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                sender_user_id INT NOT NULL,
+                sender_ticket_id INT NULL,
+                target_user_id INT NOT NULL,
+                target_ticket_id INT NOT NULL,
+                status ENUM('pending', 'accepted', 'rejected', 'expired') DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                KEY idx_target_status (target_user_id, status),
+                KEY idx_sender_target (sender_ticket_id, target_ticket_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         } catch (Exception $e) {
             // Ignore if columns exist
         }
@@ -50,7 +62,7 @@ class MatchTicket {
         return $earthRadius * $c;
     }
 
-    public function createTicket($data) {
+    public function createTicket($data, $skipAutoMatch = false) {
         $user_id = (int)$data['user_id'];
         $play_date = $data['play_date'];
         $start_time = $data['start_time'];
@@ -109,8 +121,11 @@ class MatchTicket {
 
         if ($stmt->execute()) {
             $ticketId = $this->conn->lastInsertId();
-            // Kích hoạt ngay thuật toán quét tìm đối thủ trong hàng đợi
-            $matched = $this->autoMatch($ticketId);
+            $matched = false;
+            if (!$skipAutoMatch) {
+                // Kích hoạt ngay thuật toán quét tìm đối thủ trong hàng đợi
+                $matched = $this->autoMatch($ticketId);
+            }
             return [
                 'success' => true,
                 'ticket_id' => $ticketId,
@@ -1040,6 +1055,422 @@ class MatchTicket {
 
     public function switchMatchPitch($ticketId, $newPitchId, $userId) {
         return $this->proposeSwitchPitch($ticketId, $newPitchId, $userId);
+    }
+
+    public function getNearbyWaitingTickets($currentUserId, $userLat = null, $userLng = null, $radiusKm = 10, $limit = 3) {
+        $currentUserId = (int)$currentUserId;
+        if ($currentUserId <= 0) {
+            return [];
+        }
+
+        if ($userLat === null || $userLng === null) {
+            $uStmt = $this->conn->prepare("SELECT latitude, longitude, district FROM users WHERE id = ?");
+            $uStmt->execute([$currentUserId]);
+            $uData = $uStmt->fetch(PDO::FETCH_ASSOC);
+            if ($uData) {
+                $userLat = !empty($uData['latitude']) ? (float)$uData['latitude'] : 10.7769;
+                $userLng = !empty($uData['longitude']) ? (float)$uData['longitude'] : 106.7009;
+                $userDistrict = $uData['district'] ?? 'Bình Thạnh';
+            } else {
+                $userLat = 10.7769;
+                $userLng = 106.7009;
+                $userDistrict = 'Bình Thạnh';
+            }
+        }
+
+        $nowDate = date('Y-m-d');
+        $nowTime = date('H:i:s');
+        $sql = "SELECT t.*, u.name as user_name, u.avatar_url, u.latitude as user_profile_lat, u.longitude as user_profile_lng,
+                       p.name as pitch_name, p.location as pitch_location
+                FROM " . $this->table_name . " t
+                INNER JOIN users u ON t.user_id = u.id
+                LEFT JOIN pitches p ON t.specified_pitch_id = p.id
+                WHERE t.status = 'waiting'
+                  AND t.user_id != :uid
+                  AND (t.play_date > :now_date OR (t.play_date = :now_date2 AND t.end_time > :now_time))
+                  AND (t.expires_at IS NULL OR t.expires_at >= NOW())
+                ORDER BY t.play_date ASC, t.start_time ASC";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            ':uid' => $currentUserId,
+            ':now_date' => $nowDate,
+            ':now_date2' => $nowDate,
+            ':now_time' => $nowTime
+        ]);
+        $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $inviteStmt = $this->conn->prepare("SELECT target_ticket_id FROM radar_invites WHERE sender_user_id = ? AND status IN ('pending', 'rejected') AND created_at >= DATE_SUB(NOW(), INTERVAL 2 HOUR)");
+        $inviteStmt->execute([$currentUserId]);
+        $sentInviteTicketIds = $inviteStmt->fetchAll(PDO::FETCH_COLUMN);
+        $sentMap = array_flip($sentInviteTicketIds ?: []);
+
+        $candidates = [];
+        foreach ($tickets as $t) {
+            $tId = (int)$t['id'];
+            if (isset($sentMap[$tId])) {
+                continue;
+            }
+
+            $targetLat = !empty($t['user_lat']) ? (float)$t['user_lat'] : (!empty($t['user_profile_lat']) ? (float)$t['user_profile_lat'] : null);
+            $targetLng = !empty($t['user_lng']) ? (float)$t['user_lng'] : (!empty($t['user_profile_lng']) ? (float)$t['user_profile_lng'] : null);
+
+            if ($targetLat !== null && $targetLng !== null && $userLat !== null && $userLng !== null) {
+                $dist = self::calculateHaversineDistance($userLat, $userLng, $targetLat, $targetLng);
+            } else {
+                $dist = ($t['district'] === ($userDistrict ?? '')) ? 2.5 : 6.0;
+            }
+
+            if ($dist > (float)$radiusKm) {
+                continue;
+            }
+
+            $formattedDate = ($t['play_date'] === $nowDate) ? 'Hôm nay (' . date('d/m', strtotime($t['play_date'])) . ')' : date('d/m/Y', strtotime($t['play_date']));
+            $formattedTime = substr($t['start_time'], 0, 5) . ' - ' . substr($t['end_time'], 0, 5);
+
+            $candidates[] = [
+                'ticket_id' => $tId,
+                'user_id' => (int)$t['user_id'],
+                'user_name' => $t['user_name'],
+                'avatar_url' => !empty($t['avatar_url']) ? $t['avatar_url'] : 'https://ui-avatars.com/api/?name=' . urlencode($t['user_name']) . '&background=1e293b&color=d8ff3e',
+                'elo_points' => (int)$t['elo_points'],
+                'rank_name' => $t['rank_name'] ?: 'Đồng I',
+                'district' => $t['district'],
+                'distance_km' => round($dist, 1),
+                'play_date' => $t['play_date'],
+                'formatted_date' => $formattedDate,
+                'formatted_time' => $formattedTime,
+                'format' => $t['format'],
+                'pitch_name' => $t['pitch_name'] ?: ($t['has_pitch'] ? 'Sân đã chọn sẵn' : 'Nhờ hệ thống tìm sân hộ'),
+                'note' => $t['note']
+            ];
+        }
+
+        usort($candidates, function($a, $b) {
+            return $a['distance_km'] <=> $b['distance_km'];
+        });
+
+        return array_slice($candidates, 0, (int)$limit);
+    }
+
+    public function getPendingIncomingInvite($currentUserId) {
+        $currentUserId = (int)$currentUserId;
+        if ($currentUserId <= 0) {
+            return null;
+        }
+
+        $sql = "SELECT ri.id as invite_id, ri.sender_user_id, ri.sender_ticket_id, ri.target_ticket_id, ri.created_at,
+                       mt.play_date, mt.start_time, mt.end_time, mt.format, mt.district,
+                       u.name as sender_name, u.avatar_url as sender_avatar, u.latitude as sender_lat, u.longitude as sender_lng,
+                       me.latitude as my_lat, me.longitude as my_lng
+                FROM radar_invites ri
+                JOIN match_tickets mt ON ri.target_ticket_id = mt.id
+                JOIN users u ON ri.sender_user_id = u.id
+                JOIN users me ON me.id = :my_id
+                WHERE ri.target_user_id = :my_id2
+                  AND ri.status = 'pending'
+                  AND mt.status = 'waiting'
+                  AND ri.created_at >= DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+                ORDER BY ri.id DESC LIMIT 1";
+
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([':my_id' => $currentUserId, ':my_id2' => $currentUserId]);
+        $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$inv) {
+            return null;
+        }
+
+        $dist = 2.0;
+        if (!empty($inv['sender_lat']) && !empty($inv['sender_lng']) && !empty($inv['my_lat']) && !empty($inv['my_lng'])) {
+            $dist = round(self::calculateHaversineDistance($inv['my_lat'], $inv['my_lng'], $inv['sender_lat'], $inv['sender_lng']), 1);
+        }
+
+        require_once __DIR__ . '/Ranking.php';
+        $ranking = new Ranking($this->conn);
+        $senderElo = $ranking->getSeasonPoints($inv['sender_user_id'], Ranking::getCurrentSeason());
+        if ($senderElo <= 0) $senderElo = Ranking::DEFAULT_ELO;
+        $senderRank = $ranking->getRankName($senderElo);
+
+        $nowDate = date('Y-m-d');
+        $formattedDate = ($inv['play_date'] === $nowDate) ? 'Hôm nay (' . date('d/m', strtotime($inv['play_date'])) . ')' : date('d/m/Y', strtotime($inv['play_date']));
+        $formattedTime = substr($inv['start_time'], 0, 5) . ' - ' . substr($inv['end_time'], 0, 5);
+
+        return [
+            'invite_id' => (int)$inv['invite_id'],
+            'sender_user_id' => (int)$inv['sender_user_id'],
+            'sender_name' => $inv['sender_name'],
+            'sender_avatar' => !empty($inv['sender_avatar']) ? $inv['sender_avatar'] : 'https://ui-avatars.com/api/?name=' . urlencode($inv['sender_name']) . '&background=1e293b&color=d8ff3e',
+            'sender_elo' => $senderElo,
+            'sender_rank' => $senderRank,
+            'distance_km' => $dist,
+            'play_date' => $inv['play_date'],
+            'formatted_date' => $formattedDate,
+            'formatted_time' => $formattedTime,
+            'format' => $inv['format'],
+            'target_ticket_id' => (int)$inv['target_ticket_id'],
+            'sender_ticket_id' => (int)$inv['sender_ticket_id']
+        ];
+    }
+
+    public function sendDirectNearbyInvite($senderUserId, $targetTicketId) {
+        $senderUserId = (int)$senderUserId;
+        $targetTicketId = (int)$targetTicketId;
+
+        if ($senderUserId <= 0 || $targetTicketId <= 0) {
+            return ['success' => false, 'message' => 'Thông tin yêu cầu không hợp lệ.'];
+        }
+
+        $targetTicket = $this->getTicketById($targetTicketId);
+        if (!$targetTicket || $targetTicket['status'] !== 'waiting') {
+            return ['success' => false, 'message' => 'Lệnh tìm trận này đã được ghép hoặc không còn khả dụng.'];
+        }
+
+        if ((int)$targetTicket['user_id'] === $senderUserId) {
+            return ['success' => false, 'message' => 'Bạn không thể tự rủ chính mình.'];
+        }
+
+        $targetUserId = (int)$targetTicket['user_id'];
+
+        require_once __DIR__ . '/Reputation.php';
+        $repModel = new Reputation($this->conn);
+        $rep = $repModel->getUserReputation($senderUserId);
+        if (!$rep['can_matchmake']) {
+            return ['success' => false, 'message' => $rep['lock_reason']];
+        }
+
+        $uStmt = $this->conn->prepare("SELECT id, name, latitude, longitude, district FROM users WHERE id = ?");
+        $uStmt->execute([$senderUserId]);
+        $senderUser = $uStmt->fetch(PDO::FETCH_ASSOC);
+        if (!$senderUser) {
+            return ['success' => false, 'message' => 'Người dùng không tồn tại.'];
+        }
+
+        $tCheck = $this->conn->prepare("SELECT id FROM " . $this->table_name . " 
+                                        WHERE user_id = ? AND status = 'waiting' AND play_date = ? LIMIT 1");
+        $tCheck->execute([$senderUserId, $targetTicket['play_date']]);
+        $existingTicket = $tCheck->fetch(PDO::FETCH_ASSOC);
+
+        $senderTicketId = null;
+        if ($existingTicket) {
+            $senderTicketId = (int)$existingTicket['id'];
+        } else {
+            $newTicketRes = $this->createTicket([
+                'user_id' => $senderUserId,
+                'play_date' => $targetTicket['play_date'],
+                'start_time' => $targetTicket['start_time'],
+                'end_time' => $targetTicket['end_time'],
+                'format' => $targetTicket['format'],
+                'district' => !empty($senderUser['district']) ? $senderUser['district'] : $targetTicket['district'],
+                'user_lat' => !empty($senderUser['latitude']) ? $senderUser['latitude'] : null,
+                'user_lng' => !empty($senderUser['longitude']) ? $senderUser['longitude'] : null,
+                'radius_km' => 10.00,
+                'has_pitch' => 0,
+                'specified_pitch_id' => null,
+                'note' => 'Ghép kèo qua Radar Lân Cận'
+            ], true);
+            if (!empty($newTicketRes['success']) && !empty($newTicketRes['ticket_id'])) {
+                $senderTicketId = (int)$newTicketRes['ticket_id'];
+            }
+        }
+
+        $chkInv = $this->conn->prepare("SELECT id FROM radar_invites WHERE sender_user_id = ? AND target_ticket_id = ? AND status = 'pending' LIMIT 1");
+        $chkInv->execute([$senderUserId, $targetTicketId]);
+        if ($chkInv->fetch()) {
+            return ['success' => true, 'message' => 'Bạn đã gửi lời mời đến người chơi này rồi. Đang chờ phản hồi!'];
+        }
+
+        $ins = $this->conn->prepare("INSERT INTO radar_invites (sender_user_id, sender_ticket_id, target_user_id, target_ticket_id, status)
+                                     VALUES (?, ?, ?, ?, 'pending')");
+        $ins->execute([$senderUserId, $senderTicketId, $targetUserId, $targetTicketId]);
+        $inviteId = $this->conn->lastInsertId();
+
+        $dist = 2.0;
+        if (!empty($senderUser['latitude']) && !empty($senderUser['longitude']) && !empty($targetTicket['user_lat']) && !empty($targetTicket['user_lng'])) {
+            $dist = round(self::calculateHaversineDistance($senderUser['latitude'], $senderUser['longitude'], $targetTicket['user_lat'], $targetTicket['user_lng']), 1);
+        }
+
+        require_once __DIR__ . '/Ranking.php';
+        $ranking = new Ranking($this->conn);
+        $senderElo = $ranking->getSeasonPoints($senderUserId, Ranking::getCurrentSeason());
+        if ($senderElo <= 0) $senderElo = Ranking::DEFAULT_ELO;
+        $senderRank = $ranking->getRankName($senderElo);
+
+        $dateStr = date('d/m', strtotime($targetTicket['play_date']));
+        $timeStr = substr($targetTicket['start_time'], 0, 5) . ' - ' . substr($targetTicket['end_time'], 0, 5);
+
+        require_once __DIR__ . '/Notification.php';
+        $notifModel = new Notification($this->conn);
+        $notifTitle = "RADAR BẮT CẶP: Có người muốn ghép kèo cùng bạn!";
+        $notifContent = "{$senderUser['name']} (cách bạn ~{$dist} km, Rank {$senderRank}) vừa gửi lời mời rủ bạn bắt cặp đấu lúc {$timeStr} ngày {$dateStr}.";
+        $notifLink = "index.php?action=smart_match";
+        $notifModel->create($targetUserId, $notifTitle, $notifContent, $notifLink);
+
+        $chatContent = "[LỜI MỜI BẮT CẶP TỪ RADAR] Xin chào! Tôi ở cách bạn khoảng {$dist} km muốn rủ bạn bắt cặp đấu trận cầu lông vào lúc {$timeStr} ngày {$dateStr}. Hãy bấm Đồng Ý trên Radar hoặc trang Ghép Kèo nhé!";
+        $msgSql = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
+        $this->conn->prepare($msgSql)->execute([$senderUserId, $targetUserId, $chatContent]);
+
+        return [
+            'success' => true,
+            'message' => 'Đã gửi lời mời bắt cặp tới ' . $targetTicket['user_name'] . ' thành công!',
+            'invite_id' => $inviteId
+        ];
+    }
+
+    public function respondNearbyInvite($inviteId, $userId, $action) {
+        $inviteId = (int)$inviteId;
+        $userId = (int)$userId;
+
+        $stmt = $this->conn->prepare("SELECT * FROM radar_invites WHERE id = ? AND target_user_id = ? AND status = 'pending' LIMIT 1");
+        $stmt->execute([$inviteId, $userId]);
+        $inv = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$inv) {
+            return ['success' => false, 'message' => 'Lời mời không tồn tại hoặc đã được xử lý.'];
+        }
+
+        if ($action === 'reject') {
+            $up = $this->conn->prepare("UPDATE radar_invites SET status = 'rejected' WHERE id = ?");
+            $up->execute([$inviteId]);
+            return ['success' => true, 'message' => 'Đã từ chối lời mời bắt cặp.'];
+        }
+
+        if ($action === 'accept') {
+            $targetTicketId = (int)$inv['target_ticket_id'];
+            $senderTicketId = (int)$inv['sender_ticket_id'];
+
+            if (!$senderTicketId) {
+                $tCheck = $this->conn->prepare("SELECT id FROM " . $this->table_name . " WHERE user_id = ? AND status = 'waiting' ORDER BY id DESC LIMIT 1");
+                $tCheck->execute([$inv['sender_user_id']]);
+                $sRow = $tCheck->fetch(PDO::FETCH_ASSOC);
+                if ($sRow) {
+                    $senderTicketId = (int)$sRow['id'];
+                }
+            }
+
+            if (!$senderTicketId) {
+                return ['success' => false, 'message' => 'Lệnh tìm trận của đối thủ không còn khả dụng.'];
+            }
+
+            $res = $this->pairTwoTickets($targetTicketId, $senderTicketId);
+            if ($res['success']) {
+                $up = $this->conn->prepare("UPDATE radar_invites SET status = 'accepted' WHERE id = ?");
+                $up->execute([$inviteId]);
+                return [
+                    'success' => true,
+                    'message' => 'Bắt cặp thành công! Đang chuyển vào phòng xác nhận kèo 50/50...',
+                    'ticket_id' => $targetTicketId
+                ];
+            } else {
+                return $res;
+            }
+        }
+
+        return ['success' => false, 'message' => 'Hành động không hợp lệ.'];
+    }
+
+    public function pairTwoTickets($ticketId1, $ticketId2) {
+        $t1 = $this->getTicketById($ticketId1);
+        $t2 = $this->getTicketById($ticketId2);
+
+        if (!$t1 || !$t2) {
+            return ['success' => false, 'message' => 'Không tìm thấy thông tin lệnh tìm trận.'];
+        }
+
+        if ($t1['status'] !== 'waiting' || $t2['status'] !== 'waiting') {
+            return ['success' => false, 'message' => 'Một trong hai lệnh tìm trận đã được ghép hoặc đã hủy.'];
+        }
+
+        $matchStart = max($t1['start_time'], $t2['start_time']);
+        $matchEnd = min($t1['end_time'], $t2['end_time']);
+        $duration = (strtotime($matchEnd) - strtotime($matchStart)) / 3600;
+        if ($duration < 1) {
+            $matchStart = $t1['start_time'];
+            $matchEnd = $t1['end_time'];
+        }
+
+        require_once __DIR__ . '/Booking.php';
+        $bookingModel = new Booking($this->conn);
+        $selectedPitch = null;
+
+        $specifiedPitchId = !empty($t1['specified_pitch_id']) ? $t1['specified_pitch_id'] : (!empty($t2['specified_pitch_id']) ? $t2['specified_pitch_id'] : null);
+        if ($specifiedPitchId) {
+            $pStmt = $this->conn->prepare("SELECT * FROM pitches WHERE id = ? AND status = 'active' LIMIT 1");
+            $pStmt->execute([$specifiedPitchId]);
+            $sp = $pStmt->fetch(PDO::FETCH_ASSOC);
+            if ($sp) {
+                $overlapping = $bookingModel->getConfirmedOverlappingCount($sp['id'], $t1['play_date'], $matchStart, $matchEnd);
+                if ($overlapping < $sp['quantity']) {
+                    $selectedPitch = $sp;
+                }
+            }
+        }
+
+        if (!$selectedPitch) {
+            $pStmt = $this->conn->prepare("SELECT * FROM pitches WHERE status = 'active'");
+            $pStmt->execute();
+            $pitches = $pStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $hasGps1 = (!empty($t1['user_lat']) && !empty($t1['user_lng']));
+            $hasGps2 = (!empty($t2['user_lat']) && !empty($t2['user_lng']));
+
+            usort($pitches, function($p1, $p2) use ($t1, $t2, $hasGps1, $hasGps2) {
+                if ($hasGps1 || $hasGps2) {
+                    $d1_1 = $hasGps1 ? self::calculateHaversineDistance($t1['user_lat'], $t1['user_lng'], $p1['latitude'], $p1['longitude']) : 0;
+                    $d1_2 = $hasGps2 ? self::calculateHaversineDistance($t2['user_lat'], $t2['user_lng'], $p1['latitude'], $p1['longitude']) : 0;
+                    $d2_1 = $hasGps1 ? self::calculateHaversineDistance($t1['user_lat'], $t1['user_lng'], $p2['latitude'], $p2['longitude']) : 0;
+                    $d2_2 = $hasGps2 ? self::calculateHaversineDistance($t2['user_lat'], $t2['user_lng'], $p2['latitude'], $p2['longitude']) : 0;
+                    return ($d1_1 + $d1_2) <=> ($d2_1 + $d2_2);
+                }
+                return 0;
+            });
+
+            foreach ($pitches as $p) {
+                $overlapping = $bookingModel->getConfirmedOverlappingCount($p['id'], $t1['play_date'], $matchStart, $matchEnd);
+                if ($overlapping < $p['quantity']) {
+                    $selectedPitch = $p;
+                    break;
+                }
+            }
+        }
+
+        if (!$selectedPitch) {
+            return ['success' => false, 'message' => 'Không còn cụm sân nào trống trong khung giờ này.'];
+        }
+
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+
+        $up1 = "UPDATE " . $this->table_name . " 
+                SET status = 'matched', matched_ticket_id = ?, matched_pitch_id = ?, 
+                    start_time = ?, end_time = ?, expires_at = ?,
+                    user_confirmed = 0, matched_user_confirmed = 0
+                WHERE id = ?";
+        $this->conn->prepare($up1)->execute([$t2['id'], $selectedPitch['id'], $matchStart, $matchEnd, $expiresAt, $t1['id']]);
+
+        $up2 = "UPDATE " . $this->table_name . " 
+                SET status = 'matched', matched_ticket_id = ?, matched_pitch_id = ?, 
+                    start_time = ?, end_time = ?, expires_at = ?,
+                    user_confirmed = 0, matched_user_confirmed = 0
+                WHERE id = ?";
+        $this->conn->prepare($up2)->execute([$t1['id'], $selectedPitch['id'], $matchStart, $matchEnd, $expiresAt, $t2['id']]);
+
+        $msgContent = "[THÔNG BÁO GHÉP TRẬN THÀNH CÔNG] Hai bạn đã được ghép kèo thi đấu vào ngày " . date('d/m', strtotime($t1['play_date'])) . " lúc " . substr($matchStart, 0, 5) . " tại " . $selectedPitch['name'] . ". Vui lòng vào trang Ghép Trận Thông Minh để xác nhận kèo chia đôi (50/50)!";
+        $msgSql = "INSERT INTO messages (sender_id, receiver_id, content) VALUES (?, ?, ?)";
+        $this->conn->prepare($msgSql)->execute([$t1['user_id'], $t2['user_id'], $msgContent]);
+        $this->conn->prepare($msgSql)->execute([$t2['user_id'], $t1['user_id'], $msgContent]);
+
+        require_once __DIR__ . '/Notification.php';
+        $notifModel = new Notification($this->conn);
+        $notifTitle = "BẮT CẶP THÀNH CÔNG: Phòng ghép kèo đã sẵn sàng!";
+        $notifLink = "index.php?action=smart_match";
+        $notifModel->create($t1['user_id'], $notifTitle, $msgContent, $notifLink);
+        $notifModel->create($t2['user_id'], $notifTitle, $msgContent, $notifLink);
+
+        return [
+            'success' => true,
+            'message' => 'Ghép kèo thành công!',
+            'pitch_name' => $selectedPitch['name'],
+            'pitch_id' => $selectedPitch['id']
+        ];
     }
 }
 ?>

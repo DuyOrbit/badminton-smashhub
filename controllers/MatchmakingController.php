@@ -695,5 +695,101 @@ class MatchmakingController {
         }
         exit;
     }
+
+    public function apiCheckNearbyRadar() {
+        header('Content-Type: application/json; charset=UTF-8');
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'has_nearby' => false], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $userId = (int)$_SESSION['user_id'];
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/MatchTicket.php';
+        $ticketModel = new MatchTicket($db);
+
+        $incoming = $ticketModel->getPendingIncomingInvite($userId);
+        if ($incoming) {
+            echo json_encode([
+                'success' => true,
+                'has_nearby' => true,
+                'type' => 'incoming_invite',
+                'invite' => $incoming
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $lat = !empty($_GET['lat']) ? floatval($_GET['lat']) : null;
+        $lng = !empty($_GET['lng']) ? floatval($_GET['lng']) : null;
+        $radius = !empty($_GET['radius']) ? floatval($_GET['radius']) : 10.0;
+
+        $nearby = $ticketModel->getNearbyWaitingTickets($userId, $lat, $lng, $radius, 1);
+        if (!empty($nearby)) {
+            echo json_encode([
+                'success' => true,
+                'has_nearby' => true,
+                'type' => 'nearby_player',
+                'candidate' => $nearby[0]
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        echo json_encode(['success' => true, 'has_nearby' => false], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    public function apiSendNearbyInvite() {
+        header('Content-Type: application/json; charset=UTF-8');
+        if (!isset($_SESSION['user_id'])) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập để thực hiện.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $targetTicketId = (int)($_POST['target_ticket_id'] ?? 0);
+        if ($targetTicketId <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Mã lệnh tìm trận không hợp lệ.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/MatchTicket.php';
+        $ticketModel = new MatchTicket($db);
+        $res = $ticketModel->sendDirectNearbyInvite((int)$_SESSION['user_id'], $targetTicketId);
+
+        echo json_encode($res, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    public function apiRespondNearbyInvite() {
+        header('Content-Type: application/json; charset=UTF-8');
+        if (!isset($_SESSION['user_id'])) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập để thực hiện.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $inviteId = (int)($_POST['invite_id'] ?? 0);
+        $action = $_POST['response_action'] ?? 'reject';
+
+        if ($inviteId <= 0 || !in_array($action, ['accept', 'reject'])) {
+            echo json_encode(['success' => false, 'message' => 'Yêu cầu không hợp lệ.'], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/MatchTicket.php';
+        $ticketModel = new MatchTicket($db);
+        $res = $ticketModel->respondNearbyInvite($inviteId, (int)$_SESSION['user_id'], $action);
+
+        echo json_encode($res, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 }
 ?>

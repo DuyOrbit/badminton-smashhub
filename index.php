@@ -236,6 +236,23 @@ switch ($action) {
         $controller = new MatchmakingController();
         $controller->apiCheckTicket();
         break;
+    case 'api_nearby_radar':
+        requireAuth();
+        $controller = new MatchmakingController();
+        $controller->apiCheckNearbyRadar();
+        break;
+    case 'api_send_nearby_invite':
+        requireAuth();
+        verifyCsrfToken();
+        $controller = new MatchmakingController();
+        $controller->apiSendNearbyInvite();
+        break;
+    case 'api_respond_nearby_invite':
+        requireAuth();
+        verifyCsrfToken();
+        $controller = new MatchmakingController();
+        $controller->apiRespondNearbyInvite();
+        break;
     case 'report_noshow':
         requireAuth();
         $controller = new MatchmakingController();
