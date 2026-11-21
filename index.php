@@ -314,6 +314,10 @@ switch ($action) {
         break;
 
     // Booking Routes
+    case 'api_ai_smart_search':
+        $controller = new BookingController();
+        $controller->apiAiSmartSearch();
+        break;
     case 'api_check_availability':
         $controller = new BookingController();
         $controller->apiCheckAvailability();

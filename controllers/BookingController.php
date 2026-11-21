@@ -426,5 +426,43 @@ class BookingController {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
+
+    public function apiAiSmartSearch() {
+        header('Content-Type: application/json; charset=UTF-8');
+
+        $inputRaw = file_get_contents('php://input');
+        $jsonData = json_decode($inputRaw, true) ?: [];
+
+        $prompt = $_POST['prompt'] ?? $jsonData['prompt'] ?? $_GET['prompt'] ?? '';
+        $userLat = $_POST['user_lat'] ?? $jsonData['user_lat'] ?? $_GET['user_lat'] ?? null;
+        $userLng = $_POST['user_lng'] ?? $jsonData['user_lng'] ?? $_GET['user_lng'] ?? null;
+
+        if (empty(trim($prompt))) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Vui lòng nhập yêu cầu tìm sân (Ví dụ: Chiều nay 18h ở Bình Thạnh giá dưới 100k).'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once 'models/AiSmartBooking.php';
+        $aiModel = new AiSmartBooking($db);
+
+        $parsed = $aiModel->parseNaturalLanguage($prompt);
+        $rankedPitches = $aiModel->searchAndRankPitches($parsed, $userLat, $userLng, 4);
+        $assistantMessage = $aiModel->generateAssistantMessage($parsed, $rankedPitches);
+
+        echo json_encode([
+            'success'         => true,
+            'parsed'          => $parsed,
+            'message'         => $assistantMessage,
+            'recommendations' => $rankedPitches,
+            'count'           => count($rankedPitches)
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 }
 ?>

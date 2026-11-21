@@ -278,6 +278,241 @@ $accents = [
         </div>
     <?php endif; ?>
 
+    <!-- AI SMART BOOKING ASSISTANT SECTION -->
+    <div id="aiSmartBookingSection" class="relative overflow-hidden rounded-3xl border border-[#d8ff3e]/40 bg-gradient-to-br from-[#13231d] via-[#121b21] to-[#0b1116] p-6 sm:p-8 shadow-2xl">
+        <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#d8ff3e]/15 blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-[#52e0ff]/15 blur-3xl pointer-events-none"></div>
+
+        <div class="relative">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="inline-flex items-center gap-2 rounded-full bg-[#d8ff3e]/15 px-3 py-1 text-xs font-black uppercase tracking-wider text-[#d8ff3e] border border-[#d8ff3e]/30">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm1 14.93V17a1 1 0 01-2 0v-.07A7.003 7.003 0 015.07 11H5a1 1 0 010-2h.07A7.003 7.003 0 0111 3.07V3a1 1 0 012 0v.07A7.003 7.003 0 0118.93 9H19a1 1 0 010 2h-.07A7.003 7.003 0 0113 16.93zM12 7a5 5 0 105 5 5 5 0 00-5-5z"/>
+                        </svg>
+                        TÍNH NĂNG MỚI: AI SMART BOOKING 1-CLICK
+                    </div>
+                    <h2 class="mt-2 text-2xl sm:text-3xl font-black text-white tracking-tight">
+                        Trợ Lý AI Tìm & Đặt Sân <span class="text-[#d8ff3e]">Thông Minh</span>
+                    </h2>
+                    <p class="mt-1.5 text-xs sm:text-sm text-[#82918b] max-w-2xl leading-relaxed">
+                        Bạn đã có nhóm hoặc đối cứng? Hãy nói yêu cầu bằng tiếng Việt tự nhiên hoặc lấy vị trí GPS, Trợ lý AI sẽ tự động phân tích khung giờ, lọc sân con còn trống và đề xuất sân tối ưu nhất để bạn chốt lịch ngay!
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="btnAiGps" class="inline-flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 px-3.5 py-2.5 text-xs font-bold text-white transition cursor-pointer">
+                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span id="gpsStatusText">Lấy vị trí GPS</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Input Box -->
+            <form id="aiSmartSearchForm" class="mt-5" onsubmit="handleAiSearch(event)">
+                <div class="relative flex flex-col sm:flex-row items-stretch gap-2.5 rounded-2xl bg-[#0b1116]/90 p-2 border border-white/15 shadow-inner focus-within:border-[#d8ff3e] transition">
+                    <div class="relative flex-1 flex items-center pl-3">
+                        <svg class="w-5 h-5 text-[#d8ff3e] mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                        </svg>
+                        <input type="text" id="aiSearchPrompt" 
+                            placeholder="Ví dụ: Chiều nay 18h ở Bình Thạnh giá dưới 100k còn chỗ..." 
+                            class="w-full bg-transparent text-sm text-white placeholder-white/40 focus:outline-none font-medium py-2">
+                    </div>
+                    <button type="submit" id="btnAiSearchSubmit" class="inline-flex items-center justify-center gap-2 rounded-xl bg-[#d8ff3e] px-6 py-3 text-xs font-black uppercase text-[#10181e] shadow-[3px_3px_0_#6d8a16] transition hover:translate-x-0.5 hover:translate-y-0.5 shrink-0 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span>Hỏi AI Tìm Sân</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Quick Prompt Chips -->
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+                <span class="text-[11px] font-bold text-white/50 uppercase">Gợi ý câu hỏi:</span>
+                <button type="button" onclick="setAiPrompt('Chiều nay 18h ở Bình Thạnh giá dưới 100k')" 
+                    class="rounded-full bg-white/5 hover:bg-[#d8ff3e]/15 hover:text-[#d8ff3e] border border-white/10 px-3 py-1 text-xs text-white/80 transition cursor-pointer">
+                    🏸 Chiều nay 18h ở Bình Thạnh
+                </button>
+                <button type="button" onclick="setAiPrompt('Tối nay 19h quanh vị trí của tôi giá tốt')" 
+                    class="rounded-full bg-white/5 hover:bg-[#d8ff3e]/15 hover:text-[#d8ff3e] border border-white/10 px-3 py-1 text-xs text-white/80 transition cursor-pointer">
+                    🎯 Tối nay 19h quanh vị trí của tôi
+                </button>
+                <button type="button" onclick="setAiPrompt('Sân thảm BWF giá sinh viên dưới 90k')" 
+                    class="rounded-full bg-white/5 hover:bg-[#d8ff3e]/15 hover:text-[#d8ff3e] border border-white/10 px-3 py-1 text-xs text-white/80 transition cursor-pointer">
+                    💰 Sân thảm BWF giá sinh viên
+                </button>
+                <button type="button" onclick="setAiPrompt('Sân Gò Vấp cuối tuần có bãi ô tô')" 
+                    class="rounded-full bg-white/5 hover:bg-[#d8ff3e]/15 hover:text-[#d8ff3e] border border-white/10 px-3 py-1 text-xs text-white/80 transition cursor-pointer">
+                    🚗 Sân Gò Vấp có bãi ô tô
+                </button>
+            </div>
+
+            <!-- AI Results Container (Hidden initially) -->
+            <div id="aiResultsBox" class="hidden mt-6 pt-6 border-t border-white/10">
+                <!-- AI Assistant Message Bubble -->
+                <div class="flex items-start gap-3 rounded-2xl bg-[#0b1116] border border-[#d8ff3e]/30 p-4">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#d8ff3e] text-[#10181e] font-black text-sm shadow">
+                        AI
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-xs font-black uppercase text-[#d8ff3e]">Trợ Lý AI SmashHub</div>
+                        <div id="aiMessageText" class="mt-1 text-xs sm:text-sm text-white/90 leading-relaxed"></div>
+                    </div>
+                </div>
+
+                <!-- Pitch Cards Grid -->
+                <div id="aiPitchCardsGrid" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let userCurrentGps = { lat: null, lng: null };
+
+    // Lay GPS tu trinh duyet
+    document.getElementById('btnAiGps')?.addEventListener('click', function() {
+        const statusText = document.getElementById('gpsStatusText');
+        if (!navigator.geolocation) {
+            alert('Trình duyệt của bạn không hỗ trợ định vị GPS.');
+            return;
+        }
+        statusText.innerText = 'Đang định vị...';
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                userCurrentGps.lat = pos.coords.latitude;
+                userCurrentGps.lng = pos.coords.longitude;
+                statusText.innerText = 'Đã có GPS (' + userCurrentGps.lat.toFixed(3) + ', ' + userCurrentGps.lng.toFixed(3) + ')';
+                statusText.parentElement.classList.add('border-emerald-500', 'bg-emerald-500/10');
+                if (!document.getElementById('aiSearchPrompt').value) {
+                    document.getElementById('aiSearchPrompt').value = 'Tối nay 19h quanh vị trí của tôi';
+                }
+            },
+            function(err) {
+                statusText.innerText = 'Không lấy được GPS';
+                alert('Không thể truy cập GPS: ' + err.message);
+            },
+            { timeout: 10000, enableHighAccuracy: true }
+        );
+    });
+
+    function setAiPrompt(text) {
+        document.getElementById('aiSearchPrompt').value = text;
+        handleAiSearch(new Event('submit'));
+    }
+
+    async function handleAiSearch(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const promptInput = document.getElementById('aiSearchPrompt');
+        const prompt = promptInput.value.trim();
+        if (!prompt) {
+            alert('Vui lòng nhập mong muốn tìm sân của bạn!');
+            promptInput.focus();
+            return;
+        }
+
+        const submitBtn = document.getElementById('btnAiSearchSubmit');
+        const originalBtnHtml = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Đang phân tích...';
+
+        try {
+            const formData = new FormData();
+            formData.append('prompt', prompt);
+            if (userCurrentGps.lat && userCurrentGps.lng) {
+                formData.append('user_lat', userCurrentGps.lat);
+                formData.append('user_lng', userCurrentGps.lng);
+            }
+
+            const response = await fetch('index.php?action=api_ai_smart_search', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                renderAiResults(data);
+            } else {
+                alert(data.message || 'Lỗi khi tìm kiếm với AI');
+            }
+        } catch (err) {
+            alert('Lỗi kết nối đến máy chủ AI: ' + err.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
+    }
+
+    function renderAiResults(data) {
+        const resultsBox = document.getElementById('aiResultsBox');
+        const msgText = document.getElementById('aiMessageText');
+        const grid = document.getElementById('aiPitchCardsGrid');
+
+        resultsBox.classList.remove('hidden');
+        resultsBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // Format markdown text don gian
+        let formattedMsg = (data.message || '')
+            .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+            .replace(/\n/g, '<br>');
+        msgText.innerHTML = formattedMsg;
+
+        grid.innerHTML = '';
+        if (!data.recommendations || data.recommendations.length === 0) {
+            grid.innerHTML = '<div class="col-span-full p-4 rounded-xl bg-white/5 text-center text-xs text-white/60">Không tìm thấy cụm sân phù hợp. Vui lòng thử nới rộng khoảng cách hoặc chọn giờ khác!</div>';
+            return;
+        }
+
+        data.recommendations.forEach((p, idx) => {
+            const isAvail = p.has_available_slot;
+            const availBadge = isAvail 
+                ? `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-bold text-emerald-400">Còn ${p.available_courts}/${p.total_courts} sân trống</span>`
+                : `<span class="inline-flex items-center gap-1 rounded-full bg-red-500/15 border border-red-500/30 px-2 py-0.5 text-[10px] font-bold text-red-400">Hết sân giờ này</span>`;
+
+            const card = document.createElement('div');
+            card.className = "flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#121b21] p-4 hover:border-[#d8ff3e]/40 transition shadow-lg group";
+            card.innerHTML = `
+                <div>
+                    <div class="relative h-32 w-full overflow-hidden rounded-xl bg-white/5">
+                        <img src="${p.image_url}" alt="${p.name}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
+                        <div class="absolute top-2 left-2 flex gap-1">
+                            <span class="rounded-full bg-black/75 px-2 py-0.5 text-[10px] font-bold text-[#d8ff3e] backdrop-blur-md">
+                                Top #${idx + 1} Phù Hợp
+                            </span>
+                        </div>
+                        <div class="absolute bottom-2 right-2">
+                            <span class="rounded-full bg-black/75 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
+                                📍 ${p.distance_display}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="flex items-center justify-between gap-1">
+                            <h3 class="text-sm font-black text-white truncate" title="${p.name}">${p.name}</h3>
+                            <span class="text-xs font-black text-[#d8ff3e] shrink-0">${p.price_formatted}</span>
+                        </div>
+                        <p class="mt-1 text-[11px] text-[#71818a] line-clamp-1" title="${p.location}">📍 ${p.location}</p>
+                        <div class="mt-2.5 flex items-center justify-between gap-2 pt-2 border-t border-white/5">
+                            <span class="text-[10px] font-bold text-white/70">Khung giờ: ${p.suggested_time}</span>
+                            ${availBadge}
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3.5 pt-2 border-t border-white/10">
+                    <a href="${p.booking_url}" class="w-full inline-flex items-center justify-center gap-1.5 rounded-xl ${isAvail ? 'bg-[#d8ff3e] text-[#10181e] hover:bg-[#c9f227]' : 'bg-white/10 text-white/50 cursor-not-allowed'} py-2.5 px-3 text-xs font-black uppercase transition">
+                        <span>⚡</span> ${isAvail ? 'Đặt Sân 1-Click Ngay' : 'Xem Giờ Khác'}
+                    </a>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+    </script>
+    <!-- END AI SMART BOOKING ASSISTANT SECTION -->
+
     <!-- Search & Filter Bar Section (Lấy cảm hứng từ SanBong.vn tối ưu cho Cầu Lông) -->
     <?php
     $current_q = isset($_GET['q']) ? trim($_GET['q']) : '';

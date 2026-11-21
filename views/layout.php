@@ -486,5 +486,27 @@ window.showToast = function(message, type = 'success') {
     }, 3800);
 };
 </script>
+<!-- Floating AI Smart Booking Button -->
+<div class="fixed bottom-6 right-6 z-50">
+    <button type="button" onclick="toggleGlobalAiModal()" class="group flex items-center gap-2 rounded-full bg-gradient-to-r from-[#d8ff3e] to-[#a3e635] p-3 sm:px-4 sm:py-3 text-[#10181e] font-black shadow-[0_10px_25px_rgba(216,255,62,0.4)] hover:scale-105 transition duration-200 cursor-pointer border border-[#d8ff3e]" title="Hỏi Trợ Lý AI Tìm Sân">
+        <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm1 14.93V17a1 1 0 01-2 0v-.07A7.003 7.003 0 015.07 11H5a1 1 0 010-2h.07A7.003 7.003 0 0111 3.07V3a1 1 0 012 0v.07A7.003 7.003 0 0118.93 9H19a1 1 0 010 2h-.07A7.003 7.003 0 0113 16.93zM12 7a5 5 0 105 5 5 5 0 00-5-5z"/>
+        </svg>
+        <span class="hidden sm:inline text-xs font-black uppercase tracking-wider">Trợ Lý AI Tìm Sân</span>
+    </button>
+</div>
+
+<script>
+function toggleGlobalAiModal() {
+    const homeSection = document.getElementById('aiSmartBookingSection');
+    if (homeSection) {
+        homeSection.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => document.getElementById('aiSearchPrompt')?.focus(), 500);
+    } else {
+        window.location.href = 'index.php#aiSmartBookingSection';
+    }
+}
+</script>
+
 </body>
 </html>

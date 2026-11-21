@@ -11,7 +11,14 @@
 
 ## 🌟 Tính Năng Cốt Lõi
 
-### 1. 🎯 Ghép Trận Thông Minh (Smart Match AI) & Chia Đôi Hóa Đơn (Split Bill 50/50)
+### 1. 🤖 Trợ Lý AI Tìm & Đặt Sân Tự Động (AI Smart Booking 1-Click)
+* **Xử lý ngôn ngữ tự nhiên (NLP Intent & Entity Parser)**: Người chơi chỉ cần nhập yêu cầu tìm sân bằng ngôn ngữ tự nhiên tiếng Việt (Ví dụ: *"Chiều nay 18h ở Bình Thạnh giá dưới 100k còn chỗ"*, *"Tối nay 19h quanh vị trí của tôi có thảm BWF"*).
+* **Quét dữ liệu sân trống thời gian thực (Real-time Slot Checking)**: AI tự động phân tích khung giờ, kiểm tra trực tiếp vào CSDL và chỉ đề xuất các cụm sân **thực sự còn sân con trống**.
+* **Định vị GPS Haversine & Chấm điểm đa tiêu chí (AI Relevance Ranking)**:
+  $$\mathbf{Score} = (0.35 \times \text{Khoảng cách GPS}) + (0.30 \times \text{Giá tiền}) + (0.25 \times \text{Độ trống sân}) + (0.10 \times \text{Tiện ích thảm BWF})$$
+* **Đặt sân 1-Click siêu tốc**: Hiển thị thẻ sân trực quan (khoảng cách km, số sân con còn trống, đơn giá) kèm nút **[⚡ Đặt Ngay 1-Click]** điền sẵn toàn bộ thông số, giúp người chơi chốt sân chỉ trong 3 giây.
+
+### 2. 🎯 Ghép Trận Thông Minh (Smart Match AI) & Chia Đôi Hóa Đơn (Split Bill 50/50)
 * **2 Chế độ linh hoạt**: *"Nhờ Hệ Thống Đặt Hộ"* (tự tìm sân trống trung tâm tiện nhất cho cả hai) hoặc *"Tôi Đã Có Sân Sẵn"*.
 * **Phòng ghép sân & Giữ chỗ 15 phút**: Khi hai cơ thủ được ghép nối, hệ thống mở phòng đàm phán với thời hạn giữ chỗ 15 phút. Mỗi bên hoàn tất xác nhận và thanh toán 50% tiền sân (VietQR hoặc Tiền mặt tại sân).
 * **Đàm phán đổi sân thời gian thực (Switch Pitch - Zero-Reload AJAX)**: Cho phép đề xuất đổi sang cụm sân trung tâm tiện hơn dựa trên khoảng cách GPS; đối thủ có thể Chấp thuận hoặc Từ chối tức thì mà không cần tải lại trang.
@@ -145,10 +152,13 @@ Hệ thống tích hợp bộ kịch bản kiểm thử tự động toàn diệ
 # 1. Kiểm tra toàn vẹn bảng mã tiếng Việt UTF-8 và kết nối CSDL:
 php tests/utf8_check.php
 
-# 2. Kiểm thử an toàn tranh chấp Concurrency (giả lập 20 yêu cầu đặt sân cùng mili-giây):
+# 2. Kiểm thử Trợ lý AI Tìm & Đặt sân thông minh (NLP tiếng Việt, GPS & gợi ý sân trống):
+php tests/ai_smart_booking_test.php
+
+# 3. Kiểm thử an toàn tranh chấp Concurrency (giả lập 20 yêu cầu đặt sân cùng mili-giây):
 php tests/concurrent_booking_test.php
 
-# 3. Kiểm thử tích hợp toàn bộ luồng Smart Match AI (Ghép đôi -> Xác nhận 50/50 -> Báo kết quả -> Cập nhật Elo):
+# 4. Kiểm thử tích hợp toàn bộ luồng Smart Match AI (Ghép đôi -> Xác nhận 50/50 -> Báo kết quả -> Cập nhật Elo):
 php tests/smart_match_flow_test.php
 
 # 4. Kiểm thử Unit Test logic Matching (Node.js/Jest nếu có):
@@ -213,6 +223,7 @@ badminton/
 │   ├── StaffController.php
 │   └── UserController.php
 ├── models/                  # Các lớp thực thể và thuật toán nghiệp vụ
+│   ├── AiSmartBooking.php   # Trợ lý AI Đặt Sân: NLP tiếng Việt, GPS Haversine, xếp hạng gợi ý
 │   ├── Booking.php          # Quản lý đơn đặt, chống trùng lịch Race Condition
 │   ├── Club.php             # Quản lý Câu lạc bộ & slot vãng lai
 │   ├── MatchTicket.php      # Thuật toán Matching AI, Haversine, đàm phán đổi sân
