@@ -7,6 +7,7 @@
 require_once __DIR__ . '/Tokenizer.php';
 require_once __DIR__ . '/TfIdfVectorizer.php';
 require_once __DIR__ . '/NaiveBayesClassifier.php';
+require_once __DIR__ . '/GenerativeEngine.php';
 
 class Predictor {
     private $classifier;
@@ -63,6 +64,18 @@ class Predictor {
         $reply = '';
 
         switch ($intent) {
+            case 'weather_mood':
+                $reply = GenerativeEngine::generateWeatherAndMoodResponse($msg, $userLat, $userLng);
+                break;
+
+            case 'health_fitness':
+                $reply = GenerativeEngine::generateHealthAndMotivationResponse($msg);
+                break;
+
+            case 'greeting':
+                $reply = GenerativeEngine::generateLivelyGreeting();
+                break;
+
             case 'find_pitch':
             case 'ask_price':
                 $pitchResult = $this->handlePitchSearch($entities, $userLat, $userLng);
@@ -86,14 +99,8 @@ class Predictor {
                 $reply = $this->handleRadarMatchmakingInfo($msg);
                 break;
 
-            case 'greeting':
             default:
-                $reply = "Xin chào! Tôi là Trợ Lý AI SmashHub được huấn luyện chuyên sâu cho bộ môn cầu lông. Tôi có thể hỗ trợ bạn:\n\n"
-                       . "1. Đặt sân thông minh theo vị trí GPS, khung giờ và ngân sách.\n"
-                       . "2. Tư vấn chọn vợt, căng cước phù hợp lực cổ tay và lối đánh.\n"
-                       . "3. Hướng dẫn cơ chế chia đôi tiền sân 50/50 và chống bùng kèo.\n"
-                       . "4. Giải đáp luật thi đấu cầu lông chuẩn BWF.\n\n"
-                       . "Bạn muốn trải nghiệm tính năng nào trước?";
+                $reply = GenerativeEngine::generateLivelyGreeting();
                 break;
         }
 

@@ -59,6 +59,16 @@ $testCases = [
         'query'           => 'Làm sao để tìm bạn đấu cầu lông ở gần tôi bằng radar',
         'expected_intent' => ['radar_matchmaking'],
         'check_pitches'   => false
+    ],
+    [
+        'query'           => 'Hôm nay đẹp trời nhỉ',
+        'expected_intent' => ['weather_mood'],
+        'check_pitches'   => false
+    ],
+    [
+        'query'           => 'Đánh cầu lông có giúp giảm cân và đốt mỡ không',
+        'expected_intent' => ['health_fitness'],
+        'check_pitches'   => false
     ]
 ];
 
@@ -86,3 +96,4 @@ echo "   - Do chinh xac Cross-Val: {$weights['metrics']['accuracy']}%\n";
 echo "   - F1-Score: {$weights['metrics']['macro_f1']}%\n";
 
 echo "\n=== TAT CA CAC BIEU MAU KIEM THU MACHINE LEARNING AI ENGINE HOAN TAT: 100% SUCCESS ===\n";
+

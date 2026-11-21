@@ -48,7 +48,14 @@ class Tokenizer {
         'giá rẻ' => 'giá_rẻ',
         'sinh viên' => 'sinh_viên',
         'bãi đỗ xe' => 'bãi_đỗ_xe',
-        'bãi ô tô' => 'bãi_ô_tô'
+        'bãi ô tô' => 'bãi_ô_tô',
+        'đẹp trời' => 'đẹp_trời',
+        'thời tiết' => 'thời_tiết',
+        'nhiệt độ' => 'nhiệt_độ',
+        'giảm cân' => 'giảm_cân',
+        'sức khỏe' => 'sức_khỏe',
+        'chiều cao' => 'chiều_cao',
+        'đốt mỡ' => 'đốt_mỡ'
     ];
 
     private static $stopWords = [
@@ -98,3 +105,4 @@ class Tokenizer {
         return $allTokens;
     }
 }
+

@@ -161,3 +161,4 @@ class NaiveBayesClassifier {
         $this->vectorizer->loadData($modelData['vectorizer'] ?? []);
     }
 }
+

@@ -99,3 +99,4 @@ class TfIdfVectorizer {
         $this->idf = $data['idf'] ?? [];
     }
 }
+
