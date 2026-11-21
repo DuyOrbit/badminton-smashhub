@@ -165,4 +165,58 @@ class GenerativeEngine {
             return "Chào buổi tối! Khung giờ vàng của các cơ thủ đang rất sôi động (nhiệt độ hiện tại **{$temp}°C** rất mát mẻ). Bạn đang tìm sân trống tối nay, cần tư vấn chọn vợt hay muốn giải đáp về luật chia đôi tiền sân 50/50?";
         }
     }
+
+    /**
+     * Xu ly cau hoi ve lich trinh & ngay gio thuc te (Calendar & Scheduling)
+     */
+    public static function generateCalendarScheduleResponse($userText) {
+        $daysOfWeek = [
+            0 => 'Chủ Nhật',
+            1 => 'Thứ Hai',
+            2 => 'Thứ Ba',
+            3 => 'Thứ Tư',
+            4 => 'Thứ Năm',
+            5 => 'Thứ Sáu',
+            6 => 'Thứ Bảy'
+        ];
+
+        $todayTs = time();
+        $todayW = (int)date('w', $todayTs);
+        $todayDay = $daysOfWeek[$todayW];
+        $todayStr = date('d/m/Y', $todayTs);
+
+        $tomorrowTs = strtotime('+1 day', $todayTs);
+        $tomorrowW = (int)date('w', $tomorrowTs);
+        $tomorrowDay = $daysOfWeek[$tomorrowW];
+        $tomorrowStr = date('d/m/Y', $tomorrowTs);
+
+        $afterTomorrowTs = strtotime('+2 days', $todayTs);
+        $afterTomorrowDay = $daysOfWeek[(int)date('w', $afterTomorrowTs)];
+        $afterTomorrowStr = date('d/m/Y', $afterTomorrowTs);
+
+        $lower = mb_strtolower($userText, 'UTF-8');
+
+        if (mb_strpos($lower, 'ngày mai', 0, 'UTF-8') !== false || mb_strpos($lower, 'mai', 0, 'UTF-8') !== false) {
+            $isWeekend = ($tomorrowW === 0 || $tomorrowW === 6);
+            $weekendNote = $isWeekend ? "Ngày mai rơi vào **cuối tuần**, thường là thời điểm các cụm sân rất đông người chơi." : "Ngày mai là ngày trong tuần, các khung giờ vàng từ 17:00 đến 20:00 thường kín lịch sớm.";
+
+            return "Hôm nay là {$todayDay} ({$todayStr}), **ngày mai là {$tomorrowDay} (ngày {$tomorrowStr})** bạn nhé!\n\n{$weekendNote} Bạn có muốn tôi kiểm tra và gợi ý các cụm sân con còn trống vào ngày mai ({$tomorrowDay}) để bạn chủ động chốt lịch sớm không?";
+        }
+
+        if (mb_strpos($lower, 'ngày mốt', 0, 'UTF-8') !== false) {
+            return "Hôm nay là {$todayDay} ({$todayStr}), **ngày mốt sẽ là {$afterTomorrowDay} (ngày {$afterTomorrowStr})** bạn nhé! Bạn có muốn lên lịch đặt sân trước cho ngày mốt không?";
+        }
+
+        if (mb_strpos($lower, 'cuối tuần', 0, 'UTF-8') !== false) {
+            $daysToSat = (6 - $todayW + 7) % 7;
+            if ($daysToSat === 0) $daysToSat = 7;
+            $satDate = date('d/m/Y', strtotime("+{$daysToSat} days"));
+            $sunDate = date('d/m/Y', strtotime("+" . ($daysToSat + 1) . " days"));
+
+            return "Cuối tuần này sẽ là **Thứ Bảy ({$satDate})** và **Chủ Nhật ({$sunDate})** bạn nhé! Các ngày cuối tuần các cụm sân thường mở cửa từ 06:00 đến 22:30. Bạn cần tìm sân khung giờ nào để tôi lọc danh sách sân trống sớm cho bạn?";
+        }
+
+        return "Bây giờ là **" . date('H:i') . "**, hôm nay là **{$todayDay} (ngày {$todayStr})** bạn nhé! Các cụm sân cầu lông đối tác của SmashHub mở cửa liên tục từ **06:00 đến 22:00**. Bạn có muốn tôi hỗ trợ tìm sân trống hôm nay không?";
+    }
 }
+

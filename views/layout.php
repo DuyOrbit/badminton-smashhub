@@ -734,9 +734,11 @@ window.showToast = function(message, type = 'success') {
             'split_bill_info': 'Cơ Chế Chia Đôi 50/50',
             'rule_inquiry': 'Luật Thi Đấu BWF',
             'radar_matchmaking': 'Radar Cáp Kèo Lân Cận',
+            'calendar_schedule': 'Lịch Ngày & Giờ Thi Đấu',
             'weather_mood': 'Thời Tiết & Lên Sân',
             'health_fitness': 'Sức Khỏe & Thể Lực',
-            'greeting': 'Hội Thoại Chào Hỏi'
+            'greeting': 'Hội Thoại Chào Hỏi',
+            'out_of_scope': 'Trợ Lý Chuyên Môn Cầu Lông'
         };
         const intentText = intentLabels[data.intent] || data.intent;
 

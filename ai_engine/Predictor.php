@@ -59,11 +59,33 @@ class Predictor {
         // 2. Trich xuat thuc the (Entity Extraction)
         $entities = $this->extractEntities($msg);
 
-        // 3. Xu ly logic nghiep vu & Sinh cau tra loi tu nhien
+        // 3. Kiem tra nguong do tin cay (Confidence Threshold: 0.45) de chong doan bo
+        if ($confidence < 0.45) {
+            $reply = "Tôi là **Trợ Lý AI Chuyên Môn SmashHub**, được huấn luyện chuyên sâu để phục vụ 4 lĩnh vực xoay quanh đặt sân và thi đấu cầu lông:\n\n"
+                   . "1. **Đặt Sân Thông Minh:** Tìm sân theo vị trí GPS, khung giờ và ngân sách.\n"
+                   . "2. **Tư Vấn Thiết Bị:** Chọn vợt (3U/4U/5U), căng cước (kg/lbs) theo lối đánh.\n"
+                   . "3. **Cơ Chế Chia Đôi 50/50:** Hướng dẫn thanh toán chia đôi và điểm phạt bùng kèo.\n"
+                   . "4. **Luật Thi Đấu BWF:** Tra cứu luật phát cầu 1m15, chạm lưới, tính điểm 21.\n\n"
+                   . "Câu hỏi của bạn hiện nằm ngoài phạm vi này. Bạn hãy thử hỏi tôi về lịch sân, tư vấn vợt hoặc luật thi đấu cầu lông nhé!";
+
+            return [
+                'reply'      => $reply,
+                'intent'     => 'out_of_scope',
+                'confidence' => $confidence,
+                'entities'   => $entities,
+                'pitches'    => []
+            ];
+        }
+
+        // 4. Xu ly logic nghiep vu & Sinh cau tra loi tu nhien
         $pitches = [];
         $reply = '';
 
         switch ($intent) {
+            case 'calendar_schedule':
+                $reply = GenerativeEngine::generateCalendarScheduleResponse($msg);
+                break;
+
             case 'weather_mood':
                 $reply = GenerativeEngine::generateWeatherAndMoodResponse($msg, $userLat, $userLng);
                 break;

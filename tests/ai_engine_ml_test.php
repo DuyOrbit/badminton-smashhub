@@ -69,6 +69,16 @@ $testCases = [
         'query'           => 'Đánh cầu lông có giúp giảm cân và đốt mỡ không',
         'expected_intent' => ['health_fitness'],
         'check_pitches'   => false
+    ],
+    [
+        'query'           => 'Ngày mai là thứ mấy',
+        'expected_intent' => ['calendar_schedule'],
+        'check_pitches'   => false
+    ],
+    [
+        'query'           => 'Thủ đô của nước Pháp là gì',
+        'expected_intent' => ['out_of_scope'],
+        'check_pitches'   => false
     ]
 ];
 
