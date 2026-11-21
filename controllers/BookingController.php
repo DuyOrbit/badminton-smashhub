@@ -464,5 +464,41 @@ class BookingController {
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }
+
+    public function apiAiChat() {
+        header('Content-Type: application/json; charset=UTF-8');
+
+        $inputRaw = file_get_contents('php://input');
+        $jsonData = json_decode($inputRaw, true) ?: [];
+
+        $message = $_POST['message'] ?? $jsonData['message'] ?? $_GET['message'] ?? '';
+        $userLat = $_POST['user_lat'] ?? $jsonData['user_lat'] ?? $_GET['user_lat'] ?? null;
+        $userLng = $_POST['user_lng'] ?? $jsonData['user_lng'] ?? $_GET['user_lng'] ?? null;
+
+        if (empty(trim($message))) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Vui lòng nhập tin nhắn cho Trợ lý AI.'
+            ], JSON_UNESCAPED_UNICODE);
+            exit;
+        }
+
+        $database = new Database();
+        $db = $database->getConnection();
+
+        require_once __DIR__ . '/../ai_engine/Predictor.php';
+        $predictor = new Predictor($db);
+        $result = $predictor->processMessage($message, $userLat, $userLng);
+
+        echo json_encode([
+            'success'    => true,
+            'reply'      => $result['reply'],
+            'intent'     => $result['intent'],
+            'confidence' => $result['confidence'],
+            'entities'   => $result['entities'] ?? [],
+            'pitches'    => $result['pitches'] ?? []
+        ], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 }
 ?>

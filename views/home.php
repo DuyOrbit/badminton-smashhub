@@ -359,8 +359,22 @@ $accents = [
                         AI
                     </div>
                     <div class="flex-1">
-                        <div class="text-xs font-black uppercase text-[#d8ff3e]">Trợ Lý AI SmashHub</div>
-                        <div id="aiMessageText" class="mt-1 text-xs sm:text-sm text-white/90 leading-relaxed"></div>
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="text-xs font-black uppercase text-[#d8ff3e]">Trợ Lý AI SmashHub (Mô Hình ML Tiếng Việt)</div>
+                            <span id="aiIntentBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-[#d8ff3e]/15 text-[#d8ff3e] font-bold border border-[#d8ff3e]/30">
+                                Phân Tích Ý Định
+                            </span>
+                        </div>
+                        <div id="aiMessageText" class="mt-2 text-xs sm:text-sm text-white/90 leading-relaxed"></div>
+                        <div class="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between">
+                            <span class="text-[11px] text-white/50">Muốn trò chuyện tương tác đa lượt?</span>
+                            <button type="button" onclick="window.toggleAiChatModal()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#d8ff3e]/15 hover:bg-[#d8ff3e]/25 text-[#d8ff3e] text-xs font-bold transition border border-[#d8ff3e]/30 cursor-pointer">
+                                <span>Mở Khung Chat AI Copilot</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -417,18 +431,19 @@ $accents = [
         const submitBtn = document.getElementById('btnAiSearchSubmit');
         const originalBtnHtml = submitBtn.innerHTML;
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-1.5">⏳</span> Đang phân tích...';
+        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-1.5 w-3 h-3 border-2 border-current border-t-transparent rounded-full"></span> Đang phân tích...';
 
         try {
             const formData = new FormData();
-            formData.append('prompt', prompt);
+            formData.append('message', prompt);
             if (userCurrentGps.lat && userCurrentGps.lng) {
                 formData.append('user_lat', userCurrentGps.lat);
                 formData.append('user_lng', userCurrentGps.lng);
             }
 
-            const response = await fetch('index.php?action=api_ai_smart_search', {
+            const response = await fetch('index.php?action=api_ai_chat', {
                 method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 body: formData
             });
 
@@ -450,23 +465,41 @@ $accents = [
         const resultsBox = document.getElementById('aiResultsBox');
         const msgText = document.getElementById('aiMessageText');
         const grid = document.getElementById('aiPitchCardsGrid');
+        const badge = document.getElementById('aiIntentBadge');
 
         resultsBox.classList.remove('hidden');
         resultsBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-        // Format markdown text don gian
-        let formattedMsg = (data.message || '')
+        const intentLabels = {
+            'find_pitch': 'Đặt Sân Thông Minh',
+            'ask_price': 'Bảng Giá & Chi Phí',
+            'racket_consult': 'Tư Vấn Thiết Bị Vợt/Cước',
+            'split_bill_info': 'Cơ Chế Chia Đôi 50/50',
+            'rule_inquiry': 'Luật Thi Đấu BWF',
+            'radar_matchmaking': 'Radar Cáp Kèo Lân Cận',
+            'greeting': 'Hội Thoại Chào Hỏi'
+        };
+        const confPercent = Math.round((data.confidence || 0) * 100);
+        const intentText = intentLabels[data.intent] || data.intent;
+        if (badge) {
+            badge.innerText = 'Ý định: ' + intentText + ' (' + confPercent + '%)';
+        }
+
+        let formattedMsg = (data.reply || '')
             .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>')
+            .replace(/\n\n/g, '<br><br>')
             .replace(/\n/g, '<br>');
         msgText.innerHTML = formattedMsg;
 
         grid.innerHTML = '';
-        if (!data.recommendations || data.recommendations.length === 0) {
-            grid.innerHTML = '<div class="col-span-full p-4 rounded-xl bg-white/5 text-center text-xs text-white/60">Không tìm thấy cụm sân phù hợp. Vui lòng thử nới rộng khoảng cách hoặc chọn giờ khác!</div>';
+        if (!data.pitches || data.pitches.length === 0) {
+            if (data.intent === 'find_pitch' || data.intent === 'ask_price') {
+                grid.innerHTML = '<div class="col-span-full p-4 rounded-xl bg-white/5 text-center text-xs text-white/60">Không tìm thấy cụm sân phù hợp. Vui lòng thử nới rộng khoảng cách hoặc chọn giờ khác!</div>';
+            }
             return;
         }
 
-        data.recommendations.forEach((p, idx) => {
+        data.pitches.forEach((p, idx) => {
             const isAvail = p.has_available_slot;
             const availBadge = isAvail 
                 ? `<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 text-[10px] font-bold text-emerald-400">Còn ${p.available_courts}/${p.total_courts} sân trống</span>`
@@ -485,7 +518,7 @@ $accents = [
                         </div>
                         <div class="absolute bottom-2 right-2">
                             <span class="rounded-full bg-black/75 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-md">
-                                📍 ${p.distance_display}
+                                ${p.distance_display}
                             </span>
                         </div>
                     </div>
@@ -494,7 +527,7 @@ $accents = [
                             <h3 class="text-sm font-black text-white truncate" title="${p.name}">${p.name}</h3>
                             <span class="text-xs font-black text-[#d8ff3e] shrink-0">${p.price_formatted}</span>
                         </div>
-                        <p class="mt-1 text-[11px] text-[#71818a] line-clamp-1" title="${p.location}">📍 ${p.location}</p>
+                        <p class="mt-1 text-[11px] text-[#71818a] line-clamp-1" title="${p.location}">${p.location}</p>
                         <div class="mt-2.5 flex items-center justify-between gap-2 pt-2 border-t border-white/5">
                             <span class="text-[10px] font-bold text-white/70">Khung giờ: ${p.suggested_time}</span>
                             ${availBadge}
@@ -503,7 +536,7 @@ $accents = [
                 </div>
                 <div class="mt-3.5 pt-2 border-t border-white/10">
                     <a href="${p.booking_url}" class="w-full inline-flex items-center justify-center gap-1.5 rounded-xl ${isAvail ? 'bg-[#d8ff3e] text-[#10181e] hover:bg-[#c9f227]' : 'bg-white/10 text-white/50 cursor-not-allowed'} py-2.5 px-3 text-xs font-black uppercase transition">
-                        <span>⚡</span> ${isAvail ? 'Đặt Sân 1-Click Ngay' : 'Xem Giờ Khác'}
+                        ${isAvail ? 'Đặt Sân 1-Click Ngay' : 'Xem Giờ Khác'}
                     </a>
                 </div>
             `;

@@ -124,3 +124,4 @@ $db->prepare("DELETE FROM notifications WHERE id = ?")->execute([$notif['id']]);
 echo "[PASS] 8. Don dep du lieu kiem thu thanh cong.\n";
 
 echo "=== TAT CA CAC BIEU MAU KIEM THU RADAR LAN CAN HOAN TAT: 100% SUCCESS ===\n";
+

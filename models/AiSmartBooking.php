@@ -195,8 +195,8 @@ class AiSmartBooking {
         $bookingModel = new Booking($this->conn);
 
         // Uu tien lay toa do GPS thuc te tu client, neu khong thi dung toa do suy dien tu quan
-        $targetLat = ($userLat !== null && $userLat !== '') ? (float)$userLat : $parsed['inferred_lat'];
-        $targetLng = ($userLng !== null && $userLng !== '') ? (float)$userLng : $parsed['inferred_lng'];
+        $targetLat = ($userLat !== null && $userLat !== '') ? (float)$userLat : ($parsed['inferred_lat'] ?? null);
+        $targetLng = ($userLng !== null && $userLng !== '') ? (float)$userLng : ($parsed['inferred_lng'] ?? null);
 
         // Truy van danh sach tat ca cac cum san dang hoat dong
         $sql = "SELECT id, name, location, district, city, latitude, longitude, type, quantity, price_per_hour, image_url, amenities, description

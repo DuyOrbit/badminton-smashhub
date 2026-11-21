@@ -486,27 +486,321 @@ window.showToast = function(message, type = 'success') {
     }, 3800);
 };
 </script>
-<!-- Floating AI Smart Booking Button -->
+<!-- Floating AI Copilot Chat Button -->
 <div class="fixed bottom-6 right-6 z-50">
-    <button type="button" onclick="toggleGlobalAiModal()" class="group flex items-center gap-2 rounded-full bg-gradient-to-r from-[#d8ff3e] to-[#a3e635] p-3 sm:px-4 sm:py-3 text-[#10181e] font-black shadow-[0_10px_25px_rgba(216,255,62,0.4)] hover:scale-105 transition duration-200 cursor-pointer border border-[#d8ff3e]" title="Hỏi Trợ Lý AI Tìm Sân">
+    <button type="button" onclick="window.toggleAiChatModal()" class="group flex items-center gap-2 rounded-full bg-gradient-to-r from-[#d8ff3e] to-[#a3e635] p-3 sm:px-4 sm:py-3 text-[#10181e] font-black shadow-[0_10px_25px_rgba(216,255,62,0.4)] hover:scale-105 transition duration-200 cursor-pointer border border-[#d8ff3e]" title="Trò Chuyện Cùng Trợ Lý AI (Machine Learning)">
         <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2a10 10 0 1010 10A10 10 0 0012 2zm1 14.93V17a1 1 0 01-2 0v-.07A7.003 7.003 0 015.07 11H5a1 1 0 010-2h.07A7.003 7.003 0 0111 3.07V3a1 1 0 012 0v.07A7.003 7.003 0 0118.93 9H19a1 1 0 010 2h-.07A7.003 7.003 0 0113 16.93zM12 7a5 5 0 105 5 5 5 0 00-5-5z"/>
         </svg>
-        <span class="hidden sm:inline text-xs font-black uppercase tracking-wider">Trợ Lý AI Tìm Sân</span>
+        <span class="hidden sm:inline text-xs font-black uppercase tracking-wider">Trợ Lý AI ML</span>
     </button>
 </div>
 
+<!-- Interactive Conversational AI Chat Dialog (Powered by Local ML Engine) -->
+<div id="aiChatModal" class="fixed bottom-20 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[420px] h-[580px] max-h-[82vh] flex flex-col bg-[#121b21]/95 border border-[#d8ff3e]/40 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-all duration-300 transform scale-95 opacity-0 pointer-events-none overflow-hidden">
+    <!-- Chat Header -->
+    <div class="px-4 py-3 bg-[#0b1116] border-b border-white/10 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+            <div class="relative flex h-9 w-9 items-center justify-center rounded-xl bg-[#d8ff3e] text-[#10181e] font-black text-sm shadow">
+                AI
+                <span class="absolute -bottom-0.5 -right-0.5 flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+            </div>
+            <div>
+                <div class="flex items-center gap-1.5">
+                    <h3 class="text-xs font-bold text-white tracking-wide">SmashHub AI Copilot</h3>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded bg-[#d8ff3e]/20 text-[#d8ff3e] font-bold">ML IN-HOUSE</span>
+                </div>
+                <p class="text-[10px] text-white/50">Mô hình Machine Learning tiếng Việt</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+            <button type="button" onclick="window.clearAiChatHistory()" class="text-white/40 hover:text-white p-1 text-xs transition" title="Xóa hội thoại">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </button>
+            <button type="button" onclick="window.toggleAiChatModal()" class="text-white/40 hover:text-white p-1 text-base leading-none transition" title="Đóng chat">
+                &times;
+            </button>
+        </div>
+    </div>
+
+    <!-- Chat Message Body -->
+    <div id="aiChatMessageList" class="flex-1 overflow-y-auto p-4 space-y-3 scroll-smooth">
+        <!-- Initial Assistant Message -->
+        <div class="flex items-start gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-[#d8ff3e] text-[#10181e] font-black text-xs flex items-center justify-center shrink-0 shadow">
+                AI
+            </div>
+            <div class="flex-1 bg-[#0b1116] border border-white/10 rounded-2xl p-3 text-xs text-white/90 leading-relaxed shadow-sm">
+                <p class="font-bold text-[#d8ff3e] mb-1">Xin chào!</p>
+                <p>Tôi là <strong>Trợ Lý AI SmashHub</strong> được vận hành bằng mô hình Machine Learning riêng. Hãy nói cho tôi biết nhu cầu của bạn (tìm sân trống, tư vấn vợt, luật BWF, chia tiền 50/50...):</p>
+                
+                <!-- Quick Chips -->
+                <div class="mt-2.5 pt-2 border-t border-white/10 flex flex-wrap gap-1.5">
+                    <button type="button" onclick="window.sendAiQuickPrompt('Chiều nay 18h ở Bình Thạnh giá dưới 100k')" class="rounded-lg bg-white/5 hover:bg-[#d8ff3e]/15 hover:text-[#d8ff3e] border border-white/10 px-2 py-1 text-[11px] text-white/80 transition cursor-pointer">
+                        Tìm sân Bình Thạnh 18h
+                    </button>
+                    <button type="button" onclick="window.sendAiQuickPrompt('Người mới chơi cổ tay yếu nên mua vợt gì?')" class="rounded-lg bg-white/5 hover:bg-[#d8ff3e]/15 hover:text-[#d8ff3e] border border-white/10 px-2 py-1 text-[11px] text-white/80 transition cursor-pointer">
+                        Tư vấn chọn vợt
+                    </button>
+                    <button type="button" onclick="window.sendAiQuickPrompt('Luật phát cầu 1m15 mới nhất tính sao?')" class="rounded-lg bg-white/5 hover:bg-[#d8ff3e]/15 hover:text-[#d8ff3e] border border-white/10 px-2 py-1 text-[11px] text-white/80 transition cursor-pointer">
+                        Luật phát cầu BWF
+                    </button>
+                    <button type="button" onclick="window.sendAiQuickPrompt('Cơ chế chia đôi tiền sân 50/50 hoạt động thế nào?')" class="rounded-lg bg-white/5 hover:bg-[#d8ff3e]/15 hover:text-[#d8ff3e] border border-white/10 px-2 py-1 text-[11px] text-white/80 transition cursor-pointer">
+                        Luật chia tiền 50/50
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div id="aiChatTypingIndicator" class="hidden px-4 py-2 bg-[#0b1116]/60 border-t border-white/5 flex items-center gap-2 text-[11px] text-[#d8ff3e]">
+        <span class="inline-flex h-2 w-2 rounded-full bg-[#d8ff3e] animate-ping"></span>
+        <span>AI đang suy luận ngôn ngữ tự nhiên...</span>
+    </div>
+
+    <!-- Chat Footer Input -->
+    <div class="p-3 bg-[#0b1116] border-t border-white/10">
+        <form id="aiChatForm" onsubmit="window.handleAiChatSubmit(event)" class="flex items-center gap-2">
+            <button type="button" id="btnAiChatGps" onclick="window.toggleAiChatGps()" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-emerald-400 transition cursor-pointer" title="Đính kèm vị trí GPS">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </button>
+            <input type="text" id="aiChatInput" placeholder="Nhập câu hỏi tự nhiên..." class="flex-1 bg-black/40 border border-white/15 focus:border-[#d8ff3e] rounded-xl px-3 py-2 text-xs text-white placeholder-white/40 focus:outline-none transition font-medium">
+            <button type="submit" id="btnAiChatSend" class="p-2.5 rounded-xl bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] font-bold transition shadow cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                </svg>
+            </button>
+        </form>
+    </div>
+</div>
+
 <script>
-function toggleGlobalAiModal() {
-    const homeSection = document.getElementById('aiSmartBookingSection');
-    if (homeSection) {
-        homeSection.scrollIntoView({ behavior: 'smooth' });
-        setTimeout(() => document.getElementById('aiSearchPrompt')?.focus(), 500);
-    } else {
-        window.location.href = 'index.php#aiSmartBookingSection';
+(function() {
+    let aiChatGps = { lat: null, lng: null };
+    let isModalOpen = false;
+
+    window.toggleAiChatModal = function() {
+        const modal = document.getElementById('aiChatModal');
+        if (!modal) return;
+        isModalOpen = !isModalOpen;
+        if (isModalOpen) {
+            modal.classList.remove('scale-95', 'opacity-0', 'pointer-events-none');
+            modal.classList.add('scale-100', 'opacity-100', 'pointer-events-auto');
+            setTimeout(() => document.getElementById('aiChatInput')?.focus(), 200);
+        } else {
+            modal.classList.add('scale-95', 'opacity-0', 'pointer-events-none');
+            modal.classList.remove('scale-100', 'opacity-100', 'pointer-events-auto');
+        }
+    };
+
+    window.toggleGlobalAiModal = function() {
+        window.toggleAiChatModal();
+    };
+
+    window.toggleAiChatGps = function() {
+        const btn = document.getElementById('btnAiChatGps');
+        if (!navigator.geolocation) {
+            if (window.showToast) window.showToast('Trình duyệt không hỗ trợ GPS.', 'warning');
+            return;
+        }
+        if (btn) btn.classList.add('animate-pulse');
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                aiChatGps.lat = pos.coords.latitude;
+                aiChatGps.lng = pos.coords.longitude;
+                if (btn) {
+                    btn.classList.remove('animate-pulse');
+                    btn.classList.add('text-emerald-400', 'border-emerald-500/50', 'bg-emerald-500/10');
+                }
+                if (window.showToast) window.showToast('Đã đính kèm GPS: ' + aiChatGps.lat.toFixed(3) + ', ' + aiChatGps.lng.toFixed(3), 'success');
+            },
+            err => {
+                if (btn) btn.classList.remove('animate-pulse');
+                if (window.showToast) window.showToast('Không lấy được GPS: ' + err.message, 'warning');
+            },
+            { timeout: 8000 }
+        );
+    };
+
+    window.sendAiQuickPrompt = function(promptText) {
+        const input = document.getElementById('aiChatInput');
+        if (input) {
+            input.value = promptText;
+            window.handleAiChatSubmit(new Event('submit'));
+        }
+    };
+
+    window.clearAiChatHistory = function() {
+        const list = document.getElementById('aiChatMessageList');
+        if (!list) return;
+        list.innerHTML = `
+            <div class="flex items-start gap-2.5">
+                <div class="w-7 h-7 rounded-lg bg-[#d8ff3e] text-[#10181e] font-black text-xs flex items-center justify-center shrink-0 shadow">AI</div>
+                <div class="flex-1 bg-[#0b1116] border border-white/10 rounded-2xl p-3 text-xs text-white/90 leading-relaxed shadow-sm">
+                    <p class="font-bold text-[#d8ff3e] mb-1">Cuộc trò chuyện mới</p>
+                    <p>Hãy hỏi tôi bất kỳ điều gì về sân bãi, vợt cước, luật thi đấu BWF hoặc cơ chế chia đôi tiền sân!</p>
+                </div>
+            </div>
+        `;
+    };
+
+    window.handleAiChatSubmit = async function(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const input = document.getElementById('aiChatInput');
+        const text = input ? input.value.trim() : '';
+        if (!text) return;
+
+        input.value = '';
+        appendUserMessage(text);
+
+        const typing = document.getElementById('aiChatTypingIndicator');
+        const sendBtn = document.getElementById('btnAiChatSend');
+        if (typing) typing.classList.remove('hidden');
+        if (sendBtn) sendBtn.disabled = true;
+
+        try {
+            const formData = new FormData();
+            formData.append('message', text);
+            if (aiChatGps.lat && aiChatGps.lng) {
+                formData.append('user_lat', aiChatGps.lat);
+                formData.append('user_lng', aiChatGps.lng);
+            }
+
+            const res = await fetch('index.php?action=api_ai_chat', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                appendAssistantMessage(data);
+            } else {
+                appendAssistantMessage({
+                    reply: data.message || 'Lỗi khi xử lý phản hồi.',
+                    intent: 'error',
+                    confidence: 0,
+                    pitches: []
+                });
+            }
+        } catch (err) {
+            appendAssistantMessage({
+                reply: 'Lỗi kết nối máy chủ Machine Learning.',
+                intent: 'error',
+                confidence: 0,
+                pitches: []
+            });
+        } finally {
+            if (typing) typing.classList.add('hidden');
+            if (sendBtn) sendBtn.disabled = false;
+        }
+    };
+
+    function appendUserMessage(text) {
+        const list = document.getElementById('aiChatMessageList');
+        if (!list) return;
+
+        const userDiv = document.createElement('div');
+        userDiv.className = 'flex items-start justify-end gap-2.5';
+        userDiv.innerHTML = `
+            <div class="max-w-[85%] bg-gradient-to-r from-[#1f3026] to-[#12221b] border border-[#d8ff3e]/40 text-white rounded-2xl p-3 text-xs leading-relaxed shadow">
+                ${escapeHtml(text)}
+            </div>
+        `;
+        list.appendChild(userDiv);
+        list.scrollTop = list.scrollHeight;
     }
-}
+
+    function appendAssistantMessage(data) {
+        const list = document.getElementById('aiChatMessageList');
+        if (!list) return;
+
+        const aiDiv = document.createElement('div');
+        aiDiv.className = 'flex items-start gap-2.5';
+
+        const confPercent = Math.round((data.confidence || 0) * 100);
+        const intentLabels = {
+            'find_pitch': 'Đặt Sân Thông Minh',
+            'ask_price': 'Bảng Giá & Chi Phí',
+            'racket_consult': 'Tư Vấn Thiết Bị Vợt/Cước',
+            'split_bill_info': 'Cơ Chế Chia Đôi 50/50',
+            'rule_inquiry': 'Luật Thi Đấu BWF',
+            'radar_matchmaking': 'Radar Cáp Kèo Lân Cận',
+            'greeting': 'Hội Thoại Chào Hỏi'
+        };
+        const intentText = intentLabels[data.intent] || data.intent;
+
+        let pitchesHtml = '';
+        if (data.pitches && data.pitches.length > 0) {
+            pitchesHtml = '<div class="mt-3 space-y-2">';
+            data.pitches.forEach(p => {
+                const bookUrl = p.booking_url || ('index.php?action=book&id=' + p.id);
+                pitchesHtml += `
+                    <div class="flex items-center gap-2.5 bg-black/40 border border-white/10 rounded-xl p-2.5 hover:border-[#d8ff3e]/40 transition">
+                        <img src="${p.image_url}" alt="${p.name}" class="w-14 h-14 rounded-lg object-cover shrink-0">
+                        <div class="flex-1 min-w-0">
+                            <h5 class="text-xs font-bold text-white truncate">${p.name}</h5>
+                            <p class="text-[10px] text-white/60 truncate">${p.location} (${p.district})</p>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-[11px] font-black text-[#d8ff3e]">${p.price_formatted || (p.price_per_hour + 'đ')}</span>
+                                <span class="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-white/70">${p.distance_display || (p.distance_km + ' km')}</span>
+                            </div>
+                        </div>
+                        <a href="${bookUrl}" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] font-bold text-[10px] transition shadow">
+                            Đặt Ngay
+                        </a>
+                    </div>
+                `;
+            });
+            pitchesHtml += '</div>';
+        }
+
+        const formattedReply = formatMarkdown(data.reply || '');
+
+        aiDiv.innerHTML = `
+            <div class="w-7 h-7 rounded-lg bg-[#d8ff3e] text-[#10181e] font-black text-xs flex items-center justify-center shrink-0 shadow">
+                AI
+            </div>
+            <div class="flex-1 bg-[#0b1116] border border-white/10 rounded-2xl p-3 text-xs text-white/90 leading-relaxed shadow-sm">
+                <div class="flex items-center justify-between gap-1 mb-2 pb-1.5 border-b border-white/10">
+                    <span class="text-[9px] px-2 py-0.5 rounded-full bg-[#d8ff3e]/15 text-[#d8ff3e] font-bold">
+                        ${intentText}
+                    </span>
+                    <span class="text-[9px] text-white/40">
+                        Độ tin cậy: ${confPercent}%
+                    </span>
+                </div>
+                <div class="space-y-1.5">${formattedReply}</div>
+                ${pitchesHtml}
+            </div>
+        `;
+
+        list.appendChild(aiDiv);
+        list.scrollTop = list.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+        return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function formatMarkdown(text) {
+        let out = escapeHtml(text);
+        out = out.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-bold">$1</strong>');
+        out = out.replace(/\n\n/g, '<br><br>');
+        out = out.replace(/\n/g, '<br>');
+        return out;
+    }
+})();
 </script>
+
 
 <?php if (isset($_SESSION['user_id']) && ($_SESSION['user_role'] ?? 'user') === 'user'): ?>
 <!-- Nearby Player Radar Floating Widget -->
