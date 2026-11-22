@@ -67,6 +67,17 @@
 - Bọc toàn bộ quá trình kiểm tra và lưu đơn trong **Database Transaction** (`$db->beginTransaction()` ... `$db->commit()`).
 - Kiểm tra số lượng sân con đang được sử dụng trong khung giờ (`getConfirmedOverlappingCount`). Nếu $\ge \text{quantity}$ ➔ Rollback và chặn ngay.
 
+### 3.4. Mô Hình Học Máy NLP Cục Bộ & Trợ Lý AI Chuyên Môn (In-House ML Engine) — `ai_engine/`
+- **Tập dữ liệu huấn luyện:** `ai_engine/dataset.json` (163 mẫu câu phân bố trên 10 nhóm ý định thể thao cầu lông).
+- **Thuật toán cốt lõi:**
+  - Tiền xử lý từ ngữ N-Gram (Unigram + Bigram) tiếng Việt (`ai_engine/Tokenizer.php`).
+  - Trích xuất ma trận đặc trưng TF-IDF chuẩn hóa $L2$ (`ai_engine/TfIdfVectorizer.php`).
+  - Phân loại xác suất Naive Bayes nhiều lớp với kỹ thuật làm mịn Laplace $\alpha = 0.1$ (`ai_engine/NaiveBayesClassifier.php`).
+  - Hiệu chỉnh độ tin cậy bằng hàm Softmax.
+- **Cơ chế bảo vệ ngưỡng tin cậy (Confidence Threshold $\ge 45\%$):** Ngăn chặn hoàn toàn việc đoán mò các câu hỏi ngoài phạm vi thể thao, định hướng người dùng vào 4 chuyên môn chính.
+- **Tích hợp thời gian & thời tiết thực tế (`ai_engine/GenerativeEngine.php`):** Tự động tính toán thứ/ngày lịch Việt Nam và trích xuất nhiệt độ thời tiết thực tế từ Open-Meteo API.
+- **Kịch bản huấn luyện:** Chạy lệnh `php ai_engine/train.php` để đánh giá chéo 5-Fold Stratified Cross-Validation (F1-Score ~70%, suy luận < 2ms).
+
 ---
 
 ## 4. ⚡ Cơ Chế Không Tải Lại Trang (Zero-Reload AJAX Paradigm)
@@ -87,6 +98,15 @@ Mọi thao tác tần suất cao đều chạy qua AJAX fetch và phản hồi T
 
 ```
 badminton/
+├── ai_engine/                   # Phân hệ Machine Learning NLP tự huấn luyện
+│   ├── dataset.json             # Tập dữ liệu 163 mẫu câu tiếng Việt 10 Intent
+│   ├── GenerativeEngine.php     # Sinh phản hồi ngữ cảnh thời tiết & thời gian
+│   ├── model_weights.json       # Trọng số và xác suất mô hình đã học
+│   ├── NaiveBayesClassifier.php # Thuật toán phân loại Multinomial Naive Bayes
+│   ├── Predictor.php            # Bộ suy luận thời gian thực & Entity Extractor
+│   ├── TfIdfVectorizer.php      # Ma trận vector đặc trưng TF-IDF chuẩn hóa L2
+│   ├── Tokenizer.php            # Tách từ và sinh N-Gram tiếng Việt
+│   └── train.php                # Kịch bản huấn luyện 5-Fold Cross Validation
 ├── config/
 │   └── database.php             # Kết nối PDO & Auto-migration các cột mới
 ├── controllers/
@@ -152,6 +172,10 @@ docker-compose up -d
   php tests/concurrent_booking_test.php
   php tests/smart_match_flow_test.php
   php tests/utf8_check.php
+  php tests/ai_smart_booking_test.php
+  php tests/nearby_radar_test.php
+  php tests/ai_engine_ml_test.php
+  php ai_engine/train.php
   ```
 - **Unit test logic Matching:**
   ```bash
