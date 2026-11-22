@@ -1,130 +1,155 @@
-# 🏸 SMASHHUB - Nền Tảng Đặt Sân Cầu Lông & Ghép Trận AI (Smart Matchmaking)
+# SMASHHUB - Nen Tang Dat San Cau Long & Cap Keo Thong Minh Tich Hop Machine Learning
 
 [![PHP Version](https://img.shields.io/badge/PHP-7.4%2B%20%2F%208.x-blue.svg)](https://www.php.net/)
 [![Database](https://img.shields.io/badge/Database-MySQL%20%2F%20MariaDB-orange.svg)](https://www.mysql.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Style-Tailwind%20CSS-38bdf8.svg)](https://tailwindcss.com/)
+[![Machine Learning](https://img.shields.io/badge/ML%20Engine-In--House%20Naive%20Bayes-success.svg)](ai_engine/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**SMASHHUB** là nền tảng quản lý đặt sân cầu lông và kết nối cộng đồng lông thủ thông minh. Hệ thống tích hợp thuật toán **Ghép trận thông minh (Smart Match AI)** độc quyền theo trình độ Elo quốc tế và vị trí địa lý GPS Haversine, giải quyết triệt để bài toán thiếu người đánh, chênh lệch trình độ, chia tiền sân minh bạch (Split Bill 50/50) và chống bùng kèo (No-Show Fair-Play).
+**SMASHHUB** la nen tang quan ly dat san cau long va ket noi cong dong long thu toan dien. He thong so huu **Phan he Machine Learning NLP tu huan luyen (In-House AI Engine)** ket hop thuat toan **Ghep tran thong minh (Smart Match AI)** doc quyen theo trinh do Elo quoc te va vi tri dia ly GPS Haversine, giai quyet triet de bai toan thieu nguoi danh, chenh lech trinh do, chia tien san minh bach (Split Bill 50/50) va chong bung keo (No-Show Fair-Play).
 
 ---
 
-## 🌟 Tính Năng Cốt Lõi
+## Tinh Nang Cot Loi
 
-### 1. 🤖 Trợ Lý AI Tìm & Đặt Sân Tự Động (AI Smart Booking 1-Click)
-* **Xử lý ngôn ngữ tự nhiên (NLP Intent & Entity Parser)**: Người chơi chỉ cần nhập yêu cầu tìm sân bằng ngôn ngữ tự nhiên tiếng Việt (Ví dụ: *"Chiều nay 18h ở Bình Thạnh giá dưới 100k còn chỗ"*, *"Tối nay 19h quanh vị trí của tôi có thảm BWF"*).
-* **Quét dữ liệu sân trống thời gian thực (Real-time Slot Checking)**: AI tự động phân tích khung giờ, kiểm tra trực tiếp vào CSDL và chỉ đề xuất các cụm sân **thực sự còn sân con trống**.
-* **Định vị GPS Haversine & Chấm điểm đa tiêu chí (AI Relevance Ranking)**:
-  $$\mathbf{Score} = (0.35 \times \text{Khoảng cách GPS}) + (0.30 \times \text{Giá tiền}) + (0.25 \times \text{Độ trống sân}) + (0.10 \times \text{Tiện ích thảm BWF})$$
-* **Đặt sân 1-Click siêu tốc**: Hiển thị thẻ sân trực quan (khoảng cách km, số sân con còn trống, đơn giá) kèm nút **[⚡ Đặt Ngay 1-Click]** điền sẵn toàn bộ thông số, giúp người chơi chốt sân chỉ trong 3 giây.
+### 1. Phan He Machine Learning NLP Tu Huan Luyen (In-House AI Engine)
+Kien truc AI duoc phat trien hoan toan doc lap bang thuan toan toan hoc (Pure PHP), khong phu thuoc API ben ngoai, dam bao toc do suy luan duoi 2ms:
+* **Tien xu ly ngon ngu N-Gram (`ai_engine/Tokenizer.php`)**: Tach tu vung tieng Viet va tao dac trung Unigram + Bigram ket hop xu ly stopword the thao.
+* **Trich xuat dac trung TF-IDF (`ai_engine/TfIdfVectorizer.php`)**: Xay dung ma tran TF-IDF chuan hoa $L2$ voi hon 300 chieu tu vung chuyen mon cau long.
+* **Bo phan loai Multinomial Naive Bayes (`ai_engine/NaiveBayesClassifier.php`)**:
+  * Tinh toan xac suat tien dinh $P(C_k)$ va hop ly co dieu kien $P(w_i|C_k)$ voi ky thuat lam min Laplace ($\alpha = 0.1$).
+  * Hieu chinh do tu tin qua ham Softmax:
+    $$P(C_k | \mathbf{x}) = \frac{\exp(\log P(C_k|\mathbf{x}))}{\sum_j \exp(\log P(C_j|\mathbf{x}))}$$
+* **Tap du lieu chuyen mon (`ai_engine/dataset.json`)**: 163 mau cau phan bo can bang tren 10 nhom y dinh (Intent):
+  1. `smart_booking`: Dat san theo yeu cau, dia diem, gio giac.
+  2. `find_opponent`: Tim keo, ghep tran theo trinh do.
+  3. `check_price`: Tra cuu gia gio, bang gia san BWF.
+  4. `split_bill_info`: Co che chia doi hoa don 50/50 va chong bung keo.
+  5. `radar_matching`: Radar quet ban danh theo vi tri GPS thuc te.
+  6. `racket_advice`: Tu van chon vot cau long (cong, thu, can bang).
+  7. `greeting`: Chao hoi va tiep don hoi vien.
+  8. `bot_identity`: Gioi thieu he thong va cong nghe SmashHub.
+  9. `weather_query`: Hoi thoi tiet va dieu kien danh cau.
+  10. `calendar_schedule`: Tra cuu lich thi dau, thu va ngay thang.
+* **Danh gia mo hinh 5-Fold Stratified Cross-Validation (`ai_engine/train.php`)**: Dat diem Macro F1-Score ~70%, thoi gian huan luyen chi khoang 40ms.
+* **Bo loc an toan nguong tin cay (Confidence Guardrail >= 45%)**: Ngan chan hien tuong doan mo ngoai pham vi the thao; tu dong dieu huong nguoi dung ve cac chuyen mon cot loi.
+* **Tich hop ngu canh thoi gian thuc (`ai_engine/GenerativeEngine.php`)**:
+  * Ket noi Open-Meteo API lay nhiet do va thoi tiet thuc te theo toa do GPS.
+  * Tinh toan thu, ngay thang am/duong lich Viet Nam.
+  * Sinh loi khuyen the thao tam ly va dinh duong phu hop.
 
-### 2. 🎯 Ghép Trận Thông Minh (Smart Match AI) & Chia Đôi Hóa Đơn (Split Bill 50/50)
-* **2 Chế độ linh hoạt**: *"Nhờ Hệ Thống Đặt Hộ"* (tự tìm sân trống trung tâm tiện nhất cho cả hai) hoặc *"Tôi Đã Có Sân Sẵn"*.
-* **Phòng ghép sân & Giữ chỗ 15 phút**: Khi hai cơ thủ được ghép nối, hệ thống mở phòng đàm phán với thời hạn giữ chỗ 15 phút. Mỗi bên hoàn tất xác nhận và thanh toán 50% tiền sân (VietQR hoặc Tiền mặt tại sân).
-* **Đàm phán đổi sân thời gian thực (Switch Pitch - Zero-Reload AJAX)**: Cho phép đề xuất đổi sang cụm sân trung tâm tiện hơn dựa trên khoảng cách GPS; đối thủ có thể Chấp thuận hoặc Từ chối tức thì mà không cần tải lại trang.
-* **Thuật toán đa mục tiêu (Multi-objective Scoring)**:
-  * 🥇 **Điểm Elo (50%)**: Ưu tiên ghép đối thủ có trình độ tương đương, biên độ lệch $\Delta\text{Elo} \le 100$.
-  * 🥈 **Điểm Vị trí GPS (30%)**: Quét bán kính thực tế theo công thức Haversine (hoặc cùng Quận/Huyện dự phòng).
-  * 🥉 **Thể thức thi đấu (20%)**: Khớp thể thức Đơn hoặc Đôi.
-* **Trò chuyện nội bộ (Internal Chat Box)**: Nhắn tin trao đổi trực tiếp giữa hai bên và nhận thông báo tiến trình tự động.
+### 2. Radar Ket Noi Ban Danh Gan Day (Proximity Social Radar)
+* **Quet toa do thuc te (Haversine GPS)**: Tinh khoang cach chinh xac giua cac long thu dang cho keo trong ban kinh 1 - 15 km.
+* **Loi moi 1-Click (Instant Invite)**: Gui loi moi truc tiep den doi thu phu hop tren radar.
+* **Xac nhan dong thuan (Mutual Consensus Zero-Reload)**: Khi ca hai dong y, he thong tu dong hop nhat vao phong ghep chung ma khong can tai lai trang.
 
-### 2. 🏆 Hệ Thống Xếp Hạng Elo & 4 Bậc Rank Ưu Đãi
-* **Mức khởi điểm tân thủ**: Đăng ký tài khoản nhận ngay **`100 Elo`** (Bậc **Rank Đồng**).
-* **Thuật toán chuẩn quốc tế ($K\text{-factor} = 32$)**:
-  * Tự động tính xác suất thắng kỳ vọng $E$ dựa trên chênh lệch Elo giữa 2 bên.
-  * Thắng trận: Nhận điểm cộng theo hiệu số trình độ (bảo vệ động lực thi đấu: thắng luôn nhận tối thiểu **+15 Elo**).
-  * Thua trận: Bị trừ điểm tương ứng (sàn an toàn không bao giờ âm dưới 0).
-  * Hòa trận: Biến động nhẹ tùy theo kỳ vọng trước trận.
-  * Cập nhật điểm và thông báo tức thì đến chuông thông báo cá nhân sau khi Chủ sân xác nhận kết quả.
-* **Chính sách ưu đãi giảm giá tiền sân theo Rank**:
-  * 💎 **Hạng Kim Cương** (Elo $\ge$ 1000): Giảm ngay **20%** tiền sân khi đặt và ghép kèo.
-  * 🥇 **Hạng Vàng** (Elo $\ge$ 600): Giảm ngay **10%** tiền sân.
-  * 🥈 **Hạng Bạc** (Elo $\ge$ 300): Giảm ngay **5%** tiền sân.
-  * 🥉 **Hạng Đồng** (100 - 299 Elo): Giá niêm yết chuẩn cho tân thủ.
+### 3. Tro Ly AI Tim & Dat San 1-Click (AI Smart Booking)
+* **Xu ly ngon ngu tu nhien (Entity Extraction)**: Trach loc thong minh quan/huyen, gio choi, gia toi da va tien ich tu cau chat thuan tuy.
+* **Kiem tra slot trong thoi gian thuc**: Truy van truc tiep vao co so du lieu de chi de xuat san thuc su con trong.
+* **Xep hang goi y da muc tieu (AI Relevance Ranking)**:
+  $$\mathbf{Score} = (0.35 \times \text{Khoang cach GPS}) + (0.30 \times \text{Gia tien}) + (0.25 \times \text{Do trong san}) + (0.10 \times \text{Tien ich BWF})$$
+* **The dat san 1-Click**: Dien san thong so vao form giup hoan tat dat cho chi trong 3 giay.
 
-### 3. 🛡️ Điểm Uy Tín Fair-Play & Cơ Chế Chống Bùng Kèo (No-Show)
-* **Điểm uy tín chuẩn**: **100/100 PTS**.
-* **Thưởng Fair-Play**: **+2 PTS** khi đến sân hoàn tất trận đấu đúng hẹn.
-* **Chế tài xử phạt hủy kèo minh bạch**:
-  * 🟢 Hủy sớm (> 2 tiếng trước giờ đấu): Phạt nhẹ **-5 PTS**.
-  * 🟡 Hủy cận giờ (1 - 2 tiếng trước giờ đấu): Phạt **-15 PTS**.
-  * 🟠 Hủy sát giờ (< 1 tiếng trước giờ đấu): Phạt nặng **-25 PTS** và tạm khóa tìm trận 3 ngày.
-  * 🔴 Bùng kèo (No-Show): Bị Chủ sân xác nhận vắng mặt sẽ phạt **-30 PTS Uy Tín**, **-50 Điểm Elo** và tạm khóa tìm trận 3 ngày.
-* **Bảo vệ quyền lợi**: Nếu bị đối thủ bùng kèo, người chơi có mặt được bảo toàn điểm uy tín, bảo lưu tiền sân hoặc hỗ trợ nhận sân thi đấu.
-* Tài khoản có điểm uy tín dưới **50 PTS** sẽ tự động bị tước quyền tham gia tính năng Ghép trận.
+### 4. Ghep Tran Thong Minh (Smart Match AI) & Chia Doi Hoa Don (Split Bill 50/50)
+* **2 Che do linh hoat**: "Nho He Thong Dat Ho" (chon san trung tam toi uu) hoac "Toi Da Co San San".
+* **Phong ghep giu cho 15 phut**: Moi ben hoan tat thanh toan 50% qua VietQR Sandbox hoac tien mat.
+* **Dam phan doi san thoi gian thuc (Switch Pitch)**: De xuat doi san trung tam tien hon; doi thu chap thuan hoac tu choi bang AJAX.
+* **Thuat toan cham diem 3 tieu chi**:
+  * Diem Elo (50%): Uu tien do lech $\Delta\text{Elo} \le 100$.
+  * Diem Vi tri GPS (30%): Ban kinh thuc te theo cong thuc Haversine.
+  * The thuc thi dau (20%): Khop the thuc Don hoac Doi.
+* **Hop thu tro chuyen noi bo**: Chat truc tiep va nhan thong bao tien trinh tu dong.
 
-### 4. 👥 Cộng Đồng Câu Lạc Bộ (Badminton Clubs)
-* **Quản lý CLB**: Thành lập câu lạc bộ, quản lý danh sách thành viên, cấu hình lịch sinh hoạt định kỳ và phân loại trình độ theo 4 bậc Rank.
-* **Bảng tin nội bộ & Tuyển Slot Vãng Lai**: Đăng tin tuyển người giao lưu kèm mức phí đóng góp; người chơi tự do có thể xin gia nhập slot chỉ bằng 1 thao tác.
+### 5. He Thong Xep Hang Elo & 4 Bac Rank Uu Dai
+* **Muc khoi diem**: 100 Elo (Rank Dong).
+* **Thuat toan chuan quoc te ($K\text{-factor} = 32$)**:
+  * Tinh xac suat thang ky vong $E$ dua tren chenh lech Elo.
+  * Thang tran: Cong diem theo hieu so trinh do (toi thieu +15 Elo).
+  * Thua tran: Tru diem tuong ung (san an toan khong bao gio am).
+* **Chinh sach uu dai giam gia tien san**:
+  * Hang Kim Cuong (Elo >= 1000): Giam ngay 20% tien san.
+  * Hang Vang (Elo >= 600): Giam ngay 10% tien san.
+  * Hang Bac (Elo >= 300): Giam ngay 5% tien san.
+  * Hang Dong (100 - 299 Elo): Gia niem yet chuan.
 
-### 5. 🏟️ Phân Hệ Chủ Sân (Court Owner) & POS Bán Hàng Tại Quầy
-* **Quản lý cụm sân**: Thêm/Sửa thông tin cụm sân, tọa độ GPS, số lượng sân con tiêu chuẩn BWF, đơn giá theo giờ.
-* **POS Đặt Sân Tại Quầy (Walk-in)**: Tạo đơn trực tiếp cho khách vãng lai, tích hợp dịch vụ phụ trợ (nước suối, Revive, thuê vợt, cầu Hải Yến S90) và tính tổng hóa đơn tự động.
-* **Lịch đặt sân dạng lưới (Court Schedule Grid)**: Giám sát toàn bộ trạng thái sân con theo khung giờ 06:00 - 22:00, check-in và duyệt thanh toán không tải lại trang.
-* **Biểu Đồ Trực Quan (Chart.js Analytics)**:
-  * 📈 Biểu đồ Doanh thu 7 ngày gần nhất (Line Chart Gradient).
-  * ⏰ Biểu đồ Doughnut phân tích công suất và khung giờ cao điểm (Giờ vàng 18h - 22h).
-* **Trọng tài trận đấu**: Duyệt thu 50% tiền mặt, xác nhận kết quả thi đấu cập nhật Elo, xử lý khiếu nại vắng mặt (No-Show).
+### 6. Diem Uy Tin Fair-Play & Co Che Chong Bung Keo (No-Show)
+* **Diem uy tin chuan**: 100/100 PTS.
+* **Thuong Fair-Play**: +2 PTS khi hoan tat tran dau dung hen.
+* **Che tai xu phat**:
+  * Huy som (> 2 tieng): Tru 5 PTS.
+  * Huy can gio (1 - 2 tieng): Tru 15 PTS.
+  * Huy sat gio (< 1 tieng): Tru 25 PTS, khoa tim tran 3 ngay.
+  * Bung keo (No-Show): Chu san xac nhan phat -30 PTS Uy Tin, -50 Diem Elo va khoa tim tran 3 ngay.
+* **Nguong bao ve**: Diem uy tin duoi 50 PTS se bi khoa hoan toan tinh nang Ghep tran.
 
-### 6. 🎟️ Phân Hệ Bàn Trực Lễ Tân (Staff / Receptionist)
-* Giao diện tối ưu cảm ứng cho máy tính bảng / POS tại quầy lễ tân.
-* **Check-in 1-Click**: Tra cứu theo Mã đặt sân (`CKIN...`), Số điện thoại hoặc tên khách hàng.
-* Hỗ trợ check-in riêng biệt từng người (Host/Guest) trong các đơn cáp kèo đôi.
-* Phân quyền chi nhánh: Nhân viên chỉ được phép xem và check-in các đơn thuộc cụm sân mình phụ trách.
+### 7. Cong Dong Cau Lac Bo (Badminton Clubs)
+* **Quan ly CLB**: Thanh lap nhom, quan ly hoi vien, phan loai trinh do theo 4 bac Rank.
+* **Bang tin & Tuyen Slot Vang Lai**: Dang tin giao luu kem muc phi chia se; xin gia nhap slot 1 thao tac.
 
-### 7. 👑 Phân Hệ Quản Trị Hệ Thống (Super Admin)
-* Dashboard thống kê tổng quan doanh thu toàn sàn, số lượng sân đấu, đơn đặt và thành viên.
-* Quản lý người dùng, phân quyền RBAC (`admin`, `owner`, `staff`, `user`), khóa/mở sân đấu.
-* Cấp và gán tài khoản nhân viên lễ tân vào các cụm sân trực thuộc.
+### 8. Phan He Chu San (Court Owner) & POS Ban Hang
+* **Quan ly cum san**: So luong san con BWF, gia theo gio, toa do GPS.
+* **POS Ban Hang Tai Quay (Walk-in)**: Tao don truc tiep, tich hop nuoc uong, thue vot, cau thi dau.
+* **Lich dat san dang luoi (Court Schedule Grid)**: Giam sat 06:00 - 22:00, check-in khong tai lai trang.
+* **Bieu do Chart.js Analytics**: Doanh thu 7 ngay va phan tich khung gio cao diem.
+* **Trong tai tran dau**: Duyet thu 50% tien mat, xac nhan ket qua cap nhat Elo, xu ly bung keo.
 
-### 8. 🔒 Bảo Mật & Toàn Vẹn Hệ Thống (Security & Concurrency Safe)
-* **Chống tranh chấp đặt sân (Concurrency-safe)**: Bọc toàn bộ quy trình kiểm tra và lưu đơn trong **InnoDB Database Transaction** kết hợp khóa bi quan `SELECT ... FOR UPDATE`, triệt tiêu hoàn toàn lỗi đặt trùng sân con (Race Condition).
-* **Cơ chế giữ chỗ có hạn (Pending Timeout)**: Đơn đặt sân và vé chờ quá hạn 10-15 phút không hoàn tất thanh toán sẽ tự động được giải phóng dung lượng.
-* **Bảo vệ CSRF & IDOR**: Mọi thao tác thay đổi dữ liệu đều chạy qua phương thức POST kèm xác thực `csrf_token`; phân quyền kiểm tra quyền sở hữu sân và đơn đặt nghiêm ngặt.
-* **Cơ chế Quên Mật Khẩu an toàn**: Sinh mật khẩu tạm ngẫu nhiên, giới hạn số lần thử (tối đa 5 lần trong 15 phút) chống tấn công Brute Force.
-* **An toàn Upload**: Kiểm tra MIME Type thực tế bằng `finfo`, giới hạn dung lượng, đổi tên tệp ngẫu nhiên và chặn thực thi PHP trong thư mục tải lên bằng `.htaccess`.
-* **Chuẩn hóa UTF-8 toàn diện**: Hỗ trợ 100% tiếng Việt có dấu, DSN utf8mb4, `SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci`, miễn nhiễm lỗi Mojibake.
+### 9. Phan He Ban Truc Le Tan (Staff / Receptionist)
+* Giao dien toi uu cam ung tablet / POS.
+* Check-in 1-Click bang Ma don (`CKIN...`), So dien thoai hoac ho ten.
+* Check-in doc lap tung nguoi (Host / Guest) trong cac don cap keo.
+* Phan quyen theo cum san duoc phan cong (`assigned_pitch_id`).
+
+### 10. Phan He Quan Tri He Thong (Super Admin)
+* Thong ke toan san: Doanh thu, luot dat, cum san, thanh vien.
+* Quan ly nguoi dung va phan quyen RBAC (`admin`, `owner`, `staff`, `user`).
+* Cap quyen va gan nhan vien le tan vao cac cum san.
+
+### 11. Bao Mat & Toan Ven He Thong (Concurrency Safe)
+* **Chong tranh chap dat san (Race-Condition Safe)**: Database Transaction ket hop khoa bi quan `SELECT ... FOR UPDATE`.
+* **Giai phong giu cho tu dong**: Don qua han 10 - 15 phut tu dong hoan tra slot.
+* **Bao ve CSRF & IDOR**: Token xac thuc cho moi yeu cau POST.
+* **Chuan hoa UTF-8 toan dien**: DSN `utf8mb4`, ho tro tieng Viet co dau 100%.
 
 ---
 
-## 📸 Hình Ảnh Giao Diện Hệ Thống
+## Hinh Anh Giao Dien He Thong
 
-> Các ảnh chụp giao diện chất lượng cao phục vụ báo cáo đồ án được lưu tại thư mục [`docs/screenshots/`](docs/screenshots/).
+> Anh chup giao dien chat luong cao phuc vu bao cao do an duoc luu tai thu muc [`docs/screenshots/`](docs/screenshots/).
 
-| Chức Năng | Hình Ảnh Minh Họa |
+| Chuc Nang | Hinh Anh Minh Hoa |
 | :--- | :--- |
-| **Trang Chủ Hệ Thống** | ![Trang chủ](docs/screenshots/01_trang_chu_he_thong.png) |
-| **Album Ảnh & Chi Tiết Sân BWF** | ![Chi tiết sân](docs/screenshots/02_album_anh_thuc_te_san.png) |
-| **Bộ Lọc Cụm Sân & Bản Đồ GPS** | ![Danh sách sân](docs/screenshots/03_danh_sach_cum_san_bwf.png) |
-| **Ghép Kèo Thông Minh AI** | ![Smart Match AI](docs/screenshots/04_ghep_tran_smart_match_ai.png) |
-| **Thanh Toán VietQR Sandbox** | ![VietQR Sandbox](docs/screenshots/05_thanh_toan_vietqr_sandbox.png) |
-| **Cộng Đồng Câu Lạc Bộ** | ![CLB Cầu Lông](docs/screenshots/06_cong_dong_cau_lac_bo.png) |
-| **Bàn Lễ Tân Check-in 1-Click** | ![Staff POS](docs/screenshots/07_ban_truc_tiep_don_staff.png) |
-| **Dashboard Chủ Sân (Chart.js)** | ![Owner Dashboard](docs/screenshots/08_dashboard_chu_san_chartjs.png) |
-| **Quản Trị Toàn Sàn (Super Admin)** | ![Admin Panel](docs/screenshots/09_quan_tri_he_thong_admin.png) |
-| **Sơ Đồ Khung Giờ & Chọn Sân Con** | ![Lưới giờ](docs/screenshots/11_luoi_gio_va_so_do_san_con.png) |
+| **Trang Chu He Thong** | ![Trang chu](docs/screenshots/01_trang_chu_he_thong.png) |
+| **Album Anh & Chi Tiet San BWF** | ![Chi tiet san](docs/screenshots/02_album_anh_thuc_te_san.png) |
+| **Bo Loc Cum San & Ban Do GPS** | ![Danh sach san](docs/screenshots/03_danh_sach_cum_san_bwf.png) |
+| **Ghep Keo Thong Minh AI** | ![Smart Match AI](docs/screenshots/04_ghep_tran_smart_match_ai.png) |
+| **Thanh Toan VietQR Sandbox** | ![VietQR Sandbox](docs/screenshots/05_thanh_toan_vietqr_sandbox.png) |
+| **Cong Dong Cau Lac Bo** | ![CLB Cau Long](docs/screenshots/06_cong_dong_cau_lac_bo.png) |
+| **Ban Le Tan Check-in 1-Click** | ![Staff POS](docs/screenshots/07_ban_truc_tiep_don_staff.png) |
+| **Dashboard Chu San (Chart.js)** | ![Owner Dashboard](docs/screenshots/08_dashboard_chu_san_chartjs.png) |
+| **Quan Tri Toan San (Super Admin)** | ![Admin Panel](docs/screenshots/09_quan_tri_he_thong_admin.png) |
+| **So Do Khung Gio & Chon San Con** | ![Luoi gio](docs/screenshots/11_luoi_gio_va_so_do_san_con.png) |
 
 ---
 
-## 🛠️ Yêu Cầu Kỹ Thuật & Cài Đặt
+## Yeu Cau Ky Thuat & Cai Dat
 
-### 1. Yêu Cầu Môi Trường
-* **PHP**: Phiên bản 7.4 trở lên (Tương thích tốt trên PHP 7.4 và PHP 8.x).
-* **Database**: MySQL 5.7+ hoặc MariaDB 10.3+ (Hỗ trợ InnoDB Engine).
-* **Web Server**: Apache hoặc Nginx (Hỗ trợ WAMP, XAMPP, Docker).
+### 1. Yeu Cau Moi Truong
+* **PHP**: Phien ban 7.4 tro len (Tuong thich tot tren PHP 7.4 va PHP 8.x).
+* **Database**: MySQL 5.7+ hoac MariaDB 10.3+ (InnoDB Engine ho tro Transaction).
+* **Web Server**: Apache hoac Nginx (WAMP, XAMPP, Docker).
 * **PHP Extensions**: `pdo`, `pdo_mysql`, `mbstring`, `fileinfo`.
 
-### 2. Hướng Dẫn Cài Đặt Nhanh
+### 2. Huong Dan Cai Dat Nhanh
 
-#### Cách 1: Chạy bằng WAMP / XAMPP
-1. Đặt thư mục dự án vào thư mục web server:
-   - WAMP: `C:\wamp64\www\badminton` (hoặc `D:\wamp\www\badminton`)
+#### Cach 1: Chay bang WAMP / XAMPP
+1. Dat thu muc du an vao thu muc web server:
+   - WAMP: `C:\wamp64\www\badminton` (hoac `D:\wamp\www\badminton`)
    - XAMPP: `C:\xampp\htdocs\badminton`
-2. Mở **phpMyAdmin** (`http://localhost/phpmyadmin`), tạo cơ sở dữ liệu mới:
-   - Tên CSDL: `badminton_booking`
-   - Bảng mã (Collation): `utf8mb4_unicode_ci`
-3. Nhập (Import) tệp tin: [`badminton_booking.sql`](badminton_booking.sql).
-4. Kiểm tra tệp cấu hình [`config/database.php`](config/database.php):
+2. Mo **phpMyAdmin** (`http://localhost/phpmyadmin`), tao co so du lieu moi:
+   - Ten CSDL: `badminton_booking`
+   - Bang ma (Collation): `utf8mb4_unicode_ci`
+3. Nhap (Import) tep tin: [`badminton_booking.sql`](badminton_booking.sql).
+4. Kiem tra tep cau hinh [`config/database.php`](config/database.php):
    ```php
    define('DB_HOST', '127.0.0.1');
    define('DB_PORT', '3306');
@@ -132,85 +157,102 @@
    define('DB_PASS', '');
    define('DB_NAME', 'badminton_booking');
    ```
-5. Mở trình duyệt và truy cập: `http://localhost/badminton`
+5. Mo trinh duyet va truy cap: `http://localhost/badminton`
 
-#### Cách 2: Chạy bằng Docker
+#### Cach 2: Chay bang Docker
 ```bash
 docker-compose up -d
 ```
-Ứng dụng sẽ tự động chạy tại địa chỉ: `http://localhost:8080` (CSDL port 33066).
+Ung dung se tu dong chay tai dia chi: `http://localhost:8080` (CSDL port 33066).
 
 ---
 
-## 🧪 Bộ Kiểm Thử Tự Động (Automated Testing)
+## Bo Kiem Thu Tu Dong (Automated Testing)
 
-> **Lưu ý Windows CLI:** Khi chạy kiểm thử trên Command Prompt hoặc PowerShell, hãy chuyển bảng mã sang UTF-8 bằng lệnh `chcp 65001` để hiển thị tiếng Việt chính xác.
-
-Hệ thống tích hợp bộ kịch bản kiểm thử tự động toàn diện trong thư mục `tests/`:
+> **Luu y Windows CLI:** Chay lenh `chcp 65001` de hien thi tieng Viet UTF-8 dung chuan trong Command Prompt hoac PowerShell.
 
 ```bash
-# 1. Kiểm tra toàn vẹn bảng mã tiếng Việt UTF-8 và kết nối CSDL:
+# 1. Kiem tra toan ven bang ma tieng Viet UTF-8 va ket noi CSDL:
 php tests/utf8_check.php
 
-# 2. Kiểm thử Trợ lý AI Tìm & Đặt sân thông minh (NLP tiếng Việt, GPS & gợi ý sân trống):
-php tests/ai_smart_booking_test.php
-
-# 3. Kiểm thử an toàn tranh chấp Concurrency (giả lập 20 yêu cầu đặt sân cùng mili-giây):
+# 2. Kiem thu an toan tranh chap Concurrency (Race-Condition Safe gia lap dat trung mili-giay):
 php tests/concurrent_booking_test.php
 
-# 4. Kiểm thử tích hợp toàn bộ luồng Smart Match AI (Ghép đôi -> Xác nhận 50/50 -> Báo kết quả -> Cập nhật Elo):
+# 3. Kiem thu tich hop toan bo luong Smart Match AI (Ghep doi -> Xac nhan 50/50 -> Elo):
 php tests/smart_match_flow_test.php
 
-# 4. Kiểm thử Unit Test logic Matching (Node.js/Jest nếu có):
+# 4. Kiem thu Tro ly AI Dat San & Xep hang da tieu chi (NLP tieng Viet, GPS Haversine):
+php tests/ai_smart_booking_test.php
+
+# 5. Kiem thu Radar ket noi ban danh gan day (Proximity Social Radar):
+php tests/nearby_radar_test.php
+
+# 6. Kiem thu toan dien Phan he Machine Learning NLP tu huan luyen (10 Intent, Confidence Guardrail):
+php tests/ai_engine_ml_test.php
+
+# 7. Huan luyen & danh gia cheo mo hinh Machine Learning (5-Fold Cross Validation):
+php ai_engine/train.php
+
+# 8. Kiem thu Unit Test logic Matching (Node.js/Jest):
 npm test
 
-# 5. Kiểm thử chịu tải Stress Test Concurrency (k6):
+# 9. Kiem thu chiu tai Stress Test Concurrency (k6):
 k6 run tests/concurrent_join.js
 ```
 
 ---
 
-## 👥 Danh Sách Tài Khoản Demo
+## Danh Sach Tai Khoan Demo
 
-| Vai trò (Role) | Tên đăng nhập (Username) | Mật khẩu (Password) | Chức năng kiểm thử chính |
+| Vai tro (Role) | Ten dang nhap (Username) | Mat khau (Password) | Chuc nang kiem thu chinh |
 | :--- | :--- | :--- | :--- |
-| **Quản Trị Viên (Admin)** | `admin` | `123456` | Toàn quyền quản trị, duyệt sân, quản lý tài khoản |
-| **Chủ Sân Demo** | `chusan_demo` | `123456` | Quản lý cụm sân, POS bán hàng, lịch lưới |
-| **Chủ Sân Bình Thạnh** | `chusan1` | `123456` | Quản lý sân Bình Thạnh, duyệt thu 50% tiền mặt, xử phạt bùng kèo |
-| **Nhân Viên Sân (Staff)** | `nhanvien1` | `123456` | Bàn lễ tân, check-in 1-Click bằng Mã đơn / SĐT |
-| **Khách Hàng (User 1)** | `tiendung` | `123456` | Lập lệnh tìm trận Smart Match AI, đàm phán đổi sân |
-| **Khách Hàng (User 2)** | `user` | `123456` | Đối thủ được AI bắt cặp, xác nhận thanh toán 50/50 |
-| **Khách Hàng Mới** | `khach_alpha` | `123456` | Kiểm tra tài khoản tân thủ nhận 100 Elo (Rank Đồng) |
+| **Quan Tri Vien (Admin)** | `admin` | `123456` | Toan quyen quan tri, duyet san, quan ly tai khoan |
+| **Chu San Demo** | `chusan_demo` | `123456` | Quan ly cum san, POS ban hang, lich luoi |
+| **Chu San Binh Thanh** | `chusan1` | `123456` | Quan ly san Binh Thanh, duyet thu 50% tien mat, xu phat bung keo |
+| **Nhan Vien San (Staff)** | `nhanvien1` | `123456` | Ban le tan, check-in 1-Click bang Ma don / SDT |
+| **Khach Hang (User 1)** | `tiendung` | `123456` | Lap lenh tim tran Smart Match AI, dam phan doi san |
+| **Khach Hang (User 2)** | `user` | `123456` | Doi thu duoc AI bat cap, xac nhan thanh toan 50/50 |
+| **Khach Hang Moi** | `khach_alpha` | `123456` | Kiem tra tai khoan tan thu nhan 100 Elo (Rank Dong) |
 
 ---
 
-## 🗄️ Cấu Trúc Cơ Sở Dữ Liệu (14 Bảng Dữ Liệu Chuẩn)
+## Cau Truc Co So Du Lieu (15 Bang Du Lieu Chuan)
 
-1. `users`: Tài khoản thành viên, phân quyền RBAC, tọa độ GPS, điểm uy tín và liên kết quản lý cụm sân.
-2. `pitches`: Cụm sân cầu lông, địa chỉ, kinh độ/vĩ độ GPS, số lượng sân con BWF, loại thảm và đơn giá theo giờ.
-3. `bookings`: Đơn đặt sân, mã check-in (`CKIN...`), số sân con được cấp (`court_number`), phương thức và trạng thái thanh toán.
-4. `matchmaking`: Hồ sơ trận cáp kèo, kết quả thi đấu, trạng thái thanh toán chia đôi và check-in riêng 2 bên.
-5. `match_tickets`: Lệnh tìm trận Smart Match AI, bán kính quét GPS, thời hạn phòng ghép (`expires_at`), trạng thái xác nhận.
-6. `messages`: Hộp thư trò chuyện trực tiếp và thông báo tự động giữa các cơ thủ.
-7. `notifications`: Chuông thông báo hệ thống, thông báo biến động lịch đặt và kết quả điểm $\pm\text{Elo}$.
-8. `reputation_logs`: Nhật ký biến động điểm Uy Tín Fair-Play (+2 hoàn thành, -5, -15, -25 khi hủy, -30 khi No-Show).
-9. `reviews`: Đánh giá xếp hạng sao và nhận xét của khách hàng đối với từng cụm sân.
-10. `services`: Danh mục mặt hàng dịch vụ phụ trợ (nước suối, Revive, thuê vợt, cầu thi đấu).
-11. `user_scores`: Điểm tích lũy và bảng xếp hạng Elo cá nhân theo từng mùa giải (`season`).
-12. `clubs`: Danh sách các Câu Lạc Bộ cầu lông và nhóm sinh hoạt thể thao định kỳ.
-13. `club_members`: Thành viên CLB, vai trò (`leader`, `admin`, `member`) và trạng thái xét duyệt.
-14. `club_posts`: Bảng tin nội bộ CLB và tin đăng tuyển slot vãng lai kèm chi phí chia sẻ.
+1. `users`: Tai khoan hoi vien, phan quyen RBAC, toa do GPS, diem uy tin va lien ket cum san.
+2. `pitches`: Cum san cau long, dia chi, kinh do/vi do GPS, so luong san con BWF, loai tham va don gia theo gio.
+3. `bookings`: Don dat san, ma check-in (`CKIN...`), so san con duoc cap (`court_number`), trang thai thanh toan.
+4. `matchmaking`: Ho so tran cap keo, ket qua thi dau, trang thai thanh toan chia doi va check-in rieng 2 ben.
+5. `match_tickets`: Lenh tim tran Smart Match AI, ban kinh quet GPS, thoi han phong ghep, trang thai xac nhan.
+6. `radar_invites`: Bang quan ly loi moi bat cap truc tiep tren Radar ban danh gan day.
+7. `messages`: Hop thu tro chuyen truc tiep va thong bao tien trinh tu dong giua cac co thu.
+8. `notifications`: Chuong thong bao he thong, bien dong lich dat va ket qua diem Elo.
+9. `reputation_logs`: Nhat ky bien dong diem Uy Tin Fair-Play (+2 hoan thanh, -5/-15/-25 khi huy, -30 khi No-Show).
+10. `reviews`: Danh gia xep hang sao va nhan xet cua khach hang doi voi tung cum san.
+11. `services`: Danh muc mat hang dich vu phu tro (nuoc suoi, Revive, thue vot, cau thi dau).
+12. `user_scores`: Diem tich luy va bang xep hang Elo ca nhan theo tung mua giai (`season`).
+13. `clubs`: Danh sach cac Cau Lac Bo cau long va nhom sinh hoat the thao dinh ky.
+14. `club_members`: Thanh vien CLB, vai tro (`leader`, `admin`, `member`) va trang thai xet duyet.
+15. `club_posts`: Bang tin noi bo CLB va tin dang tuyen slot vang lai kem chi phi chia se.
 
 ---
 
-## 📁 Cấu Trúc Thư Mục Dự Án
+## Cau Truc Thu Muc Du An
 
 ```
 badminton/
-├── assets/                  # CSS, JS, hình ảnh giao diện, thư mục uploads bảo mật
-├── config/                  # Kết nối PDO Database & cơ chế Auto-migration
+├── ai_engine/                   # Phan he Machine Learning NLP tu huan luyen
+│   ├── dataset.json             # Tap du lieu 163 mau cau tieng Viet 10 Intent
+│   ├── GenerativeEngine.php     # Sinh phan hoi ngu canh thoi tiet & thoi gian thuc
+│   ├── model_weights.json       # Trong so va xac suat mo hinh da hoc
+│   ├── NaiveBayesClassifier.php # Thuat toan phan loai Multinomial Naive Bayes
+│   ├── Predictor.php            # Bo suy luan thoi gian thuc & Entity Extractor
+│   ├── TfIdfVectorizer.php      # Ma tran vector dac trung TF-IDF chuan hoa L2
+│   ├── Tokenizer.php            # Tach tu va sinh N-Gram tieng Viet
+│   └── train.php                # Kich ban huan luyen 5-Fold Cross Validation
+├── assets/                      # CSS, JS, hinh anh giao dien, thu muc uploads bao mat
+├── config/                      # Ket noi PDO Database & co che Auto-migration
 │   └── database.php
-├── controllers/             # Bộ điều khiển mô hình MVC thuần
+├── controllers/                 # Bo dieu khien mo hinh MVC thuan
 │   ├── AdminController.php
 │   ├── AuthController.php
 │   ├── BookingController.php
@@ -222,37 +264,38 @@ badminton/
 │   ├── OwnerController.php
 │   ├── StaffController.php
 │   └── UserController.php
-├── models/                  # Các lớp thực thể và thuật toán nghiệp vụ
-│   ├── AiSmartBooking.php   # Trợ lý AI Đặt Sân: NLP tiếng Việt, GPS Haversine, xếp hạng gợi ý
-│   ├── Booking.php          # Quản lý đơn đặt, chống trùng lịch Race Condition
-│   ├── Club.php             # Quản lý Câu lạc bộ & slot vãng lai
-│   ├── MatchTicket.php      # Thuật toán Matching AI, Haversine, đàm phán đổi sân
-│   ├── Matchmaking.php      # Quản lý trận đấu, cập nhật kết quả
-│   ├── Pitch.php            # Cụm sân, định vị GPS, đơn giá
-│   ├── Ranking.php          # Thuật toán xếp hạng Elo K=32, ưu đãi theo Rank
-│   ├── Reputation.php       # Điểm Uy Tín Fair-Play, xử lý bùng kèo (No-Show)
-│   └── User.php             # Người dùng, phân quyền RBAC
-├── views/                   # Giao diện người dùng thuần HTML5/Tailwind/Vanilla JS
-│   ├── admin/               # Quản trị toàn sàn
-│   ├── auth/                # Đăng nhập, đăng ký, quên mật khẩu an toàn
-│   ├── clubs/               # Danh sách CLB, bảng tin giao lưu
-│   ├── matchmaking/         # Màn hình cáp kèo Smart Match AI real-time
-│   ├── owner/               # Dashboard chủ sân, biểu đồ Chart.js, lịch lưới
-│   ├── staff/               # Bàn trực lễ tân màn hình cảm ứng
-│   ├── layout.php           # Khung sườn giao diện chung
-│   └── home.php             # Trang chủ, tìm kiếm bán kính bản đồ
-├── tests/                   # Bộ kịch bản kiểm thử tự động (Concurrency, Flow, UTF-8)
-├── docs/screenshots/        # Ảnh chụp màn hình phục vụ báo cáo đồ án
-├── .editorconfig            # Quy chuẩn định dạng tệp tin UTF-8
-├── .htaccess                # Cấu hình bảo vệ thư mục & chuẩn hóa charset UTF-8
-├── Dockerfile               # Cấu hình container PHP 8.2 Apache
-├── docker-compose.yml       # Điều phối container web và MariaDB
-├── badminton_booking.sql    # Bản sao lưu cơ sở dữ liệu mẫu chuẩn hóa UTF-8
-├── index.php                # Router điều hướng chính, CSRF Middleware
-└── README.md                # Tài liệu hướng dẫn sử dụng và triển khai dự án
+├── models/                      # Cac lop thuc the va thuat toan nghiep vu
+│   ├── AiSmartBooking.php       # Tro ly AI Dat San: NLP, GPS Haversine, xep hang
+│   ├── Booking.php              # Quan ly don dat, chong trung lich Race Condition
+│   ├── Club.php                 # Quan ly Cau lac bo & slot vang lai
+│   ├── MatchTicket.php          # Thuat toan Matching AI, Haversine, dam phan doi san, Radar
+│   ├── Matchmaking.php          # Quan ly tran dau, cap nhat ket qua Elo
+│   ├── Pitch.php                # Cum san, dinh vi GPS, don gia
+│   ├── Ranking.php              # Thuat toan xep hang Elo K=32, uu dai theo Rank
+│   ├── Reputation.php           # Diem Uy Tin Fair-Play, xu ly bung keo (No-Show)
+│   └── User.php                 # Nguoi dung, phan quyen RBAC
+├── views/                       # Giao dien nguoi dung thuan HTML5/Tailwind/Vanilla JS
+│   ├── admin/                   # Quan tri toan san
+│   ├── auth/                    # Dang nhap, dang ky, quen mat khau an toan
+│   ├── clubs/                   # Danh sach CLB, bang tin giao luu
+│   ├── matchmaking/             # Man hinh cap keo Smart Match AI real-time
+│   ├── owner/                   # Dashboard chu san, bieu do Chart.js, lich luoi
+│   ├── staff/                   # Ban truc le tan man hinh cam ung
+│   ├── layout.php               # Khung suon giao dien chung, Copilot Drawer, Radar Widget
+│   └── home.php                 # Trang chu, tim kiem ban kinh ban do
+├── tests/                       # Bo kich ban kiem thu tu dong (Concurrency, Flow, UTF-8, ML)
+├── docs/screenshots/            # Anh chup man hinh phuc vu bao cao do an
+├── .editorconfig                # Quy chuan dinh dang tep tin UTF-8
+├── .htaccess                    # Cau hinh bao ve thu muc & chuan hoa charset UTF-8
+├── Dockerfile                   # Cau hinh container PHP 8.2 Apache
+├── docker-compose.yml           # Dieu phoi container web va MariaDB
+├── badminton_booking.sql        # Ban sao luu co so du lieu mau chuan hoa UTF-8
+├── index.php                    # Router dieu huong chinh, CSRF Middleware
+├── AGENTS.md                    # Tai lieu boi canh du an danh cho AI Assistant
+└── README.md                    # Tai lieu huong dan su dung va trien khai du an
 ```
 
 ---
 
-## 📄 Bản Quyền & Học Thuật
-Dự án được xây dựng phục vụ nghiên cứu, đồ án tốt nghiệp và ứng dụng thực tiễn trong chuyển đổi số thể thao phong trào. Mọi đóng góp và đề xuất cải tiến đều được hoan nghênh!
+## Ban Quyen & Hoc Thuat
+Du an duoc xay dung phuc vu nghien cuu, do an tot nghiep va ung dung thuc tien trong chuyen doi so the thao phong trao. Moi dong gop va de xuat cai tien deu duoc hoan nghenh!
