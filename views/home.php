@@ -496,6 +496,75 @@ $accents = [
         msgText.innerHTML = formattedMsg;
 
         grid.innerHTML = '';
+
+        // Truong hop 1: Co danh sach doi thu (Opponents)
+        if (data.opponents && data.opponents.length > 0) {
+            data.opponents.forEach((opp, idx) => {
+                const card = document.createElement('div');
+                card.className = "flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-[#121b21] p-4 hover:border-[#d8ff3e]/40 transition shadow-lg";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <div class="relative shrink-0">
+                                <img src="${opp.avatar}" alt="${opp.full_name}" class="w-14 h-14 rounded-full object-cover border-2" style="border-color: ${opp.rank_color || '#d8ff3e'};">
+                                <span class="absolute -bottom-1 -right-1 text-[9px] px-1.5 py-0.2 rounded font-black text-black bg-[#d8ff3e]">
+                                    ${opp.rank_name ? opp.rank_name.replace('Rank ', '') : 'Elo'}
+                                </span>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-black text-white truncate">${opp.full_name}</h3>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <span class="text-xs font-black text-[#d8ff3e]">${opp.elo} Elo</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-white/70">${opp.distance_display || opp.district}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3.5 space-y-1.5 p-2.5 rounded-xl bg-black/30 border border-white/5 text-xs text-white/80">
+                            <div>📅 <span class="text-white/60">Ngày:</span> <strong class="text-white">${opp.play_date_formatted || opp.play_date}</strong> • ⏰ <strong class="text-white">${opp.time_slot}</strong></div>
+                            <div>🏸 <span class="text-white/60">Thể thức:</span> <strong class="text-white">${opp.format}</strong></div>
+                            <div>📍 <span class="text-white/60">Địa điểm:</span> <strong class="text-white">${opp.pitch_name}</strong></div>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-2 border-t border-white/10">
+                        <button onclick="window.sendAiChatRadarInvite(${opp.ticket_id}, this)" class="w-full inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#d8ff3e] text-[#10181e] hover:bg-[#c9f227] py-2.5 px-3 text-xs font-black uppercase transition shadow">
+                            🤝 Rủ Bắt Cặp Kèo Này
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+            return;
+        }
+
+        // Truong hop 2: Chua co doi thu, de xuat tao ve 1-Click
+        if (data.quick_ticket && (!data.pitches || data.pitches.length === 0)) {
+            const qt = data.quick_ticket;
+            const card = document.createElement('div');
+            card.className = "col-span-full max-w-lg mx-auto p-5 rounded-2xl bg-gradient-to-r from-[#121b21] to-[#0f171d] border border-dashed border-[#d8ff3e]/40 shadow-xl space-y-3";
+            card.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-black text-[#d8ff3e] flex items-center gap-1.5">
+                        🎯 LỆNH TÌM ĐỐI THÔNG MINH (1-CLICK)
+                    </span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-[#d8ff3e]/15 text-[#d8ff3e] font-bold">Tự Động Ghép</span>
+                </div>
+                <p class="text-xs text-white/70 leading-relaxed">
+                    Hệ thống sẽ giữ lệnh chờ và tự động thông báo ngay khi có bạn chơi cùng trình độ nhận kèo.
+                </p>
+                <div class="p-3 rounded-xl bg-black/40 border border-white/5 text-xs text-white/90 space-y-1">
+                    <div>📍 <span class="text-white/60">Khu vực:</span> <strong>${qt.district}</strong></div>
+                    <div>📅 <span class="text-white/60">Lịch đấu:</span> <strong>${qt.play_date_formatted || qt.play_date}</strong> (⏰ <strong>${qt.time_slot}</strong>)</div>
+                    <div>🏸 <span class="text-white/60">Thể thức:</span> <strong>${qt.format}</strong></div>
+                </div>
+                <button onclick="window.createTicketFromAiChat('${qt.district}', '${qt.play_date}', '${qt.start_time}', '${qt.end_time}', '${qt.format}', this)"
+                        class="w-full py-3 rounded-xl bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] font-black text-xs uppercase transition shadow flex items-center justify-center gap-2">
+                    <span>⚡ Kích Hoạt Lệnh Tìm Đối Ngay</span>
+                </button>
+            `;
+            grid.appendChild(card);
+            return;
+        }
+
         if (!data.pitches || data.pitches.length === 0) {
             if (data.intent === 'find_pitch' || data.intent === 'ask_price') {
                 grid.innerHTML = '<div class="col-span-full p-4 rounded-xl bg-white/5 text-center text-xs text-white/60">Không tìm thấy cụm sân phù hợp. Vui lòng thử nới rộng khoảng cách hoặc chọn giờ khác!</div>';

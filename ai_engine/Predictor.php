@@ -40,14 +40,16 @@ class Predictor {
     /**
      * Xu ly tin nhan cua nguoi dung, tra ve phan hoi hoi thoai kem du lieu san truc tiep
      */
-    public function processMessage($message, $userLat = null, $userLng = null) {
+    public function processMessage($message, $userLat = null, $userLng = null, $userId = null) {
         $msg = trim((string)$message);
         if ($msg === '') {
             return [
-                'reply'      => 'Bạn cần tôi hỗ trợ tìm sân, tư vấn vợt hay giải đáp luật thi đấu cầu lông?',
-                'intent'     => 'greeting',
-                'confidence' => 1.0,
-                'pitches'    => []
+                'reply'        => 'Bạn cần tôi hỗ trợ tìm sân, tìm đối thủ ghép kèo hay tư vấn vợt cầu lông?',
+                'intent'       => 'greeting',
+                'confidence'   => 1.0,
+                'pitches'      => [],
+                'opponents'    => [],
+                'quick_ticket' => null
             ];
         }
 
@@ -59,79 +61,97 @@ class Predictor {
         // 2. Trich xuat thuc the (Entity Extraction)
         $entities = $this->extractEntities($msg);
 
-        // 3. Kiem tra nguong do tin cay (Confidence Threshold: 0.45) de chong doan bo
-        if ($confidence < 0.45) {
+        // 3. Kiem tra nguong do tin cay (Confidence Threshold: 0.50) de chong doan mo
+        if ($confidence < 0.50) {
             $reply = "Tôi là **Trợ Lý AI Chuyên Môn SmashHub**, được huấn luyện chuyên sâu để phục vụ 4 lĩnh vực xoay quanh đặt sân và thi đấu cầu lông:\n\n"
-                   . "1. **Đặt Sân Thông Minh:** Tìm sân theo vị trí GPS, khung giờ và ngân sách.\n"
+                   . "1. **Đặt Sân Thông Minh & Tìm Đối:** Tìm sân trống và ghép đối thủ theo trình độ Elo & GPS.\n"
                    . "2. **Tư Vấn Thiết Bị:** Chọn vợt (3U/4U/5U), căng cước (kg/lbs) theo lối đánh.\n"
                    . "3. **Cơ Chế Chia Đôi 50/50:** Hướng dẫn thanh toán chia đôi và điểm phạt bùng kèo.\n"
                    . "4. **Luật Thi Đấu BWF:** Tra cứu luật phát cầu 1m15, chạm lưới, tính điểm 21.\n\n"
-                   . "Câu hỏi của bạn hiện nằm ngoài phạm vi này. Bạn hãy thử hỏi tôi về lịch sân, tư vấn vợt hoặc luật thi đấu cầu lông nhé!";
+                   . "Câu hỏi của bạn hiện nằm ngoài phạm vi này. Bạn hãy thử hỏi tôi về lịch sân, tìm đối thủ hoặc luật thi đấu cầu lông nhé!";
 
             return [
-                'reply'      => $reply,
-                'intent'     => 'out_of_scope',
-                'confidence' => $confidence,
-                'entities'   => $entities,
-                'pitches'    => []
+                'reply'        => $reply,
+                'intent'       => 'out_of_scope',
+                'confidence'   => $confidence,
+                'entities'     => $entities,
+                'pitches'      => [],
+                'opponents'    => [],
+                'quick_ticket' => null
             ];
         }
 
         // 4. Xu ly logic nghiep vu & Sinh cau tra loi tu nhien
         $pitches = [];
+        $opponents = [];
+        $quickTicket = null;
         $reply = '';
 
-        switch ($intent) {
-            case 'calendar_schedule':
-                $reply = GenerativeEngine::generateCalendarScheduleResponse($msg);
-                break;
+        $isLookingForOpponent = (bool)preg_match('/(tìm đối|tìm bạn|tìm kèo|ghép kèo|ghép trận|cáp kèo|bắt cặp|người đánh cùng|người chơi cùng|kèo giao lưu|tìm đối thủ|kèo đơn|kèo đôi|tìm người|cần người|có ai đánh)/ui', $msg);
+        $isExplanation = (bool)preg_match('/(hoạt động thế nào|giải thích|như thế nào|quy định|là gì|cách thức hoạt động|thuật toán)/ui', $msg);
+        $isPenaltyOrSplit = (bool)preg_match('/(bùng kèo|hủy kèo|uy tín|chia đôi|50\/50|bị trừ|phạt|tiền cọc)/ui', $msg);
 
-            case 'weather_mood':
-                $reply = GenerativeEngine::generateWeatherAndMoodResponse($msg, $userLat, $userLng);
-                break;
-
-            case 'health_fitness':
-                $reply = GenerativeEngine::generateHealthAndMotivationResponse($msg);
-                break;
-
-            case 'greeting':
-                $reply = GenerativeEngine::generateLivelyGreeting();
-                break;
-
-            case 'find_pitch':
-            case 'ask_price':
-                $pitchResult = $this->handlePitchSearch($entities, $userLat, $userLng);
-                $reply = $pitchResult['reply'];
-                $pitches = $pitchResult['pitches'];
-                break;
-
-            case 'racket_consult':
-                $reply = $this->handleRacketConsultation($msg, $entities);
-                break;
-
-            case 'split_bill_info':
-                $reply = $this->handleSplitBillInfo($msg);
-                break;
-
-            case 'rule_inquiry':
-                $reply = $this->handleRuleInquiry($msg);
-                break;
-
-            case 'radar_matchmaking':
+        if (!$isPenaltyOrSplit && ($intent === 'radar_matchmaking' || ($isLookingForOpponent && !$isExplanation))) {
+            if ($isExplanation) {
                 $reply = $this->handleRadarMatchmakingInfo($msg);
-                break;
+            } else {
+                $matchResult = $this->handleMatchmakingSearch($msg, $entities, $userLat, $userLng, $userId);
+                $reply = $matchResult['reply'];
+                $opponents = $matchResult['opponents'];
+                $quickTicket = $matchResult['quick_ticket'];
+                $intent = 'radar_matchmaking';
+            }
+        } else {
+            switch ($intent) {
+                case 'calendar_schedule':
+                    $reply = GenerativeEngine::generateCalendarScheduleResponse($msg);
+                    break;
 
-            default:
-                $reply = GenerativeEngine::generateLivelyGreeting();
-                break;
+                case 'weather_mood':
+                    $reply = GenerativeEngine::generateWeatherAndMoodResponse($msg, $userLat, $userLng);
+                    break;
+
+                case 'health_fitness':
+                    $reply = GenerativeEngine::generateHealthAndMotivationResponse($msg);
+                    break;
+
+                case 'greeting':
+                    $reply = GenerativeEngine::generateLivelyGreeting();
+                    break;
+
+                case 'find_pitch':
+                case 'ask_price':
+                    $pitchResult = $this->handlePitchSearch($entities, $userLat, $userLng);
+                    $reply = $pitchResult['reply'];
+                    $pitches = $pitchResult['pitches'];
+                    break;
+
+                case 'racket_consult':
+                    $reply = $this->handleRacketConsultation($msg, $entities);
+                    break;
+
+                case 'split_bill_info':
+                    $reply = $this->handleSplitBillInfo($msg);
+                    break;
+
+                case 'rule_inquiry':
+                    $reply = $this->handleRuleInquiry($msg);
+                    break;
+
+                default:
+                    $reply = GenerativeEngine::generateLivelyGreeting();
+                    break;
+            }
         }
 
         return [
-            'reply'      => $reply,
-            'intent'     => $intent,
-            'confidence' => $confidence,
-            'entities'   => $entities,
-            'pitches'    => $pitches
+            'reply'        => $reply,
+            'intent'       => $intent,
+            'confidence'   => $confidence,
+            'entities'     => $entities,
+            'pitches'      => $pitches,
+            'opponents'    => $opponents,
+            'quick_ticket' => $quickTicket
         ];
     }
 
@@ -233,6 +253,14 @@ class Predictor {
             $amenities[] = 'parking';
         }
 
+        // The thuc thi dau (Don / Doi)
+        $format = 'Đánh Đôi';
+        if (mb_strpos($lower, 'đánh đơn', 0, 'UTF-8') !== false || mb_strpos($lower, 'kèo đơn', 0, 'UTF-8') !== false || mb_strpos($lower, 'đơn', 0, 'UTF-8') !== false || mb_strpos($lower, '1v1', 0, 'UTF-8') !== false || mb_strpos($lower, 'solo', 0, 'UTF-8') !== false) {
+            $format = 'Đánh Đơn';
+        } elseif (mb_strpos($lower, 'đánh đôi', 0, 'UTF-8') !== false || mb_strpos($lower, 'kèo đôi', 0, 'UTF-8') !== false || mb_strpos($lower, 'đôi', 0, 'UTF-8') !== false || mb_strpos($lower, '2v2', 0, 'UTF-8') !== false) {
+            $format = 'Đánh Đôi';
+        }
+
         $inferredLat = ($district && isset($districtCoords[$district])) ? $districtCoords[$district]['lat'] : null;
         $inferredLng = ($district && isset($districtCoords[$district])) ? $districtCoords[$district]['lng'] : null;
 
@@ -249,7 +277,8 @@ class Predictor {
             'start_hour_display' => sprintf('%02d:00', $startHour),
             'end_hour_display'   => sprintf('%02d:00', $endHour),
             'max_price'    => $maxPrice,
-            'amenities'    => $amenities
+            'amenities'    => $amenities,
+            'format'       => $format
         ];
     }
 
@@ -356,5 +385,165 @@ class Predictor {
              . "2. **Cân bằng trình độ (Elo Scoring):** Hệ thống lọc những người chơi có mức chênh lệch Elo nhỏ, đảm bảo trận đấu kịch tính và cân trình.\n"
              . "3. **Bắt cặp 1-Click:** Khi thấy bạn đấu phù hợp, bấm **`[Rủ Bắt Cặp Ngay]`**. Đối phương sẽ nhận thông báo trên màn hình để bấm **`[Đồng Ý]`**, hai bên sẽ lập tức được xếp vào phòng chung để chia đôi hóa đơn 50/50!\n\n"
              . "Bạn có thể vào trang **Ghép Trận Thông Minh** ở menu trên để mở phòng ghép ngay nhé!";
+    }
+
+    /**
+     * Chu dong tim kiem tran va doi thu phu hop tu CSDL match_tickets
+     */
+    private function handleMatchmakingSearch($msg, $entities, $userLat = null, $userLng = null, $userId = null) {
+        if (!$this->db) {
+            require_once __DIR__ . '/../config/database.php';
+            $dbObj = new Database();
+            $this->db = $dbObj->getConnection();
+        }
+
+        require_once __DIR__ . '/../models/Ranking.php';
+        require_once __DIR__ . '/../models/MatchTicket.php';
+
+        $district = $entities['district'] ?? null;
+        $date = $entities['date'] ?? date('Y-m-d');
+        $startTime = $entities['start_time'] ?? '18:00:00';
+        $endTime = $entities['end_time'] ?? '20:00:00';
+        $format = $entities['format'] ?? 'Đánh Đôi';
+        $startHour = (int)substr($startTime, 0, 2);
+
+        $ranking = new Ranking($this->db);
+        $season = Ranking::getCurrentSeason();
+
+        $myElo = Ranking::DEFAULT_ELO;
+        if ($userId) {
+            $uElo = $ranking->getSeasonPoints($userId, $season);
+            if ($uElo > 0) $myElo = $uElo;
+        }
+
+        // Toa do tim kiem
+        $searchLat = $userLat ?? ($entities['inferred_lat'] ?? null);
+        $searchLng = $userLng ?? ($entities['inferred_lng'] ?? null);
+
+        // Truy van cac ticket dang cho (status = 'waiting')
+        $sql = "SELECT mt.*, u.name, u.avatar_url as avatar, u.district as user_district, 
+                       u.latitude as user_lat, u.longitude as user_lng, p.name as pitch_name, p.district as pitch_district
+                FROM match_tickets mt
+                JOIN users u ON mt.user_id = u.id
+                LEFT JOIN pitches p ON mt.specified_pitch_id = p.id
+                WHERE mt.status = 'waiting'
+                  AND mt.play_date >= CURDATE()
+                  AND (mt.expires_at IS NULL OR mt.expires_at > NOW())";
+        $params = [];
+        if ($userId) {
+            $sql .= " AND mt.user_id != ?";
+            $params[] = (int)$userId;
+        }
+        $sql .= " ORDER BY mt.created_at DESC LIMIT 25";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        $candidates = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $scored = [];
+        foreach ($candidates as $cand) {
+            $candElo = $ranking->getSeasonPoints($cand['user_id'], $season);
+            if ($candElo <= 0) $candElo = Ranking::DEFAULT_ELO;
+            $rankName = $ranking->getRankName($candElo);
+
+            // Khoang cach GPS
+            $cLat = !empty($cand['user_lat']) ? (float)$cand['user_lat'] : null;
+            $cLng = !empty($cand['user_lng']) ? (float)$cand['user_lng'] : null;
+            $distKm = 999.0;
+            if ($searchLat && $searchLng && $cLat && $cLng) {
+                $distKm = MatchTicket::calculateHaversineDistance($searchLat, $searchLng, $cLat, $cLng);
+            } elseif ($district && !empty($cand['district'])) {
+                $distKm = (mb_strtolower($district, 'UTF-8') === mb_strtolower($cand['district'], 'UTF-8')) ? 2.5 : 8.0;
+            } else {
+                $distKm = 5.0;
+            }
+
+            // Diem chenh lech Elo (0 lech = 100, 100 lech = 80)
+            $eloDiff = abs($myElo - $candElo);
+            $eloScore = max(0, 100 - ($eloDiff * 0.2));
+
+            // Diem khoang cach (duoi 5km = 100..75)
+            $distScore = max(0, 100 - ($distKm * 5));
+
+            // Diem ngay gio
+            $dateScore = ($cand['play_date'] === $date) ? 100 : 70;
+            $candStart = (int)date('H', strtotime($cand['start_time']));
+            $timeDiff = abs($candStart - $startHour);
+            $timeScore = max(0, 100 - ($timeDiff * 15));
+
+            // Diem the thuc
+            $formatScore = ($cand['format'] === $format) ? 100 : 80;
+
+            // Tong diem da muc tieu
+            $totalScore = ($eloScore * 0.35) + ($distScore * 0.30) + ($timeScore * 0.20) + ($dateScore * 0.10) + ($formatScore * 0.05);
+
+            $scored[] = [
+                'ticket'    => $cand,
+                'elo'       => $candElo,
+                'rank_name' => $rankName,
+                'dist_km'   => round($distKm, 1),
+                'score'     => $totalScore
+            ];
+        }
+
+        // Sap xep theo tong diem giam dan
+        usort($scored, function($a, $b) {
+            return $b['score'] <=> $a['score'];
+        });
+
+        $opponents = [];
+        $rankColors = [
+            'Kim Cương' => '#38bdf8',
+            'Vàng'      => '#fbbf24',
+            'Bạc'       => '#94a3b8',
+            'Đồng'      => '#f97316'
+        ];
+
+        foreach (array_slice($scored, 0, 3) as $item) {
+            $c = $item['ticket'];
+            $opponents[] = [
+                'ticket_id'           => (int)$c['id'],
+                'user_id'             => (int)$c['user_id'],
+                'full_name'           => !empty($c['name']) ? $c['name'] : 'Người chơi',
+                'avatar'              => !empty($c['avatar']) ? $c['avatar'] : 'assets/images/default-avatar.png',
+                'elo'                 => $item['elo'],
+                'rank_name'           => $item['rank_name'],
+                'rank_color'          => $rankColors[$item['rank_name']] ?? '#f97316',
+                'play_date'           => $c['play_date'],
+                'play_date_formatted' => date('d/m', strtotime($c['play_date'])),
+                'time_slot'           => date('H:i', strtotime($c['start_time'])) . ' - ' . date('H:i', strtotime($c['end_time'])),
+                'district'            => $c['district'],
+                'pitch_name'          => !empty($c['pitch_name']) ? $c['pitch_name'] : 'Tự động chọn sân trung tâm',
+                'format'              => $c['format'],
+                'distance_km'         => $item['dist_km'] < 100 ? $item['dist_km'] : null,
+                'distance_display'    => $item['dist_km'] < 100 ? ('~' . $item['dist_km'] . ' km') : 'Cùng khu vực'
+            ];
+        }
+
+        $quickTicket = [
+            'district'            => $district ?? 'Bình Thạnh',
+            'play_date'           => $date,
+            'play_date_formatted' => date('d/m', strtotime($date)),
+            'start_time'          => $startTime,
+            'end_time'            => $endTime,
+            'time_slot'           => substr($startTime, 0, 5) . ' - ' . substr($endTime, 0, 5),
+            'format'              => $format,
+            'radius_km'           => 10.0
+        ];
+
+        if (!empty($opponents)) {
+            $reply = "AI đã quét hệ thống và tìm thấy **" . count($opponents) . " đối thủ đang chờ kèo** phù hợp với yêu cầu của bạn:\n\n"
+                   . "Hệ thống đã phân tích độ cân bằng Elo và vị trí GPS. Bạn có thể bấm **`[🤝 Rủ Bắt Cặp Ngay]`** để gửi lời mời và kết nối vào phòng xác nhận 50/50!";
+        } else {
+            $locText = $district ? "khu vực **{$district}**" : "khu vực lân cận của bạn";
+            $reply = "AI đã rà soát toàn bộ CSDL nhưng hiện tại chưa có cơ thủ nào đang mở lệnh tìm trận tại {$locText} vào khung giờ **" . substr($startTime, 0, 5) . " - " . substr($endTime, 0, 5) . "** (" . date('d/m', strtotime($date)) . ").\n\n"
+                   . "Tôi đã chuẩn bị sẵn thông số lệnh tìm đối cho bạn. Bạn chỉ cần bấm **`[🎯 Mở Vé Tìm Đối 1-Click]`** bên dưới, hệ thống sẽ tự động ghép và gửi thông báo chuông ngay khi có bạn chơi phù hợp!";
+        }
+
+        return [
+            'reply'        => $reply,
+            'opponents'    => $opponents,
+            'quick_ticket' => $quickTicket
+        ];
     }
 }

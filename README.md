@@ -190,13 +190,16 @@ php tests/nearby_radar_test.php
 # 6. Kiem thu toan dien Phan he Machine Learning NLP tu huan luyen (10 Intent, Confidence Guardrail):
 php tests/ai_engine_ml_test.php
 
-# 7. Huan luyen & danh gia cheo mo hinh Machine Learning (5-Fold Cross Validation):
+# 7. Kiem thu AI Copilot chu dong tim tran, tim doi thu & tao ve 1-Click:
+php tests/ai_matchmaker_copilot_test.php
+
+# 8. Huan luyen & danh gia cheo mo hinh Machine Learning (5-Fold Cross Validation):
 php ai_engine/train.php
 
-# 8. Kiem thu Unit Test logic Matching (Node.js/Jest):
+# 9. Kiem thu Unit Test logic Matching (Node.js/Jest):
 npm test
 
-# 9. Kiem thu chiu tai Stress Test Concurrency (k6):
+# 10. Kiem thu chiu tai Stress Test Concurrency (k6):
 k6 run tests/concurrent_join.js
 ```
 

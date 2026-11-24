@@ -488,15 +488,18 @@ class BookingController {
 
         require_once __DIR__ . '/../ai_engine/Predictor.php';
         $predictor = new Predictor($db);
-        $result = $predictor->processMessage($message, $userLat, $userLng);
+        $userId = $_SESSION['user_id'] ?? null;
+        $result = $predictor->processMessage($message, $userLat, $userLng, $userId);
 
         echo json_encode([
-            'success'    => true,
-            'reply'      => $result['reply'],
-            'intent'     => $result['intent'],
-            'confidence' => $result['confidence'],
-            'entities'   => $result['entities'] ?? [],
-            'pitches'    => $result['pitches'] ?? []
+            'success'      => true,
+            'reply'        => $result['reply'],
+            'intent'       => $result['intent'],
+            'confidence'   => $result['confidence'],
+            'entities'     => $result['entities'] ?? [],
+            'pitches'      => $result['pitches'] ?? [],
+            'opponents'    => $result['opponents'] ?? [],
+            'quick_ticket' => $result['quick_ticket'] ?? null
         ], JSON_UNESCAPED_UNICODE);
         exit;
     }

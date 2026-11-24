@@ -175,6 +175,7 @@ docker-compose up -d
   php tests/ai_smart_booking_test.php
   php tests/nearby_radar_test.php
   php tests/ai_engine_ml_test.php
+  php tests/ai_matchmaker_copilot_test.php
   php ai_engine/train.php
   ```
 - **Unit test logic Matching:**

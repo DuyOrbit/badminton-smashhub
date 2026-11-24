@@ -280,6 +280,11 @@ class MatchmakingController {
 
     public function storeTicket() {
         if (!isset($_SESSION['user_id'])) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_POST['is_ajax'])) {
+                header('Content-Type: application/json; charset=UTF-8');
+                echo json_encode(['success' => false, 'message' => 'Vui lòng đăng nhập để tạo vé tìm trận.'], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
             header("Location: index.php?action=login");
             exit;
         }
@@ -295,6 +300,11 @@ class MatchmakingController {
             $end_time = $_POST['end_time'];
 
             if (strtotime($end_time) <= strtotime($start_time)) {
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_POST['is_ajax'])) {
+                    header('Content-Type: application/json; charset=UTF-8');
+                    echo json_encode(['success' => false, 'message' => 'Giờ kết thúc phải sau giờ bắt đầu!'], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
                 header("Location: index.php?action=smart_match&error=" . urlencode("Giờ kết thúc phải sau giờ bắt đầu!"));
                 exit;
             }
@@ -334,6 +344,25 @@ class MatchmakingController {
             ];
 
             $res = $ticketModel->createTicket($data);
+
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_POST['is_ajax']);
+            if ($isAjax) {
+                header('Content-Type: application/json; charset=UTF-8');
+                if ($res['success']) {
+                    echo json_encode([
+                        'success'   => true,
+                        'message'   => $res['matched'] ? 'Bắt cặp tức thì thành công! Đang chuyển vào phòng...' : 'Đã tạo lệnh tìm đối thành công!',
+                        'matched'   => $res['matched'] ?? false,
+                        'ticket_id' => $res['ticket_id'] ?? null
+                    ], JSON_UNESCAPED_UNICODE);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => $res['message'] ?? 'Không thể tạo vé tìm trận.'
+                    ], JSON_UNESCAPED_UNICODE);
+                }
+                exit;
+            }
 
             if ($res['success']) {
                 $msg = $res['matched'] ? 'matched_instant' : 'ticket_queued';

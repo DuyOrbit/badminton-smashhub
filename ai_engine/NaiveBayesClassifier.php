@@ -83,8 +83,8 @@ class NaiveBayesClassifier {
         $scores = $this->predictLogProbabilities($text);
         if (empty($scores)) {
             return [
-                'intent'     => 'find_pitch',
-                'confidence' => 0.5,
+                'intent'     => 'out_of_scope',
+                'confidence' => 0.1,
                 'scores'     => []
             ];
         }
@@ -121,6 +121,16 @@ class NaiveBayesClassifier {
         }
 
         $vocab = $this->vectorizer->getVocabulary();
+        $matchedTokens = 0;
+        foreach ($tokens as $tok) {
+            if (isset($vocab[$tok])) {
+                $matchedTokens++;
+            }
+        }
+        if ($matchedTokens === 0) {
+            return [];
+        }
+
         $scores = [];
 
         foreach ($this->classes as $c) {

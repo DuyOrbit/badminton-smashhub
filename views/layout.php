@@ -51,7 +51,11 @@ if (isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>">
-    <script>window.csrfToken = "<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>";</script>
+    <script>
+        window.csrfToken = "<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? ''); ?>";
+        window.isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
+        window.currentUserId = <?php echo isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 'null'; ?>;
+    </script>
     <title><?php echo htmlspecialchars($page_title ?? 'Trang Chủ'); ?> - SMASHHUB Badminton</title>
     
     <!-- Google Fonts Inter -->
@@ -767,6 +771,63 @@ window.showToast = function(message, type = 'success') {
             pitchesHtml += '</div>';
         }
 
+        let opponentsHtml = '';
+        if (data.opponents && data.opponents.length > 0) {
+            opponentsHtml = '<div class="mt-3 space-y-2">';
+            data.opponents.forEach(opp => {
+                opponentsHtml += `
+                    <div class="flex items-center gap-2.5 bg-black/40 border border-white/10 rounded-xl p-2.5 hover:border-[#d8ff3e]/40 transition">
+                        <div class="relative shrink-0">
+                            <img src="${escapeHtml(opp.avatar)}" alt="${escapeHtml(opp.full_name)}" class="w-11 h-11 rounded-full object-cover border-2" style="border-color: ${opp.rank_color || '#d8ff3e'};">
+                            <span class="absolute -bottom-1 -right-1 text-[8px] px-1 rounded font-black text-black bg-[#d8ff3e]">
+                                ${escapeHtml(opp.rank_name ? opp.rank_name.replace('Rank ', '') : 'Elo')}
+                            </span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-1.5">
+                                <h5 class="text-xs font-bold text-white truncate">${escapeHtml(opp.full_name)}</h5>
+                                <span class="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-[#d8ff3e] font-black">${opp.elo} Elo</span>
+                            </div>
+                            <p class="text-[10px] text-white/60 truncate mt-0.5">
+                                📅 ${escapeHtml(opp.play_date_formatted || opp.play_date)} • ⏰ ${escapeHtml(opp.time_slot)} • 🏸 ${escapeHtml(opp.format)}
+                            </p>
+                            <p class="text-[9px] text-[#71818a] truncate mt-0.5">
+                                📍 ${escapeHtml(opp.pitch_name)} (${escapeHtml(opp.distance_display || opp.district)})
+                            </p>
+                        </div>
+                        <button onclick="window.sendAiChatRadarInvite(${opp.ticket_id}, this)" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] font-bold text-[10px] transition shadow">
+                            Rủ Bắt Cặp
+                        </button>
+                    </div>
+                `;
+            });
+            opponentsHtml += '</div>';
+        }
+
+        let quickTicketHtml = '';
+        if (data.quick_ticket) {
+            const qt = data.quick_ticket;
+            quickTicketHtml = `
+                <div class="mt-3 p-3 rounded-xl bg-gradient-to-r from-[#121b21] to-[#0f171d] border border-dashed border-[#d8ff3e]/40 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-bold text-[#d8ff3e] flex items-center gap-1">
+                            🎯 Lệnh Tìm Đối AI Đề Xuất
+                        </span>
+                        <span class="text-[9px] px-1.5 py-0.2 rounded bg-[#d8ff3e]/15 text-[#d8ff3e] font-bold">1-Click</span>
+                    </div>
+                    <div class="text-[10px] text-white/80 space-y-1">
+                        <div>📍 <span class="text-white/60">Khu vực:</span> <strong class="text-white">${escapeHtml(qt.district)}</strong></div>
+                        <div>📅 <span class="text-white/60">Lịch đấu:</span> <strong class="text-white">${escapeHtml(qt.play_date_formatted || qt.play_date)}</strong> • ⏰ <strong class="text-white">${escapeHtml(qt.time_slot)}</strong></div>
+                        <div>🏸 <span class="text-white/60">Thể thức:</span> <strong class="text-white">${escapeHtml(qt.format)}</strong></div>
+                    </div>
+                    <button onclick="window.createTicketFromAiChat('${escapeHtml(qt.district)}', '${escapeHtml(qt.play_date)}', '${escapeHtml(qt.start_time)}', '${escapeHtml(qt.end_time)}', '${escapeHtml(qt.format)}', this)" 
+                            class="w-full py-2 rounded-lg bg-[#d8ff3e] hover:bg-[#c6f030] text-[#0b1116] font-bold text-xs transition shadow flex items-center justify-center gap-1.5">
+                        <span>⚡ Kích Hoạt Vé Chờ Ngay</span>
+                    </button>
+                </div>
+            `;
+        }
+
         const formattedReply = formatMarkdown(data.reply || '');
 
         aiDiv.innerHTML = `
@@ -784,6 +845,8 @@ window.showToast = function(message, type = 'success') {
                 </div>
                 <div class="space-y-1.5">${formattedReply}</div>
                 ${pitchesHtml}
+                ${opponentsHtml}
+                ${quickTicketHtml}
             </div>
         `;
 
@@ -792,7 +855,7 @@ window.showToast = function(message, type = 'success') {
     }
 
     function escapeHtml(str) {
-        return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        return (str || '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
     function formatMarkdown(text) {
@@ -802,6 +865,104 @@ window.showToast = function(message, type = 'success') {
         out = out.replace(/\n/g, '<br>');
         return out;
     }
+
+    window.sendAiChatRadarInvite = function(ticketId, btn) {
+        if (!window.isLoggedIn) {
+            if (window.showToast) window.showToast('Vui lòng đăng nhập để rủ bắt cặp.', 'warning');
+            setTimeout(() => { window.location.href = 'index.php?action=login'; }, 1000);
+            return;
+        }
+        if (typeof window.sendNearbyRadarInvite === 'function') {
+            window.sendNearbyRadarInvite(ticketId, btn);
+        } else {
+            const formData = new FormData();
+            formData.append('target_ticket_id', ticketId);
+            formData.append('csrf_token', window.csrfToken || '');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = 'Đang gửi...';
+            }
+            fetch('index.php?action=api_send_nearby_invite', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    if (window.showToast) window.showToast(data.message, 'success');
+                    if (btn) {
+                        btn.className = 'shrink-0 px-2.5 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-[10px] border border-emerald-500/30';
+                        btn.innerText = 'Đã Gửi Lời Mời';
+                    }
+                } else {
+                    if (window.showToast) window.showToast(data.message || 'Lỗi gửi lời mời.', 'warning');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerText = 'Rủ Bắt Cặp';
+                    }
+                }
+            }).catch(e => {
+                if (window.showToast) window.showToast('Lỗi kết nối máy chủ.', 'warning');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = 'Rủ Bắt Cặp';
+                }
+            });
+        }
+    };
+
+    window.createTicketFromAiChat = async function(district, playDate, startTime, endTime, format, btn) {
+        if (!window.isLoggedIn) {
+            if (window.showToast) window.showToast('Vui lòng đăng nhập để tạo vé tìm trận.', 'warning');
+            setTimeout(() => { window.location.href = 'index.php?action=login'; }, 1000);
+            return;
+        }
+        if (btn) {
+            btn.disabled = true;
+            btn.innerText = 'Đang kích hoạt...';
+        }
+        const formData = new FormData();
+        formData.append('is_ajax', '1');
+        formData.append('district', district || 'Bình Thạnh');
+        formData.append('play_date', playDate);
+        formData.append('start_time', startTime);
+        formData.append('end_time', endTime);
+        formData.append('format', format || 'Đánh Đôi');
+        formData.append('pitch_mode', 'auto');
+        formData.append('radius_km', '10.0');
+        formData.append('note', 'Tạo tự động qua Trợ Lý AI Copilot');
+        formData.append('csrf_token', window.csrfToken || '');
+
+        try {
+            const res = await fetch('index.php?action=store_ticket', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (window.showToast) window.showToast(data.message || 'Đã tạo lệnh tìm đối thành công!', 'success');
+                if (btn) {
+                    btn.className = 'w-full py-2 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs border border-emerald-500/30 text-center cursor-default';
+                    btn.innerText = 'Đã Kích Hoạt Vé Chờ';
+                }
+                if (data.matched) {
+                    setTimeout(() => { window.location.href = 'index.php?action=smart_match&msg=matched_instant'; }, 1200);
+                }
+            } else {
+                if (window.showToast) window.showToast(data.message || 'Lỗi khi tạo vé tìm trận.', 'warning');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = 'Kích Hoạt Lại';
+                }
+            }
+        } catch (e) {
+            if (window.showToast) window.showToast('Lỗi kết nối máy chủ.', 'warning');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = 'Kích Hoạt Lại';
+            }
+        }
+    };
 })();
 </script>
 
