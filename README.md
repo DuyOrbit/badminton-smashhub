@@ -61,12 +61,13 @@ Kien truc AI duoc phat trien hoan toan doc lap bang thuan toan toan hoc (Pure PH
 * **Hop thu tro chuyen noi bo**: Chat truc tiep va nhan thong bao tien trinh tu dong.
 
 ### 5. He Thong Xep Hang Elo & 4 Bac Rank Uu Dai
-* **Muc khoi diem**: 100 Elo (Rank Dong).
+* **Muc khoi diem**: 100 Elo (Rank Dong, `Ranking::DEFAULT_ELO = 100`).
 * **Thuat toan chuan quoc te ($K\text{-factor} = 32$)**:
   * Tinh xac suat thang ky vong $E$ dua tren chenh lech Elo.
-  * Thang tran: Cong diem theo hieu so trinh do (toi thieu +15 Elo).
-  * Thua tran: Tru diem tuong ung (san an toan khong bao gio am).
-* **Chinh sach uu dai giam gia tien san**:
+  * Thang tran: Cong diem theo hieu so trinh do (cong thuc Elo chuan $K=32$, khong ap dung muc cong toi thieu co dinh).
+  * Thua tran: Tru diem tuong ung theo cong thuc Elo chuan.
+  * San diem: Gioi han san 0 Elo (diem khong bao gio am).
+* **Chinh sach uu dai giam gia tien san theo Rank**:
   * Hang Kim Cuong (Elo >= 1000): Giam ngay 20% tien san.
   * Hang Vang (Elo >= 600): Giam ngay 10% tien san.
   * Hang Bac (Elo >= 300): Giam ngay 5% tien san.

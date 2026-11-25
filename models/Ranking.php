@@ -53,10 +53,6 @@ class Ranking {
         $host_points = (int)round($K * ($actualHost - $expectedHost));
         $guest_points = (int)round($K * ($actualGuest - $expectedGuest));
 
-        // Đảm bảo mức tối thiểu khi thắng/thua để giữ động lực thi đấu
-        if ($actualHost == 1.0 && $host_points < 10) $host_points = 15;
-        if ($actualGuest == 1.0 && $guest_points < 10) $guest_points = 15;
-
         $this->updatePoints($host_id, $season, $host_points);
         if ($guest_id) {
             $this->updatePoints($guest_id, $season, $guest_points);

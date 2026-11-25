@@ -1,0 +1,353 @@
+[
+  {
+    "id": 1,
+    "prompt": "Tìm sân ở Bình Thạnh chiều nay 17h thảm BWF",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [1, 3],
+    "reason": "Pitch 1 nằm ở Bình Thạnh và có thảm tiêu chuẩn BWF; Pitch 3 nằm cùng quận Bình Thạnh",
+    "expected_entities": {
+      "district": "Bình Thạnh",
+      "start_hour": 17,
+      "max_price": null,
+      "amenities": ["bwf"]
+    }
+  },
+  {
+    "id": 2,
+    "prompt": "Có sân nào ở quận 10 giá dưới 80k tối nay không",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [5],
+    "reason": "Pitch 5 nằm ở Quận 10 với giá 70.000đ/h đáp ứng dưới 80k",
+    "expected_entities": {
+      "district": "Quận 10",
+      "start_hour": 19,
+      "max_price": 80000,
+      "amenities": []
+    }
+  },
+  {
+    "id": 3,
+    "prompt": "Thuê sân cầu lông Gò Vấp sáng mai 8h",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [6, 4],
+    "reason": "Pitch 6 và 4 đều nằm ở khu vực Gò Vấp",
+    "expected_entities": {
+      "district": "Gò Vấp",
+      "start_hour": 8,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 4,
+    "prompt": "Tìm sân ở Tân Bình có bãi đỗ ô tô",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [2],
+    "reason": "Pitch 2 nằm tại Tân Bình và có tiện ích parking (bãi đỗ xe)",
+    "expected_entities": {
+      "district": "Tân Bình",
+      "start_hour": null,
+      "max_price": null,
+      "amenities": ["parking"]
+    }
+  },
+  {
+    "id": 5,
+    "prompt": "Sân Bình Thạnh giá rẻ dưới 85k",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [3],
+    "reason": "Pitch 3 ở Bình Thạnh có giá 80.000đ/h thỏa mãn dưới 85k (Pitch 1 giá 90k bị loại hoặc điểm thấp hơn)",
+    "expected_entities": {
+      "district": "Bình Thạnh",
+      "start_hour": null,
+      "max_price": 85000,
+      "amenities": []
+    }
+  },
+  {
+    "id": 6,
+    "prompt": "Tối nay 19h quanh vị trí của tôi có sân nào trống",
+    "user_lat": 10.8120,
+    "user_lng": 106.7110,
+    "expected_pitch_ids": [1, 3],
+    "reason": "Tọa độ người dùng ở sát Pitch 1 (cách < 0.2km) và gần Pitch 3 tại Bình Thạnh",
+    "expected_entities": {
+      "district": null,
+      "start_hour": 19,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 7,
+    "prompt": "Tìm cụm sân có thảm tiêu chuẩn BWF giá dưới 100k",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [1, 5, 6],
+    "reason": "Pitch 1 (90k), Pitch 5 (70k), Pitch 6 (70k) đều có thảm BWF và giá dưới 100k",
+    "expected_entities": {
+      "district": null,
+      "start_hour": null,
+      "max_price": 100000,
+      "amenities": ["bwf"]
+    }
+  },
+  {
+    "id": 8,
+    "prompt": "Sân sinh viên giá rẻ quanh quận 10",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [5],
+    "reason": "Pitch 5 nằm ở Quận 10 có giá 70k thấp nhất phân khúc sinh viên",
+    "expected_entities": {
+      "district": "Quận 10",
+      "start_hour": null,
+      "max_price": 90000,
+      "amenities": []
+    }
+  },
+  {
+    "id": 9,
+    "prompt": "Đặt sân 20h tối mai ở Bình Thạnh",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [1, 3],
+    "reason": "Cả Pitch 1 và 3 đều thuộc Bình Thạnh, hoạt động đến 22:00",
+    "expected_entities": {
+      "district": "Bình Thạnh",
+      "start_hour": 20,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 10,
+    "prompt": "Tìm sân có điều hòa máy lạnh ở Gò Vấp",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [4, 6],
+    "reason": "Pitch 4 và 6 tại Gò Vấp đều có tiện ích cooling",
+    "expected_entities": {
+      "district": "Gò Vấp",
+      "start_hour": null,
+      "max_price": null,
+      "amenities": ["cooling"]
+    }
+  },
+  {
+    "id": 11,
+    "prompt": "Chiều nay 18h cần sân Tân Bình giá dưới 100k",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [2],
+    "reason": "Pitch 2 nằm tại Tân Bình với giá 95.000đ/h dưới 100k",
+    "expected_entities": {
+      "district": "Tân Bình",
+      "start_hour": 18,
+      "max_price": 100000,
+      "amenities": []
+    }
+  },
+  {
+    "id": 12,
+    "prompt": "Sân Gò Vấp giá dưới 90k có bãi xe",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [6],
+    "reason": "Pitch 6 tại Gò Vấp giá 70k < 90k và có bãi xe (Pitch 4 giá 110k vượt ngân sách)",
+    "expected_entities": {
+      "district": "Gò Vấp",
+      "start_hour": null,
+      "max_price": 90000,
+      "amenities": ["parking"]
+    }
+  },
+  {
+    "id": 13,
+    "prompt": "Tìm sân đánh cầu tối nay 7h tối ở Bình Thạnh",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [1, 3],
+    "reason": "7h tối được chuẩn hóa thành 19:00, cả Pitch 1 và 3 đều ở Bình Thạnh",
+    "expected_entities": {
+      "district": "Bình Thạnh",
+      "start_hour": 19,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 14,
+    "prompt": "Thuê sân cuối tuần ở quận 10",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [5],
+    "reason": "Pitch 5 là cụm sân tại Quận 10",
+    "expected_entities": {
+      "district": "Quận 10",
+      "start_hour": null,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 15,
+    "prompt": "Tìm sân quanh tọa độ này có bãi xe ô tô",
+    "user_lat": 10.7980,
+    "user_lng": 106.6500,
+    "expected_pitch_ids": [2, 7],
+    "reason": "Tọa độ tại Tân Bình gần Pitch 2 (< 0.1km) và Pitch 7 (< 2km)",
+    "expected_entities": {
+      "district": null,
+      "start_hour": null,
+      "max_price": null,
+      "amenities": ["parking"]
+    }
+  },
+  {
+    "id": 16,
+    "prompt": "Sân cầu lông Bình Thạnh có thảm xịn",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [1, 3],
+    "reason": "Pitch 1 có thảm PVC BWF và Pitch 3 ở Bình Thạnh",
+    "expected_entities": {
+      "district": "Bình Thạnh",
+      "start_hour": null,
+      "max_price": null,
+      "amenities": ["bwf"]
+    }
+  },
+  {
+    "id": 17,
+    "prompt": "Đặt sân 8h sáng ngày mốt ở Gò Vấp",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [6, 4],
+    "reason": "Các sân tại khu vực Gò Vấp khung giờ sáng sớm",
+    "expected_entities": {
+      "district": "Gò Vấp",
+      "start_hour": 8,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 18,
+    "prompt": "Tìm sân giá dưới 120k ở Gò Vấp",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [6, 4],
+    "reason": "Cả Pitch 6 (70k) và Pitch 4 (110k) đều thuộc Gò Vấp và dưới 120k",
+    "expected_entities": {
+      "district": "Gò Vấp",
+      "start_hour": null,
+      "max_price": 120000,
+      "amenities": []
+    }
+  },
+  {
+    "id": 19,
+    "prompt": "Sân cầu lông gần tôi nhất",
+    "user_lat": 10.8440,
+    "user_lng": 106.6580,
+    "expected_pitch_ids": [4, 6],
+    "reason": "Tọa độ người dùng tại Quang Trung Gò Vấp, sát Pitch 4 (< 0.2km)",
+    "expected_entities": {
+      "district": null,
+      "start_hour": null,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 20,
+    "prompt": "Tìm sân ở quận 10 lúc 18h tối nay",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [5],
+    "reason": "Pitch 5 tại Quận 10",
+    "expected_entities": {
+      "district": "Quận 10",
+      "start_hour": 18,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 21,
+    "prompt": "Cần sân có thảm BWF bãi xe ô tô ở Bình Thạnh",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [1],
+    "reason": "Pitch 1 thỏa mãn cả 3 tiêu chí: Bình Thạnh, thảm BWF và bãi xe",
+    "expected_entities": {
+      "district": "Bình Thạnh",
+      "start_hour": null,
+      "max_price": null,
+      "amenities": ["bwf", "parking"]
+    }
+  },
+  {
+    "id": 22,
+    "prompt": "Sân giá sinh viên dưới 100k ở Tân Bình",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [2],
+    "reason": "Pitch 2 tại Tân Bình giá 95k < 100k",
+    "expected_entities": {
+      "district": "Tân Bình",
+      "start_hour": null,
+      "max_price": 100000,
+      "amenities": []
+    }
+  },
+  {
+    "id": 23,
+    "prompt": "Đặt sân 19h - 21h hôm nay ở Bình Thạnh",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [1, 3],
+    "reason": "Cả Pitch 1 và Pitch 3 tại Bình Thạnh đều nhận đặt khung 19h-21h",
+    "expected_entities": {
+      "district": "Bình Thạnh",
+      "start_hour": 19,
+      "max_price": null,
+      "amenities": []
+    }
+  },
+  {
+    "id": 24,
+    "prompt": "Tìm sân tại Tân Phú có thảm BWF",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [7],
+    "reason": "Pitch 7 tại Tân Phú có thảm tiêu chuẩn BWF",
+    "expected_entities": {
+      "district": "Tân Phú",
+      "start_hour": null,
+      "max_price": null,
+      "amenities": ["bwf"]
+    }
+  },
+  {
+    "id": 25,
+    "prompt": "Sân cầu lông mở cửa sáng sớm 6h ở quận 10",
+    "user_lat": null,
+    "user_lng": null,
+    "expected_pitch_ids": [5],
+    "reason": "Pitch 5 tại Quận 10 mở cửa từ 06:00",
+    "expected_entities": {
+      "district": "Quận 10",
+      "start_hour": 6,
+      "max_price": null,
+      "amenities": []
+    }
+  }
+]
+

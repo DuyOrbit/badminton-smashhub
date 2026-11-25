@@ -57,17 +57,27 @@
 - **Đàm phán đổi sân (`switch_pitch`):**
   - Người chơi có thể chọn sân khác dựa trên gợi ý km của cả 2 bạn. Đối thủ bấm `[✅ Đồng Ý Đổi Sân]` hoặc `[✕ Từ Chối]`.
 
-### 3.2. Điểm Uy Tín Fair-Play & Cơ Chế Chống Bùng Kèo (No-Show) — `models/Reputation.php`
+### 3.2. Hệ Thống Xếp Hạng Elo & Hạng Thành Viên — `models/Ranking.php`
+- **Công thức:** Elo chuẩn quốc tế $K = 32$. Không áp dụng mức cộng tối thiểu cố định để bảo toàn tổng điểm Elo.
+- **Điểm khởi tạo:** 100 Elo (`Ranking::DEFAULT_ELO`).
+- **Sàn điểm:** 0 Elo (điểm không âm).
+- **Mốc phân hạng:**
+  - Kim Cương: Elo $\ge 1000$ (giảm 20% tiền sân).
+  - Vàng: Elo $\ge 600$ (giảm 10% tiền sân).
+  - Bạc: Elo $\ge 300$ (giảm 5% tiền sân).
+  - Đồng: Elo $100 - 299$ (giá niêm yết chuẩn).
+
+### 3.3. Điểm Uy Tín Fair-Play & Cơ Chế Chống Bùng Kèo (No-Show) — `models/Reputation.php`
 - Điểm uy tín chuẩn: **100 PTS**.
 - Đánh xong trận bình thường: **+2 PTS**.
 - Bùng kèo bị chủ sân xác nhận: **-30 PTS Uy Tín, -50 Điểm Elo**.
 - Điểm uy tín dưới **50 PTS**: Bị hệ thống **khóa tính năng tìm trận**.
 
-### 3.3. Cơ Chế Chống Trùng Lịch Đặt Sân (Concurrency / Race-Condition Safe) — `models/Booking.php`
+### 3.4. Cơ Chế Chống Trùng Lịch Đặt Sân (Concurrency / Race-Condition Safe) — `models/Booking.php`
 - Bọc toàn bộ quá trình kiểm tra và lưu đơn trong **Database Transaction** (`$db->beginTransaction()` ... `$db->commit()`).
 - Kiểm tra số lượng sân con đang được sử dụng trong khung giờ (`getConfirmedOverlappingCount`). Nếu $\ge \text{quantity}$ ➔ Rollback và chặn ngay.
 
-### 3.4. Mô Hình Học Máy NLP Cục Bộ & Trợ Lý AI Chuyên Môn (In-House ML Engine) — `ai_engine/`
+### 3.5. Mô Hình Học Máy NLP Cục Bộ & Trợ Lý AI Chuyên Môn (In-House ML Engine) — `ai_engine/`
 - **Tập dữ liệu huấn luyện:** `ai_engine/dataset.json` (163 mẫu câu phân bố trên 10 nhóm ý định thể thao cầu lông).
 - **Thuật toán cốt lõi:**
   - Tiền xử lý từ ngữ N-Gram (Unigram + Bigram) tiếng Việt (`ai_engine/Tokenizer.php`).

@@ -29,7 +29,9 @@ class AiSmartBooking {
         'phú nhuận'  => ['lat' => 10.7992, 'lng' => 106.6803, 'name' => 'Phú Nhuận'],
         'phu nhuan'  => ['lat' => 10.7992, 'lng' => 106.6803, 'name' => 'Phú Nhuận'],
         'quận 7'     => ['lat' => 10.7340, 'lng' => 106.7218, 'name' => 'Quận 7'],
-        'quan 7'     => ['lat' => 10.7340, 'lng' => 106.7218, 'name' => 'Quận 7']
+        'quan 7'     => ['lat' => 10.7340, 'lng' => 106.7218, 'name' => 'Quận 7'],
+        'tân phú'    => ['lat' => 10.7950, 'lng' => 106.6350, 'name' => 'Tân Phú'],
+        'tan phu'    => ['lat' => 10.7950, 'lng' => 106.6350, 'name' => 'Tân Phú']
     ];
 
     public function __construct($db) {
@@ -250,14 +252,14 @@ class AiSmartBooking {
                 $distScore = max(10, min(100, round(100 - ($distKm * 8))));
             }
 
-            // Diem Gia tien: Neu trong ngan sach duoc 100d, vuot ngan sach bi tru diem
+            // Diem Gia tien: Neu trong ngan sach duoc 100d, vuot ngan sach bi phat nang de khong xep truoc san trong ngan sach
             $priceScore = 70;
             if ($parsed['max_price'] && $parsed['max_price'] > 0) {
                 if ($price <= $parsed['max_price']) {
                     $priceScore = 100;
                 } else {
                     $diffPercent = (($price - $parsed['max_price']) / $parsed['max_price']) * 100;
-                    $priceScore = max(10, 100 - ($diffPercent * 1.5));
+                    $priceScore = max(0, 10 - ($diffPercent * 1.5));
                 }
             }
 
@@ -277,12 +279,17 @@ class AiSmartBooking {
                 $amenityScore = ($matchedCount / count($parsed['amenities'])) * 100;
             }
 
-            // Tong diem trong so da muc tieu
+            // Tong diem trong so da muc tieu (giu nguyen cac ty le trong so)
             $totalScore = ($distScore * 0.35) + ($priceScore * 0.25) + ($slotScore * 0.30) + ($amenityScore * 0.10);
 
             // Neu het san hoan toan thi tru diem tong de uu tien san con cho
             if ($available <= 0) {
                 $totalScore -= 40;
+            }
+
+            // Neu vuot ngan sach yeu cau thi phat tru diem tong de khong xep truoc san trong ngan sach con trong
+            if ($parsed['max_price'] && $parsed['max_price'] > 0 && $price > $parsed['max_price']) {
+                $totalScore -= 35;
             }
 
             $bookingUrl = "index.php?action=book&id={$pitchId}&date={$parsed['date']}&start=" . substr($parsed['start_time'], 0, 5) . "&end=" . substr($parsed['end_time'], 0, 5);

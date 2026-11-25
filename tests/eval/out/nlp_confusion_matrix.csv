@@ -1,0 +1,11 @@
+"Actual_Intent \ Predicted",ask_price,calendar_schedule,find_pitch,greeting,health_fitness,racket_consult,radar_matchmaking,rule_inquiry,split_bill_info,weather_mood
+ask_price,15,0,4,0,0,0,0,1,0,0
+calendar_schedule,1,8,3,0,0,0,0,0,0,0
+find_pitch,2,2,20,0,0,0,1,0,0,0
+greeting,2,0,0,8,0,1,1,0,1,0
+health_fitness,1,0,0,0,5,0,3,0,0,1
+racket_consult,1,0,0,0,0,15,1,0,2,1
+radar_matchmaking,1,0,1,0,0,0,21,1,6,0
+rule_inquiry,3,0,2,0,0,0,4,7,1,0
+split_bill_info,1,0,0,1,0,0,1,1,14,0
+weather_mood,2,0,0,0,1,0,1,0,0,8
