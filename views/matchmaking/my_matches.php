@@ -94,6 +94,14 @@
                                             else echo "Hòa Nhau";
                                         ?>
                                     </span>
+                                    <?php 
+                                        $myDelta = $is_host ? ($m['host_elo_change'] ?? null) : ($m['guest_elo_change'] ?? null);
+                                        if ($myDelta !== null):
+                                            $sign = ((int)$myDelta >= 0 ? '+' : '') . (int)$myDelta;
+                                            $colorClass = (int)$myDelta >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                                    ?>
+                                        <span class="text-[10px] font-black <?php echo $colorClass; ?> mt-1 tracking-tight"><?php echo $sign; ?> Elo</span>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </div>
 

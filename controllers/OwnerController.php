@@ -55,13 +55,23 @@ class OwnerController {
         $matches = $matchModel->getMatchesForOwner($_SESSION['user_id'])->fetchAll(PDO::FETCH_ASSOC);
 
         // Lọc Booking thông thường khỏi bảng (giấu các booking sinh ra từ Cáp Kèo)
+        $match_booking_ids = [];
+        foreach($matches as $m) {
+            if (!empty($m['booking_id'])) {
+                $match_booking_ids[$m['booking_id']] = true;
+            }
+        }
         $regular_bookings = [];
         foreach($bookings as $b) {
             $is_match = false;
-            foreach($matches as $m) {
-                if ($b['pitch_id'] == $m['pitch_id'] && $b['booking_date'] == $m['play_date'] && $b['start_time'] == $m['start_time']) {
-                    $is_match = true;
-                    break;
+            if (isset($match_booking_ids[$b['id']])) {
+                $is_match = true;
+            } else {
+                foreach($matches as $m) {
+                    if ($b['pitch_id'] == $m['pitch_id'] && $b['booking_date'] == $m['play_date'] && $b['start_time'] == $m['start_time'] && ($b['user_id'] == $m['user_id'] || $b['user_id'] == $m['opponent_id'])) {
+                        $is_match = true;
+                        break;
+                    }
                 }
             }
             if (!$is_match) {
@@ -114,10 +124,40 @@ class OwnerController {
             $db = $database->getConnection();
             $matchModel = new Matchmaking($db);
             
-            if ($matchModel->reportResult($_POST['match_id'], $_POST['match_result'], $_SESSION['user_id'])) {
-                header("Location: index.php?action=owner_dashboard&msg=reported");
+            $matchId = (int)$_POST['match_id'];
+            $matchResult = $_POST['match_result'] ?? '';
+            $redirectTo = !empty($_POST['redirect_to']) ? $_POST['redirect_to'] : 'owner_matches';
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) || isset($_REQUEST['is_ajax']);
+
+            $res = $matchModel->reportResult($matchId, $matchResult, $_SESSION['user_id']);
+            if ($res && !empty($res['success'])) {
+                $hPoints = (int)($res['host_points'] ?? 0);
+                $gPoints = (int)($res['guest_points'] ?? 0);
+                $hSign = ($hPoints >= 0 ? '+' : '') . $hPoints;
+                $gSign = ($gPoints >= 0 ? '+' : '') . $gPoints;
+
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=UTF-8');
+                    echo json_encode([
+                        'success' => true,
+                        'message' => "Cập nhật kết quả thành công! Chủ nhà: {$hSign} Elo | Đội khách: {$gSign} Elo.",
+                        'host_points' => $hPoints,
+                        'guest_points' => $gPoints,
+                        'result' => $res['result']
+                    ], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+                header("Location: index.php?action={$redirectTo}&msg=reported&h_elo={$hPoints}&g_elo={$gPoints}&res={$res['result']}");
             } else {
-                header("Location: index.php?action=owner_dashboard&error=failed");
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=UTF-8');
+                    echo json_encode([
+                        'success' => false,
+                        'message' => "Không thể cập nhật kết quả (kết quả đã được chốt trước đó hoặc không hợp lệ)."
+                    ], JSON_UNESCAPED_UNICODE);
+                    exit;
+                }
+                header("Location: index.php?action={$redirectTo}&error=failed");
             }
             exit;
         }

@@ -113,22 +113,64 @@ Kien truc AI duoc phat trien hoan toan doc lap bang thuan toan toan hoc (Pure PH
 
 ---
 
-## Hinh Anh Giao Dien He Thong
+## Hinh Anh Giao Dien & Ban Ve Thiet Ke He Thong
 
-> Anh chup giao dien chat luong cao phuc vu bao cao do an duoc luu tai thu muc [`docs/screenshots/`](docs/screenshots/).
+> Toan bo ban ve phac thao (Wireframe) va hinh anh giao dien chup thuc te phuc vu Bao cao Khoa luan Tot nghiep duoc luu tru tai thu muc [`docs/screenshots/`](docs/screenshots/) va [`docs/screenshots/thesis/`](docs/screenshots/thesis/).
+
+### 1. Ban Ve Phac Thao Giao Dien (Wireframes - Muc 3.8 Bao Cao Khoa Luan)
+
+Cac ban ve Wireframe chuan ky thuat phan mem duoc thiet ke theo Style Guide (3.8.1) va Layout Structure (3.8.2), the hien quy uoc mau trang thai Timeline san va bo cuc 2 phan he (Customer Layout & Dashboard Layout):
+
+| Ma Hinh | Ten Ban Ve Wireframe | Hinh Anh Phac Thao |
+| :--- | :--- | :--- |
+| **Hinh 3.8.1** | **Wireframe Trang chu & Tra cuu cum san tich hop ban do GPS**<br>*(Thanh loc Quan/Gia/Tien ich, danh sach the san ben trai, ban do Leaflet GPS radar ben phai)* | ![Wireframe Trang Chu](docs/screenshots/thesis/hinh_3_8_1_wireframe_trang_chu_gps.png) |
+| **Hinh 3.8.2** | **Wireframe Man hinh chon khung gio san & Thanh toan VietQR**<br>*(Luoi Timeline san con theo gio, danh muc ban kem, khung VietQR dong dem nguoc 10 phut)* | ![Wireframe Dat San VietQR](docs/screenshots/thesis/hinh_3_8_2_wireframe_dat_san_vietqr.png) |
+| **Hinh 3.8.3** | **Wireframe Man hinh Goi y ghep san thong minh & Tro ly AI Copilot**<br>*(Bo loc Elo/GPS, the phong ghep chia doi 50/50, khung chat AI Copilot tu van san)* | ![Wireframe Smart Match AI](docs/screenshots/thesis/hinh_3_8_3_wireframe_smart_match_ai.png) |
+| **Hinh 3.8.4** | **Wireframe Man hinh Check-in tiep don & Quan ly lich san**<br>*(O quet QR/Barcode tiep don, check-in doc lap 2 ben, xac nhan thu tien mat 50%, Timeline co so)* | ![Wireframe Check-in Le Tan](docs/screenshots/thesis/hinh_3_8_4_wireframe_checkin_le_tan.png) |
+
+---
+
+### 2. Giao Dien Hien Thuc Hoa Theo 4 Nhom Vai Tro (Muc 4.3 Bao Cao Khoa Luan)
+
+He thong SMASHHUB cung cap giao dien truc quan, chuyen biet theo dung phan quyen RBAC cua tung nhom tac nhan:
+
+#### 2.1. Phan He Khach Hang (Customer / Player)
+| Ma Hinh | Ten Giao Dien Chuc Nang | Hinh Anh Thuc Te |
+| :--- | :--- | :--- |
+| **Hinh 4.3.1** | **Giao dien Trang chu va Ban do tim kiem cum san GPS**<br>*(Bo loc dia ly, tien ich san va ban do Leaflet.js tinh khoang cach theo cong thuc Haversine)* | ![Trang chu GPS](docs/screenshots/thesis/hinh_4_3_1_trang_chu_ban_do_gps.png) |
+| **Hinh 4.3.2** | **Giao dien chon khung gio dat san va thanh toan ma VietQR**<br>*(Chon san con tren luoi Timeline, chon dich vu va quet ma VietQR dong Napas 247)* | ![Dat san VietQR](docs/screenshots/thesis/hinh_4_3_2_dat_san_vietqr.png) |
+| **Hinh 4.3.3** | **Giao dien Goi y ghep san thong minh va Bang xep hang Elo**<br>*(Phong ghep tuong thich ban kinh <= 10km, delta Elo <= 200, chia doi 50/50, BXH Elo)* | ![Goi y ghep san](docs/screenshots/thesis/hinh_4_3_3_goi_y_ghep_san_elo.png) |
+| **Hinh 4.3.4** | **Giao dien hoi thoai Tro ly AI Copilot goi y dat san**<br>*(Boc tach tu nhien khu vuc, thoi gian, ngan sach va de xuat the san kem nut Dat ngay)* | ![AI Copilot](docs/screenshots/thesis/hinh_4_3_4_tro_ly_ai_copilot.png) |
+
+#### 2.2. Phan He Chu San (Court Owner)
+| Ma Hinh | Ten Giao Dien Chuc Nang | Hinh Anh Thuc Te |
+| :--- | :--- | :--- |
+| **Hinh 4.3.5** | **Giao dien quan ly lich san Timeline va ban hang tai quay (Walk-in POS)**<br>*(Trang thai tat ca san con theo truc thoi gian thuc, tao don nhanh, ban kem do uong/vot)* | ![Chu san Timeline POS](docs/screenshots/thesis/hinh_4_3_5_chu_san_lich_timeline.png) |
+| **Hinh 4.3.6** | **Giao dien quan ly danh sach va phan quyen nhan vien**<br>*(Tao tai khoan le tan, phan cong cum san truc tiep don, kich hoat/khoa tai khoan)* | ![Quan ly nhan vien](docs/screenshots/thesis/hinh_4_3_6_quan_ly_nhan_vien_le_tan.png) |
+
+#### 2.3. Phan He Nhan Vien Truc Quay (Staff / Receptionist)
+| Ma Hinh | Ten Giao Dien Chuc Nang | Hinh Anh Thuc Te |
+| :--- | :--- | :--- |
+| **Hinh 4.3.7** | **Giao dien Check-in tiep don va soat ve tai quay cua Nhan vien**<br>*(Quet ma QR/Barcode/SDT, check-in doc lap Host/Guest trong phong ghep, thu tien mat)* | ![Staff Check-in](docs/screenshots/thesis/hinh_4_3_7_le_tan_checkin.png) |
+
+#### 2.4. Phan He Quan Tri Vien (Super Admin)
+| Ma Hinh | Ten Giao Dien Chuc Nang | Hinh Anh Thuc Te |
+| :--- | :--- | :--- |
+| **Hinh 4.3.8** | **Giao dien Dashboard Quan tri vien va bieu do thong ke doanh thu**<br>*(Tong hop chi so toan he thong, bieu do Chart.js doanh thu, duyet cum san va CLB)* | ![Admin Dashboard](docs/screenshots/thesis/hinh_4_3_8_admin_dashboard_doanh_thu.png) |
+
+---
+
+### 3. Thu Vien Anh Chuc Nang Bo Sung (Full UI Gallery)
 
 | Chuc Nang | Hinh Anh Minh Hoa |
 | :--- | :--- |
-| **Trang Chu He Thong** | ![Trang chu](docs/screenshots/01_trang_chu_he_thong.png) |
 | **Album Anh & Chi Tiet San BWF** | ![Chi tiet san](docs/screenshots/02_album_anh_thuc_te_san.png) |
 | **Bo Loc Cum San & Ban Do GPS** | ![Danh sach san](docs/screenshots/03_danh_sach_cum_san_bwf.png) |
 | **Ghep Keo Thong Minh AI** | ![Smart Match AI](docs/screenshots/04_ghep_tran_smart_match_ai.png) |
 | **Thanh Toan VietQR Sandbox** | ![VietQR Sandbox](docs/screenshots/05_thanh_toan_vietqr_sandbox.png) |
 | **Cong Dong Cau Lac Bo** | ![CLB Cau Long](docs/screenshots/06_cong_dong_cau_lac_bo.png) |
-| **Ban Le Tan Check-in 1-Click** | ![Staff POS](docs/screenshots/07_ban_truc_tiep_don_staff.png) |
-| **Dashboard Chu San (Chart.js)** | ![Owner Dashboard](docs/screenshots/08_dashboard_chu_san_chartjs.png) |
-| **Quan Tri Toan San (Super Admin)** | ![Admin Panel](docs/screenshots/09_quan_tri_he_thong_admin.png) |
 | **So Do Khung Gio & Chon San Con** | ![Luoi gio](docs/screenshots/11_luoi_gio_va_so_do_san_con.png) |
+| **Giao Dien Di Dong (Responsive)** | ![Mobile Responsive](docs/screenshots/10_giao_dien_mobile_responsive.png) |
 
 ---
 
@@ -288,7 +330,8 @@ badminton/
 │   ├── layout.php               # Khung suon giao dien chung, Copilot Drawer, Radar Widget
 │   └── home.php                 # Trang chu, tim kiem ban kinh ban do
 ├── tests/                       # Bo kich ban kiem thu tu dong (Concurrency, Flow, UTF-8, ML)
-├── docs/screenshots/            # Anh chup man hinh phuc vu bao cao do an
+├── docs/screenshots/            # Anh chup man hinh & ban ve wireframe phuc vu bao cao khoa luan
+│   └── thesis/                  # 12 anh wireframe (Muc 3.8) & giao dien thuc te theo 4 vai tro (Muc 4.3)
 ├── .editorconfig                # Quy chuan dinh dang tep tin UTF-8
 ├── .htaccess                    # Cau hinh bao ve thu muc & chuan hoa charset UTF-8
 ├── Dockerfile                   # Cau hinh container PHP 8.2 Apache

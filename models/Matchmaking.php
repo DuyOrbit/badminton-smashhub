@@ -123,7 +123,7 @@ class Matchmaking {
                   LEFT JOIN users u2 ON m.opponent_id = u2.id
                   INNER JOIN pitches p ON m.pitch_id = p.id
                   WHERE m.user_id = ? OR m.opponent_id = ?
-                  ORDER BY m.play_date DESC, m.start_time DESC";
+                  ORDER BY m.id DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$user_id, $user_id]);
         return $stmt;
@@ -131,17 +131,18 @@ class Matchmaking {
 
     public function getMatchesForOwner($owner_id) {
         $query = "SELECT m.*, 
-                         u1.name as host_name, u1.avatar_url as host_avatar, 
-                         u2.name as guest_name, u2.avatar_url as guest_avatar,
+                         u1.name as host_name, u1.avatar_url as host_avatar, u1.phone as host_phone,
+                         u2.name as guest_name, u2.avatar_url as guest_avatar, u2.phone as guest_phone,
                          p.name as pitch_name, p.image_url as pitch_image, p.price_per_hour,
                          b.status as booking_status
                   FROM " . $this->table_name . " m
                   INNER JOIN users u1 ON m.user_id = u1.id
                   INNER JOIN users u2 ON m.opponent_id = u2.id
                   INNER JOIN pitches p ON m.pitch_id = p.id
-                  LEFT JOIN bookings b ON m.pitch_id = b.pitch_id AND m.play_date = b.booking_date AND m.start_time = b.start_time
+                  LEFT JOIN bookings b ON (m.booking_id IS NOT NULL AND m.booking_id = b.id)
+                                      OR (m.booking_id IS NULL AND m.pitch_id = b.pitch_id AND m.play_date = b.booking_date AND m.start_time = b.start_time AND (b.user_id = m.user_id OR b.user_id = m.opponent_id))
                   WHERE p.owner_id = ? AND m.opponent_id IS NOT NULL
-                  ORDER BY m.play_date DESC, m.start_time DESC";
+                  ORDER BY m.id DESC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$owner_id]);
         return $stmt;
@@ -166,13 +167,22 @@ class Matchmaking {
                 return false;
             }
 
-            $query = "UPDATE " . $this->table_name . " SET match_result = ? WHERE id = ? AND (match_result = 'pending' OR match_result IS NULL)";
+            require_once 'models/Ranking.php';
+            $ranking = new Ranking($this->conn);
+            $eloResult = $ranking->updateScore($row['user_id'], $row['opponent_id'], $result);
+
+            $hostChange = $eloResult['host_points'] ?? 0;
+            $guestChange = $eloResult['guest_points'] ?? 0;
+
+            $query = "UPDATE " . $this->table_name . " SET match_result = ?, host_elo_change = ?, guest_elo_change = ? WHERE id = ? AND (match_result = 'pending' OR match_result IS NULL)";
             $stmt = $this->conn->prepare($query);
-            if ($stmt->execute([$result, $id]) && $stmt->rowCount() > 0) {
-                require_once 'models/Ranking.php';
-                $ranking = new Ranking($this->conn);
-                $ranking->updateScore($row['user_id'], $row['opponent_id'], $result);
-                return true;
+            if ($stmt->execute([$result, $hostChange, $guestChange, $id]) && $stmt->rowCount() > 0) {
+                return [
+                    'success' => true,
+                    'result' => $result,
+                    'host_points' => $hostChange,
+                    'guest_points' => $guestChange
+                ];
             }
         }
         return false;

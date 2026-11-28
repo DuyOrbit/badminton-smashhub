@@ -5,6 +5,7 @@ test_*.php
 # Logs & Temporary Files
 *.log
 error_log
+~$*
 
 # OS Generated Files
 .DS_Store

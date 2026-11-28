@@ -21,10 +21,24 @@
         </div>
     <?php endif; ?>
 
-    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'reported'): ?>
-        <div class="mb-6 bg-green-500/20 border-l-4 border-green-500 p-4 rounded-r-xl shadow-none flex items-center">
-            <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-            <span class="text-green-800 font-bold text-sm">Xác nhận kết quả trận đấu và cập nhật điểm xếp hạng thành công!</span>
+    <?php if(isset($_GET['msg']) && $_GET['msg'] == 'reported'): 
+        $hElo = isset($_GET['h_elo']) ? (int)$_GET['h_elo'] : 0;
+        $gElo = isset($_GET['g_elo']) ? (int)$_GET['g_elo'] : 0;
+        $hSign = ($hElo >= 0 ? '+' : '') . $hElo;
+        $gSign = ($gElo >= 0 ? '+' : '') . $gElo;
+    ?>
+        <div class="mb-6 bg-emerald-950/80 border-l-4 border-emerald-500 p-4 rounded-xl shadow-none flex items-center justify-between text-white border border-white/10">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🏆</span>
+                <div>
+                    <p class="text-emerald-400 font-black text-sm">Cập nhật tỉ số & điểm Elo chuẩn xác thành công!</p>
+                    <p class="text-xs text-white/80 mt-0.5">
+                        Chủ nhà nhận: <strong class="text-blue-300"><?php echo $hSign; ?> Elo</strong> | 
+                        Đội khách nhận: <strong class="text-rose-300"><?php echo $gSign; ?> Elo</strong> | 
+                        Thưởng Fair-Play: <strong class="text-yellow-300">+2 PTS</strong>
+                    </p>
+                </div>
+            </div>
         </div>
     <?php endif; ?>
 
@@ -121,9 +135,40 @@
 
     <!-- Booking List -->
     <div class="bg-[#121b21] rounded-2xl shadow-none border border-white/5 overflow-hidden">
-        <div class="px-6 py-5 border-b border-white/5 bg-[#0b1116]">
-            <h3 class="text-lg leading-6 font-bold text-white">Đơn đặt sân mới nhất</h3>
+        <div class="px-6 py-5 border-b border-white/5 bg-[#0b1116] flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <h3 class="text-lg leading-6 font-bold text-white">Đơn đặt sân mới nhất</h3>
+                <span id="book-total-pill" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    <?php echo count($bookings); ?> Đơn
+                </span>
+            </div>
+            <!-- Quick search for regular bookings -->
+            <div class="relative w-full md:w-72">
+                <input type="text" id="book-search-input" onkeyup="filterBookings()" placeholder="🔍 Tìm tên khách, SĐT, sân, ngày..." 
+                       class="w-full bg-[#121b21] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-emerald-500 transition-all">
+                <button type="button" onclick="clearBookSearch()" id="book-clear-search" class="hidden absolute right-2.5 top-2 text-xs text-white/40 hover:text-white">✕</button>
+            </div>
         </div>
+
+        <!-- Filter tabs for regular bookings -->
+        <div class="px-6 py-3 border-b border-white/5 bg-[#0e161c] flex items-center gap-2 overflow-x-auto scrollbar-none text-xs">
+            <button type="button" onclick="setBookFilter('all')" class="book-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-white text-black shadow-sm" data-status="all">
+                ⚡ Tất cả (<span id="count-book-all"><?php echo count($bookings); ?></span>)
+            </button>
+            <button type="button" onclick="setBookFilter('pending')" class="book-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-status="pending">
+                ⏳ Đang chờ (<span id="count-book-pending">0</span>)
+            </button>
+            <button type="button" onclick="setBookFilter('confirmed')" class="book-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-status="confirmed">
+                ✅ Đã duyệt (<span id="count-book-confirmed">0</span>)
+            </button>
+            <button type="button" onclick="setBookFilter('completed')" class="book-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-status="completed">
+                🎟️ Đã vào sân (<span id="count-book-completed">0</span>)
+            </button>
+            <button type="button" onclick="setBookFilter('cancelled')" class="book-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-status="cancelled">
+                ❌ Đã hủy (<span id="count-book-cancelled">0</span>)
+            </button>
+        </div>
+
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-white/10">
                 <thead class="bg-[#121b21]">
@@ -135,10 +180,13 @@
                         <th class="px-6 py-4 text-center text-xs font-bold text-white/60 uppercase tracking-wider">Trạng Thái</th>
                     </tr>
                 </thead>
-                <tbody class="bg-[#121b21] divide-y divide-white/5">
+                <tbody class="bg-[#121b21] divide-y divide-white/5" id="booking-table-body">
                     <?php if(count($bookings) > 0): ?>
                         <?php foreach($bookings as $b): ?>
-                        <tr class="hover:bg-[#0b1116] transition-colors">
+                        <tr class="booking-row hover:bg-[#0b1116] transition-colors"
+                            data-booking-id="<?php echo $b['id']; ?>"
+                            data-status="<?php echo $b['status']; ?>"
+                            data-search="<?php echo htmlspecialchars(strtolower($b['id'] . ' ' . $b['customer_name'] . ' ' . $b['customer_phone'] . ' ' . $b['pitch_name'] . ' ' . date('d/m/Y', strtotime($b['booking_date'])))); ?>">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-white"><?php echo htmlspecialchars($b['customer_name']); ?></div>
                                 <div class="text-sm text-white/60"><a href="tel:<?php echo htmlspecialchars($b['customer_phone']); ?>" class="text-blue-600 hover:underline"><?php echo htmlspecialchars($b['customer_phone']); ?></a></div>
@@ -175,21 +223,86 @@
                             </td>
                         </tr>
                         <?php endforeach; ?>
+                        <tr id="book-empty-filter" class="hidden">
+                            <td colspan="5" class="px-6 py-8 text-center text-white/50 text-sm">
+                                🔍 Không tìm thấy đơn đặt sân nào phù hợp với bộ lọc hoặc từ khóa tìm kiếm.
+                            </td>
+                        </tr>
                     <?php else: ?>
                         <tr><td colspan="5" class="px-6 py-8 text-center text-white/60">Sân của bạn chưa có lượt đặt nào.</td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
+
+        <!-- Bookings Pagination / Load More Bar -->
+        <?php if(count($bookings) > 0): ?>
+        <div id="book-pagination-bar" class="px-6 py-4 border-t border-white/5 bg-[#0b1116] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div class="text-white/60">
+                Đang hiển thị <span id="book-shown-count" class="font-bold text-white">0</span> / <span id="book-total-count" class="font-bold text-white"><?php echo count($bookings); ?></span> đơn
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" id="btn-book-load-more" onclick="loadMoreBookings()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all shadow-sm">
+                    <span>⬇️ Xem thêm (+6 đơn)</span>
+                </button>
+                <button type="button" id="btn-book-show-all" onclick="showAllBookings()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-all">
+                    <span>📖 Xem tất cả</span>
+                </button>
+                <button type="button" id="btn-book-collapse" onclick="collapseBookings()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 transition-all">
+                    <span>⬆️ Thu gọn</span>
+                </button>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 
     <!-- Matchmaking Integration -->
-    <div class="mt-12 mb-8 border-b border-white/10 pb-5">
-        <h2 class="text-2xl font-extrabold text-white tracking-tight">Quản Lý Cáp Kèo & Chấm Điểm</h2>
-        <p class="mt-1 text-white/60 text-base">Xác nhận tỉ số sau trận đấu căng thẳng. Thu xếp hóa đơn Split Bill (chia đôi) của 2 đội!</p>
+    <div class="mt-12 mb-6 border-b border-white/10 pb-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-2xl font-extrabold text-white tracking-tight">Quản Lý Cáp Kèo & Chấm Điểm</h2>
+                    <span id="match-total-pill" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        <?php echo count($matches); ?> Kèo
+                    </span>
+                </div>
+                <p class="mt-1 text-white/60 text-sm">Xác nhận tỉ số sau trận đấu căng thẳng. Thu xếp hóa đơn Split Bill (chia đôi) của 2 đội!</p>
+            </div>
+            <!-- Quick Search Input -->
+            <div class="relative w-full md:w-72">
+                <input type="text" id="match-search-input" onkeyup="filterMatches()" placeholder="🔍 Tìm tên cơ thủ, SĐT, sân, ngày..." 
+                       class="w-full bg-[#121b21] border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-white/40 focus:outline-none focus:border-blue-500 transition-all">
+                <button type="button" onclick="clearMatchSearch()" id="match-clear-search" class="hidden absolute right-2.5 top-2 text-xs text-white/40 hover:text-white">✕</button>
+            </div>
+        </div>
+
+        <!-- Filter Tabs / Pills -->
+        <div class="mt-4 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+            <button type="button" onclick="setMatchFilter('all')" class="match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-white text-black shadow-sm" data-filter="all">
+                ⚡ Tất cả (<span id="count-match-all"><?php echo count($matches); ?></span>)
+            </button>
+            <button type="button" onclick="setMatchFilter('unscored')" class="match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-filter="unscored">
+                ⏳ Chưa điền điểm (<span id="count-match-unscored">0</span>)
+            </button>
+            <button type="button" onclick="setMatchFilter('unpaid')" class="match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-filter="unpaid">
+                💵 Chưa thu đủ tiền (<span id="count-match-unpaid">0</span>)
+            </button>
+            <button type="button" onclick="setMatchFilter('uncheckin')" class="match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-filter="uncheckin">
+                🎟️ Chưa Check-in (<span id="count-match-uncheckin">0</span>)
+            </button>
+            <button type="button" onclick="setMatchFilter('noshow')" class="match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-filter="noshow">
+                ⚠️ Khiếu nại No-Show (<span id="count-match-noshow">0</span>)
+            </button>
+            <button type="button" onclick="setMatchFilter('pending_booking')" class="match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-filter="pending_booking">
+                📋 Chờ duyệt sân (<span id="count-match-pending-booking">0</span>)
+            </button>
+            <button type="button" onclick="setMatchFilter('completed')" class="match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10" data-filter="completed">
+                🏆 Đã hoàn tất (<span id="count-match-completed">0</span>)
+            </button>
+        </div>
     </div>
 
-    <div class="space-y-6 flex flex-col items-center mb-10">
+    <div class="space-y-6 flex flex-col items-center mb-10" id="matches-container">
         <?php if(count($matches) > 0): ?>
             <?php foreach($matches as $m): 
                 $start = strtotime($m['start_time']);
@@ -202,8 +315,33 @@
                 
                 $hostFinalPrice = $half_base * ((100 - $hostDiscount) / 100);
                 $guestFinalPrice = $half_base * ((100 - $guestDiscount) / 100);
+
+                // Điểm Elo hiện tại & tính toán trước biến động Elo K=32
+                $hostElo = $ranking->getSeasonPoints($m['user_id']);
+                $guestElo = $ranking->getSeasonPoints($m['opponent_id']);
+                $eloPreview = $ranking->calculateEloPreview($hostElo, $guestElo);
+                
+                $hWonHost = ($eloPreview['host_won']['host'] >= 0 ? '+' : '') . $eloPreview['host_won']['host'];
+                $hWonGuest = ($eloPreview['host_won']['guest'] >= 0 ? '+' : '') . $eloPreview['host_won']['guest'];
+                
+                $gWonGuest = ($eloPreview['guest_won']['guest'] >= 0 ? '+' : '') . $eloPreview['guest_won']['guest'];
+                $gWonHost = ($eloPreview['guest_won']['host'] >= 0 ? '+' : '') . $eloPreview['guest_won']['host'];
+                
+                $drawHost = ($eloPreview['draw']['host'] >= 0 ? '+' : '') . $eloPreview['draw']['host'];
+                $drawGuest = ($eloPreview['draw']['guest'] >= 0 ? '+' : '') . $eloPreview['draw']['guest'];
             ?>
-            <div class="bg-[#121b21] rounded-2xl shadow-none border border-white/5 overflow-hidden w-full relative">
+            <div class="owner-match-card bg-[#121b21] rounded-2xl shadow-none border border-white/5 overflow-hidden w-full relative transition-all duration-300"
+                 data-match-id="<?php echo $m['id']; ?>"
+                 data-result="<?php echo (!empty($m['match_result']) && $m['match_result'] !== 'pending') ? 'completed' : 'unscored'; ?>"
+                 data-host-paid="<?php echo $m['host_paid'] ? '1' : '0'; ?>"
+                 data-guest-paid="<?php echo $m['guest_paid'] ? '1' : '0'; ?>"
+                 data-paid="<?php echo ($m['host_paid'] && $m['guest_paid']) ? 'paid' : 'unpaid'; ?>"
+                 data-host-checkin="<?php echo $m['host_checkin'] ? '1' : '0'; ?>"
+                 data-guest-checkin="<?php echo $m['guest_checkin'] ? '1' : '0'; ?>"
+                 data-checkin="<?php echo ($m['host_checkin'] && $m['guest_checkin']) ? 'checked_in' : 'uncheckin'; ?>"
+                 data-noshow="<?php echo (!empty($m['noshow_status']) && $m['noshow_status'] === 'pending') ? 'noshow' : 'none'; ?>"
+                 data-pending-booking="<?php echo ($m['status'] != 'cancelled' && $m['booking_status'] == 'pending') ? 'pending_booking' : 'normal'; ?>"
+                 data-search="<?php echo htmlspecialchars(strtolower($m['id'] . ' ' . $m['host_name'] . ' ' . $m['guest_name'] . ' ' . $m['pitch_name'] . ' ' . ($m['host_phone'] ?? '') . ' ' . ($m['guest_phone'] ?? '') . ' ' . date('d/m/Y', strtotime($m['play_date'])))); ?>">
                 <!-- Status Badge -->
                 <div class="absolute top-4 right-4 z-10 flex items-center gap-1.5">
                     <?php if(!empty($m['noshow_status']) && $m['noshow_status'] == 'pending'): ?>
@@ -406,34 +544,36 @@
                         <div class="flex items-center justify-between mb-8">
                             <!-- Host -->
                             <div class="flex flex-col items-center flex-1">
-                                <div class="w-20 h-20 rounded-full overflow-hidden border-4 border-blue-100 mb-2 shadow-none bg-[#0b1116]/20">
+                                <div class="w-20 h-20 rounded-full overflow-hidden border-4 border-blue-500/30 mb-2 shadow-none bg-[#0b1116]/40">
                                     <?php if(!empty($m['host_avatar'])): ?>
                                         <img src="<?php echo htmlspecialchars($m['host_avatar']); ?>" class="w-full h-full object-cover">
                                     <?php endif; ?>
                                 </div>
-                                <p class="text-lg font-bold text-white flex flex-col items-center">
+                                <p class="text-base font-black text-white flex flex-col items-center text-center">
                                     <?php echo htmlspecialchars($m['host_name']); ?>
-                                    <span class="text-[10px] text-white bg-blue-600 uppercase px-2 py-0.5 rounded-full mt-1 shadow-none">Chủ Nhà</span>
+                                    <span class="text-[10px] text-white bg-blue-600 font-extrabold uppercase px-2 py-0.5 rounded-full mt-1 shadow-none">Chủ Nhà</span>
+                                    <span class="text-xs font-black text-blue-400 mt-1"><?php echo $hostElo; ?> Elo</span>
                                 </p>
                             </div>
 
                             <!-- VS Graphic -->
                             <div class="flex flex-col items-center px-4">
-                                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 text-white flex items-center justify-center font-black text-2xl italic shadow-lg ring-4 ring-gray-100 z-10">
+                                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 text-white flex items-center justify-center font-black text-xl italic shadow-lg ring-2 ring-white/10 z-10">
                                     VS
                                 </div>
                             </div>
 
                             <!-- Guest -->
                             <div class="flex flex-col items-center flex-1">
-                                <div class="w-20 h-20 rounded-full overflow-hidden border-4 border-red-100 mb-2 shadow-none bg-[#0b1116]/20">
+                                <div class="w-20 h-20 rounded-full overflow-hidden border-4 border-rose-500/30 mb-2 shadow-none bg-[#0b1116]/40">
                                     <?php if(!empty($m['guest_avatar'])): ?>
                                         <img src="<?php echo htmlspecialchars($m['guest_avatar']); ?>" class="w-full h-full object-cover">
                                     <?php endif; ?>
                                 </div>
-                                <p class="text-lg font-bold text-white flex flex-col items-center">
+                                <p class="text-base font-black text-white flex flex-col items-center text-center">
                                     <?php echo htmlspecialchars($m['guest_name']); ?>
-                                    <span class="text-[10px] text-white bg-red-600 uppercase px-2 py-0.5 rounded-full mt-1 shadow-none">Đội Khách</span>
+                                    <span class="text-[10px] text-white bg-rose-600 font-extrabold uppercase px-2 py-0.5 rounded-full mt-1 shadow-none">Đội Khách</span>
+                                    <span class="text-xs font-black text-rose-400 mt-1"><?php echo $guestElo; ?> Elo</span>
                                 </p>
                             </div>
                         </div>
@@ -447,14 +587,25 @@
                             <?php elseif($m['match_result'] == 'pending'): ?>
                                 <form action="index.php?action=owner_report_result" method="POST" class="bg-[#0b1116] p-4 rounded-xl border border-white/10 mb-3">
                                     <input type="hidden" name="match_id" value="<?php echo $m['id']; ?>">
-                                    <div class="flex items-center gap-2 mb-3 justify-center">
-                                        <svg class="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <p class="font-bold text-sm text-white/80 uppercase tracking-wide">Xác Nhận Kết Quả Kèo Đấu</p>
+                                    <input type="hidden" name="redirect_to" value="owner_dashboard">
+                                    <div class="flex items-center gap-2 mb-1 justify-center">
+                                        <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        <p class="font-black text-sm text-white uppercase tracking-wide">Xác Nhận Kết Quả Kèo Đấu</p>
                                     </div>
-                                    <div class="flex gap-2">
-                                        <button type="submit" name="match_result" value="host_won" onclick="return confirm('Chắc chắn CHỦ NHÀ Thắng?');" class="flex-1 bg-[#121b21] text-blue-700 hover:bg-blue-600 hover:text-white font-black py-3 rounded-lg border-2 border-blue-200 transition-all focus:ring-4 focus:ring-blue-100 uppercase tracking-wider text-[11px]">Chủ Thắng</button>
-                                        <button type="submit" name="match_result" value="draw" onclick="return confirm('Chắc chắn kết quả HÒA NHAU?');" class="flex-1 bg-[#121b21] text-white/80 hover:bg-gray-600 hover:text-white font-black py-3 rounded-lg border-2 border-white/20 transition-all focus:ring-4 focus:ring-gray-100 uppercase tracking-wider text-[11px]">Hòa Nhau</button>
-                                        <button type="submit" name="match_result" value="guest_won" onclick="return confirm('Chắc chắn ĐỘI KHÁCH Thắng?');" class="flex-1 bg-[#121b21] text-red-700 hover:bg-red-600 hover:text-white font-black py-3 rounded-lg border-2 border-red-200 transition-all focus:ring-4 focus:ring-red-100 uppercase tracking-wider text-[11px]">Khách Thắng</button>
+                                    <p class="text-[11px] text-center text-white/50 mb-3">Hệ thống áp dụng chuẩn Elo $K=32$ & thưởng +2 Uy tín Fair-Play</p>
+                                    <div class="grid grid-cols-3 gap-2">
+                                        <button type="submit" name="match_result" value="host_won" onclick="return confirm('Xác nhận CHỦ NHÀ THẮNG?\n\n- Chủ nhà (<?php echo htmlspecialchars($m['host_name']); ?>): <?php echo $hWonHost; ?> Elo\n- Đội khách (<?php echo htmlspecialchars($m['guest_name']); ?>): <?php echo $hWonGuest; ?> Elo\n- Cả hai nhận +2 điểm Uy tín Fair-Play');" class="bg-[#121b21] hover:bg-blue-600/30 text-blue-400 hover:text-white font-black py-2.5 px-1.5 rounded-lg border border-blue-500/30 transition-all text-center">
+                                            <span class="block text-[11px] uppercase tracking-wider font-extrabold">Chủ Thắng</span>
+                                            <span class="block text-[10px] font-bold text-blue-300/90 mt-0.5"><?php echo $hWonHost; ?> / <?php echo $hWonGuest; ?></span>
+                                        </button>
+                                        <button type="submit" name="match_result" value="draw" onclick="return confirm('Xác nhận kết quả HÒA NHAU?\n\n- Chủ nhà: <?php echo $drawHost; ?> Elo\n- Đội khách: <?php echo $drawGuest; ?> Elo\n- Cả hai nhận +2 điểm Uy tín Fair-Play');" class="bg-[#121b21] hover:bg-slate-700/50 text-slate-300 hover:text-white font-black py-2.5 px-1.5 rounded-lg border border-white/20 transition-all text-center">
+                                            <span class="block text-[11px] uppercase tracking-wider font-extrabold">Hòa Nhau</span>
+                                            <span class="block text-[10px] font-bold text-slate-400 mt-0.5"><?php echo $drawHost; ?> / <?php echo $drawGuest; ?></span>
+                                        </button>
+                                        <button type="submit" name="match_result" value="guest_won" onclick="return confirm('Xác nhận ĐỘI KHÁCH THẮNG?\n\n- Đội khách (<?php echo htmlspecialchars($m['guest_name']); ?>): <?php echo $gWonGuest; ?> Elo\n- Chủ nhà (<?php echo htmlspecialchars($m['host_name']); ?>): <?php echo $gWonHost; ?> Elo\n- Cả hai nhận +2 điểm Uy tín Fair-Play');" class="bg-[#121b21] hover:bg-rose-600/30 text-rose-400 hover:text-white font-black py-2.5 px-1.5 rounded-lg border border-rose-500/30 transition-all text-center">
+                                            <span class="block text-[11px] uppercase tracking-wider font-extrabold">Khách Thắng</span>
+                                            <span class="block text-[10px] font-bold text-rose-300/90 mt-0.5"><?php echo $gWonGuest; ?> / <?php echo $gWonHost; ?></span>
+                                        </button>
                                     </div>
                                 </form>
                                 <form action="index.php?action=owner_cancel_match" method="POST" onsubmit="return confirm('Chú ý: Hành động này HỦY kèo, giải phóng Sân và báo hoàn tiền cho cả 2 Đội. Bạn có chắc không?');">
@@ -465,15 +616,37 @@
                                     </button>
                                 </form>
                             <?php else: ?>
-                                <div class="bg-gray-800 text-white rounded-xl p-4 text-center border-b-4 border-yellow-500">
-                                    <p class="font-bold uppercase tracking-widest text-xs mb-1 text-white/40">Kết Quả Đã Được Duyệt</p>
-                                    <p class="text-lg font-black text-yellow-400">
-                                        <?php 
-                                            if($m['match_result'] == 'host_won') echo "🏆 ĐỘI CHỦ NHÀ GIÀNH CHIẾN THẮNG (+30 Pts)";
-                                            elseif($m['match_result'] == 'guest_won') echo "🏆 ĐỘI KHÁCH CƯỚP ĐIỂM THÀNH CÔNG (+30 Pts)";
-                                            else echo "🤝 HAI ĐỘI BẤT PHÂN THẮNG BẠI (+10 Pts)";
-                                        ?>
-                                    </p>
+                                <?php 
+                                    $hostDelta = isset($m['host_elo_change']) && $m['host_elo_change'] !== null ? (int)$m['host_elo_change'] : ($m['match_result'] == 'host_won' ? 16 : ($m['match_result'] == 'guest_won' ? -16 : 0));
+                                    $guestDelta = isset($m['guest_elo_change']) && $m['guest_elo_change'] !== null ? (int)$m['guest_elo_change'] : ($m['match_result'] == 'guest_won' ? 16 : ($m['match_result'] == 'host_won' ? -16 : 0));
+                                    $hSign = ($hostDelta >= 0 ? '+' : '') . $hostDelta;
+                                    $gSign = ($guestDelta >= 0 ? '+' : '') . $guestDelta;
+                                ?>
+                                <div class="bg-[#0b1116] rounded-xl p-4 text-center border border-yellow-500/30 shadow-lg">
+                                    <p class="font-bold uppercase tracking-widest text-[10px] mb-1.5 text-white/50">Kết Quả Đã Được Duyệt</p>
+                                    <?php if($m['match_result'] == 'host_won'): ?>
+                                        <p class="text-base font-black text-emerald-400">🏆 ĐỘI CHỦ NHÀ GIÀNH CHIẾN THẮNG</p>
+                                        <div class="mt-2 flex items-center justify-center gap-2 text-xs font-bold flex-wrap">
+                                            <span class="bg-blue-950/80 text-blue-300 px-2.5 py-1 rounded-lg border border-blue-500/30">Chủ nhà: <strong class="text-white"><?php echo $hSign; ?> Elo</strong></span>
+                                            <span class="text-white/30">•</span>
+                                            <span class="bg-red-950/80 text-red-300 px-2.5 py-1 rounded-lg border border-red-500/30">Đội khách: <strong class="text-white"><?php echo $gSign; ?> Elo</strong></span>
+                                        </div>
+                                    <?php elseif($m['match_result'] == 'guest_won'): ?>
+                                        <p class="text-base font-black text-amber-400">🏆 ĐỘI KHÁCH CƯỚP ĐIỂM THÀNH CÔNG</p>
+                                        <div class="mt-2 flex items-center justify-center gap-2 text-xs font-bold flex-wrap">
+                                            <span class="bg-red-950/80 text-red-300 px-2.5 py-1 rounded-lg border border-red-500/30">Đội khách: <strong class="text-white"><?php echo $gSign; ?> Elo</strong></span>
+                                            <span class="text-white/30">•</span>
+                                            <span class="bg-blue-950/80 text-blue-300 px-2.5 py-1 rounded-lg border border-blue-500/30">Chủ nhà: <strong class="text-white"><?php echo $hSign; ?> Elo</strong></span>
+                                        </div>
+                                    <?php else: ?>
+                                        <p class="text-base font-black text-slate-300">🤝 HAI ĐỘI BẤT PHÂN THẮNG BẠI (HÒA)</p>
+                                        <div class="mt-2 flex items-center justify-center gap-2 text-xs font-bold flex-wrap">
+                                            <span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-white/10">Chủ nhà: <strong class="text-white"><?php echo $hSign; ?> Elo</strong></span>
+                                            <span class="text-white/30">•</span>
+                                            <span class="bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-white/10">Đội khách: <strong class="text-white"><?php echo $gSign; ?> Elo</strong></span>
+                                        </div>
+                                    <?php endif; ?>
+                                    <p class="text-[10px] text-white/40 mt-2">Cả 2 cơ thủ đều được nhận +2 điểm Uy tín Fair-Play</p>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -481,6 +654,15 @@
                 </div>
             </div>
             <?php endforeach; ?>
+            <!-- No match filter result -->
+            <div id="match-empty-filter" class="hidden text-center py-12 bg-[#121b21] rounded-3xl border border-white/5 w-full flex flex-col items-center">
+                <span class="text-4xl mb-3">🔍</span>
+                <h3 class="text-lg font-bold text-white">Không tìm thấy kèo đấu nào</h3>
+                <p class="text-xs text-white/50 mt-1">Không có trận nào khớp với tiêu chí lọc hoặc từ khóa tìm kiếm của bạn.</p>
+                <button type="button" onclick="setMatchFilter('all'); clearMatchSearch();" class="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-bold transition-all">
+                    Xem lại tất cả kèo
+                </button>
+            </div>
         <?php else: ?>
             <div class="text-center py-12 bg-[#121b21] rounded-3xl border border-white/5 w-full shadow-none flex flex-col items-center">
                 <svg class="h-16 w-16 text-gray-200 mb-4 drop-shadow-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15M9 11l3 3m0 0l3-3m-3 3V8" /></svg>
@@ -489,6 +671,26 @@
             </div>
         <?php endif; ?>
     </div>
+
+    <!-- Matchmaking Pagination / Load More Bar -->
+    <?php if(count($matches) > 0): ?>
+    <div id="match-pagination-bar" class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 p-4 bg-[#121b21] border border-white/5 rounded-2xl mb-12">
+        <div class="text-xs text-white/60 font-medium">
+            Đang hiển thị <span id="match-shown-count" class="font-bold text-white">0</span> / <span id="match-total-count" class="font-bold text-white"><?php echo count($matches); ?></span> trận
+        </div>
+        <div class="flex items-center gap-2">
+            <button type="button" id="btn-match-load-more" onclick="loadMoreMatches()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white transition-all shadow-sm">
+                <span>⬇️ Xem thêm (+5 trận)</span>
+            </button>
+            <button type="button" id="btn-match-show-all" onclick="showAllMatches()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-all">
+                <span>📖 Xem tất cả</span>
+            </button>
+            <button type="button" id="btn-match-collapse" onclick="collapseMatches()" class="hidden inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-white/5 hover:bg-white/10 text-white/70 border border-white/10 transition-all">
+                <span>⬆️ Thu gọn</span>
+            </button>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
 
 <!-- Chart.js Visualization Library & Initialization -->
@@ -774,6 +976,25 @@ async function ajaxOwnerDashboardPayment(event, btn, party, matchId, amountStr) 
                     </span>
                 `;
             }
+
+            // Cập nhật trạng thái card trong bộ lọc & badge số lượng
+            const card = document.getElementById(`dash_${party}_pay_action_${matchId}`)?.closest('.owner-match-card');
+            if (card) {
+                if (party === 'host') {
+                    card.dataset.hostPaid = '1';
+                    card.dataset.hostCheckin = '1';
+                } else {
+                    card.dataset.guestPaid = '1';
+                    card.dataset.guestCheckin = '1';
+                }
+                if (card.dataset.hostPaid === '1' && card.dataset.guestPaid === '1') {
+                    card.dataset.paid = 'paid';
+                }
+                if (card.dataset.hostCheckin === '1' && card.dataset.guestCheckin === '1') {
+                    card.dataset.checkin = 'checked_in';
+                }
+                updateMatchBadges();
+            }
         } else {
             if (typeof window.showToast === 'function') {
                 window.showToast(data.message || 'Xử lý thất bại', 'error');
@@ -793,6 +1014,309 @@ async function ajaxOwnerDashboardPayment(event, btn, party, matchId, amountStr) 
     }
     return false;
 }
+
+// ========================================================
+// === BỘ LỌC, TÌM KIẾM & PHÂN TRANG CÁP KÈO (MATCHMAKING) ===
+// ========================================================
+let currentMatchFilter = 'all';
+let matchPageSize = 5;
+let currentMatchVisibleLimit = 5;
+
+function updateMatchBadges() {
+    const cards = document.querySelectorAll('.owner-match-card');
+    let counts = {
+        all: cards.length,
+        unscored: 0,
+        unpaid: 0,
+        uncheckin: 0,
+        noshow: 0,
+        pending_booking: 0,
+        completed: 0
+    };
+    cards.forEach(card => {
+        if (card.dataset.result === 'unscored') counts.unscored++;
+        if (card.dataset.paid === 'unpaid') counts.unpaid++;
+        if (card.dataset.checkin === 'uncheckin') counts.uncheckin++;
+        if (card.dataset.noshow === 'noshow') counts.noshow++;
+        if (card.dataset.pendingBooking === 'pending_booking') counts.pending_booking++;
+        if (card.dataset.result === 'completed') counts.completed++;
+    });
+    for (const [key, val] of Object.entries(counts)) {
+        const el = document.getElementById(`count-match-${key}`);
+        if (el) el.textContent = val;
+    }
+}
+
+function setMatchFilter(filterKey) {
+    currentMatchFilter = filterKey;
+    currentMatchVisibleLimit = matchPageSize;
+    document.querySelectorAll('.match-tab-btn').forEach(btn => {
+        if (btn.dataset.filter === filterKey) {
+            btn.className = 'match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-white text-black shadow-sm';
+        } else {
+            btn.className = 'match-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10';
+        }
+    });
+    renderMatches();
+}
+
+function filterMatches() {
+    currentMatchVisibleLimit = matchPageSize;
+    renderMatches();
+}
+
+function clearMatchSearch() {
+    const inp = document.getElementById('match-search-input');
+    if (inp) inp.value = '';
+    const btn = document.getElementById('match-clear-search');
+    if (btn) btn.classList.add('hidden');
+    renderMatches();
+}
+
+function renderMatches() {
+    const searchVal = (document.getElementById('match-search-input')?.value || '').trim().toLowerCase();
+    const clearBtn = document.getElementById('match-clear-search');
+    if (clearBtn) {
+        if (searchVal) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+    }
+
+    const cards = Array.from(document.querySelectorAll('.owner-match-card'));
+    let matchedCards = [];
+
+    cards.forEach(card => {
+        let passFilter = false;
+        if (currentMatchFilter === 'all') passFilter = true;
+        else if (currentMatchFilter === 'unscored' && card.dataset.result === 'unscored') passFilter = true;
+        else if (currentMatchFilter === 'unpaid' && card.dataset.paid === 'unpaid') passFilter = true;
+        else if (currentMatchFilter === 'uncheckin' && card.dataset.checkin === 'uncheckin') passFilter = true;
+        else if (currentMatchFilter === 'noshow' && card.dataset.noshow === 'noshow') passFilter = true;
+        else if (currentMatchFilter === 'pending_booking' && card.dataset.pendingBooking === 'pending_booking') passFilter = true;
+        else if (currentMatchFilter === 'completed' && card.dataset.result === 'completed') passFilter = true;
+
+        if (passFilter && searchVal) {
+            const cardSearch = (card.dataset.search || '').toLowerCase();
+            if (!cardSearch.includes(searchVal)) {
+                passFilter = false;
+            }
+        }
+
+        if (passFilter) {
+            matchedCards.push(card);
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+
+    const totalMatched = matchedCards.length;
+    matchedCards.forEach((card, idx) => {
+        if (idx < currentMatchVisibleLimit) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+
+    const emptyBox = document.getElementById('match-empty-filter');
+    if (emptyBox) {
+        if (totalMatched === 0) emptyBox.classList.remove('hidden');
+        else emptyBox.classList.add('hidden');
+    }
+
+    const shownCount = Math.min(currentMatchVisibleLimit, totalMatched);
+    const shownEl = document.getElementById('match-shown-count');
+    const totalEl = document.getElementById('match-total-count');
+    if (shownEl) shownEl.textContent = shownCount;
+    if (totalEl) totalEl.textContent = totalMatched;
+
+    const loadMoreBtn = document.getElementById('btn-match-load-more');
+    const showAllBtn = document.getElementById('btn-match-show-all');
+    const collapseBtn = document.getElementById('btn-match-collapse');
+    const paginationBar = document.getElementById('match-pagination-bar');
+
+    if (paginationBar) {
+        if (totalMatched <= matchPageSize) {
+            loadMoreBtn?.classList.add('hidden');
+            showAllBtn?.classList.add('hidden');
+            collapseBtn?.classList.add('hidden');
+        } else {
+            if (shownCount < totalMatched) {
+                const remaining = totalMatched - shownCount;
+                if (loadMoreBtn) {
+                    loadMoreBtn.classList.remove('hidden');
+                    loadMoreBtn.innerHTML = `<span>⬇️ Xem thêm (+${Math.min(5, remaining)} trận, còn ${remaining})</span>`;
+                }
+                if (showAllBtn) {
+                    showAllBtn.classList.remove('hidden');
+                    showAllBtn.innerHTML = `<span>📖 Xem tất cả (${totalMatched} trận)</span>`;
+                }
+            } else {
+                loadMoreBtn?.classList.add('hidden');
+                showAllBtn?.classList.add('hidden');
+            }
+            if (shownCount > matchPageSize) {
+                collapseBtn?.classList.remove('hidden');
+            } else {
+                collapseBtn?.classList.add('hidden');
+            }
+        }
+    }
+}
+
+function loadMoreMatches() {
+    currentMatchVisibleLimit += matchPageSize;
+    renderMatches();
+}
+
+function showAllMatches() {
+    currentMatchVisibleLimit = 999999;
+    renderMatches();
+}
+
+function collapseMatches() {
+    currentMatchVisibleLimit = matchPageSize;
+    renderMatches();
+    document.getElementById('match-total-pill')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ========================================================
+// === BỘ LỌC, TÌM KIẾM & PHÂN TRANG ĐƠN ĐẶT THƯỜNG (BOOKINGS) ===
+// ========================================================
+let currentBookFilter = 'all';
+let bookPageSize = 6;
+let currentBookVisibleLimit = 6;
+
+function updateBookBadges() {
+    const rows = document.querySelectorAll('.booking-row');
+    let counts = { all: rows.length, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
+    rows.forEach(r => {
+        const s = r.dataset.status;
+        if (counts[s] !== undefined) counts[s]++;
+    });
+    for (const [key, val] of Object.entries(counts)) {
+        const el = document.getElementById(`count-book-${key}`);
+        if (el) el.textContent = val;
+    }
+}
+
+function setBookFilter(statusKey) {
+    currentBookFilter = statusKey;
+    currentBookVisibleLimit = bookPageSize;
+    document.querySelectorAll('.book-tab-btn').forEach(btn => {
+        if (btn.dataset.status === statusKey) {
+            btn.className = 'book-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-white text-black shadow-sm';
+        } else {
+            btn.className = 'book-tab-btn px-3 py-1.5 rounded-xl font-bold transition-all bg-[#0b1116] hover:bg-white/10 text-white/70 border border-white/10';
+        }
+    });
+    renderBookings();
+}
+
+function filterBookings() {
+    currentBookVisibleLimit = bookPageSize;
+    renderBookings();
+}
+
+function clearBookSearch() {
+    const inp = document.getElementById('book-search-input');
+    if (inp) inp.value = '';
+    const btn = document.getElementById('book-clear-search');
+    if (btn) btn.classList.add('hidden');
+    renderBookings();
+}
+
+function renderBookings() {
+    const searchVal = (document.getElementById('book-search-input')?.value || '').trim().toLowerCase();
+    const clearBtn = document.getElementById('book-clear-search');
+    if (clearBtn) {
+        if (searchVal) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+    }
+
+    const rows = Array.from(document.querySelectorAll('.booking-row'));
+    let matchedRows = [];
+
+    rows.forEach(row => {
+        let pass = (currentBookFilter === 'all' || row.dataset.status === currentBookFilter);
+        if (pass && searchVal) {
+            const rowSearch = (row.dataset.search || '').toLowerCase();
+            if (!rowSearch.includes(searchVal)) pass = false;
+        }
+        if (pass) matchedRows.push(row);
+        else row.classList.add('hidden');
+    });
+
+    const totalMatched = matchedRows.length;
+    matchedRows.forEach((row, idx) => {
+        if (idx < currentBookVisibleLimit) row.classList.remove('hidden');
+        else row.classList.add('hidden');
+    });
+
+    const emptyRow = document.getElementById('book-empty-filter');
+    if (emptyRow) {
+        if (totalMatched === 0) emptyRow.classList.remove('hidden');
+        else emptyRow.classList.add('hidden');
+    }
+
+    const shownCount = Math.min(currentBookVisibleLimit, totalMatched);
+    const shownEl = document.getElementById('book-shown-count');
+    const totalEl = document.getElementById('book-total-count');
+    if (shownEl) shownEl.textContent = shownCount;
+    if (totalEl) totalEl.textContent = totalMatched;
+
+    const loadMoreBtn = document.getElementById('btn-book-load-more');
+    const showAllBtn = document.getElementById('btn-book-show-all');
+    const collapseBtn = document.getElementById('btn-book-collapse');
+    const paginationBar = document.getElementById('book-pagination-bar');
+
+    if (paginationBar) {
+        if (totalMatched <= bookPageSize) {
+            loadMoreBtn?.classList.add('hidden');
+            showAllBtn?.classList.add('hidden');
+            collapseBtn?.classList.add('hidden');
+        } else {
+            if (shownCount < totalMatched) {
+                const remaining = totalMatched - shownCount;
+                if (loadMoreBtn) {
+                    loadMoreBtn.classList.remove('hidden');
+                    loadMoreBtn.innerHTML = `<span>⬇️ Xem thêm (+${Math.min(6, remaining)} đơn, còn ${remaining})</span>`;
+                }
+                if (showAllBtn) {
+                    showAllBtn.classList.remove('hidden');
+                    showAllBtn.innerHTML = `<span>📖 Xem tất cả (${totalMatched} đơn)</span>`;
+                }
+            } else {
+                loadMoreBtn?.classList.add('hidden');
+                showAllBtn?.classList.add('hidden');
+            }
+            if (shownCount > bookPageSize) collapseBtn?.classList.remove('hidden');
+            else collapseBtn?.classList.add('hidden');
+        }
+    }
+}
+
+function loadMoreBookings() {
+    currentBookVisibleLimit += bookPageSize;
+    renderBookings();
+}
+
+function showAllBookings() {
+    currentBookVisibleLimit = 999999;
+    renderBookings();
+}
+
+function collapseBookings() {
+    currentBookVisibleLimit = bookPageSize;
+    renderBookings();
+}
+
+// Khởi tạo các bộ đếm và phân trang khi trang tải xong
+document.addEventListener('DOMContentLoaded', function() {
+    updateMatchBadges();
+    renderMatches();
+    updateBookBadges();
+    renderBookings();
+});
 </script>
 
 

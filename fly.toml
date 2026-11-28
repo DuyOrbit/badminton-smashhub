@@ -1,12 +1,11 @@
-# fly.toml app configuration file generated for badminton-smashhub on 2026-11-28T04:28:12Z
-#
-# See https://docs.fly.io/reference/configuration for information about how to use this file.
-#
+# fly.toml app configuration file generated for badminton-smashhub
+# Đặt primary_region = 'sin' để máy chủ đặt tại Singapore (độ trễ thấp nhất cho Việt Nam ~30ms)
 
 app = 'badminton-smashhub'
-primary_region = 'iad'
+primary_region = 'sin'
 
 [build]
+
 [http_service]
   internal_port = 8080
   force_https = true

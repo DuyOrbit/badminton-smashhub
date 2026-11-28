@@ -77,6 +77,42 @@ class Ranking {
         } catch (Exception $e) {
             // Khong lam gian doan luong neu loi ghi thong bao
         }
+
+        return [
+            'host_points' => $host_points,
+            'guest_points' => $guest_points,
+            'host_rating' => $hostRating,
+            'guest_rating' => $guestRating
+        ];
+    }
+
+    /**
+     * Tính toán trước biến động điểm Elo cho cả 3 kết quả (Chủ thắng, Khách thắng, Hòa)
+     */
+    public function calculateEloPreview($hostRating, $guestRating) {
+        $hostRating = (int)$hostRating;
+        $guestRating = (int)$guestRating;
+        if ($hostRating <= 0) $hostRating = self::DEFAULT_ELO;
+        if ($guestRating <= 0) $guestRating = self::DEFAULT_ELO;
+
+        $expectedHost = 1 / (1 + pow(10, ($guestRating - $hostRating) / 400));
+        $expectedGuest = 1 / (1 + pow(10, ($hostRating - $guestRating) / 400));
+        $K = 32;
+
+        return [
+            'host_won' => [
+                'host' => (int)round($K * (1.0 - $expectedHost)),
+                'guest' => (int)round($K * (0.0 - $expectedGuest))
+            ],
+            'guest_won' => [
+                'host' => (int)round($K * (0.0 - $expectedHost)),
+                'guest' => (int)round($K * (1.0 - $expectedGuest))
+            ],
+            'draw' => [
+                'host' => (int)round($K * (0.5 - $expectedHost)),
+                'guest' => (int)round($K * (0.5 - $expectedGuest))
+            ]
+        ];
     }
 
     public function updateScore($host_id, $guest_id, $result) {
@@ -98,7 +134,10 @@ class Ranking {
         $stmt->execute([$user_id, $season, $new_points, $new_points, $new_points, $new_points]);
     }
 
-    public function getSeasonPoints($user_id, $season) {
+    public function getSeasonPoints($user_id, $season = null) {
+        if (!$season) {
+            $season = self::getCurrentSeason();
+        }
         $query = "SELECT points FROM user_scores WHERE user_id = ? AND season = ?";
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$user_id, $season]);

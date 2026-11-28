@@ -90,6 +90,23 @@ class Database {
             // Auto initialize database schema & tables if they do not exist yet
             $this->autoInitializeIfMissing();
         } catch (PDOException $e) {
+            // Smart fallback for WAMP/XAMPP localhost (tries port 3307 if 3306 fails, or 3306 if 3307 fails)
+            if (($this->host === '127.0.0.1' || $this->host === 'localhost') && ($this->port == '3306' || $this->port == '3307')) {
+                $altPort = ($this->port == '3306') ? '3307' : '3306';
+                $altDsn = 'mysql:host=' . $this->host . ';port=' . $altPort . ';dbname=' . $this->dbname . ';charset=utf8mb4';
+                try {
+                    $this->dbh = new PDO($altDsn, $this->user, $this->pass, $options);
+                    $this->port = $altPort;
+                    try {
+                        $this->dbh->exec("SET time_zone = '+07:00'");
+                    } catch (\Exception $tzEx) {}
+                    $this->autoInitializeIfMissing();
+                    return;
+                } catch (PDOException $altEx) {
+                    // Fallback failed, continue to standard error handling
+                }
+            }
+
             $this->error = $e->getMessage();
             error_log("Database Connection Error: " . $this->error);
             http_response_code(500);
@@ -274,6 +291,12 @@ class Database {
             } catch (\Exception $e) {}
             try {
                 $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN booking_id INT DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN host_elo_change INT DEFAULT NULL");
+            } catch (\Exception $e) {}
+            try {
+                $this->dbh->exec("ALTER TABLE matchmaking ADD COLUMN guest_elo_change INT DEFAULT NULL");
             } catch (\Exception $e) {}
 
             // Auto-migrate amenities in pitches table
