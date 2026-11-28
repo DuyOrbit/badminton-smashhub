@@ -1,5 +1,7 @@
-# fly.toml app configuration file generated for badminton-smashhub
-# Đặt primary_region = 'sin' để máy chủ đặt tại Singapore (độ trễ thấp nhất cho Việt Nam ~30ms)
+# fly.toml app configuration file generated for badminton-smashhub on 2026-11-28T05:25:20Z
+#
+# See https://docs.fly.io/reference/configuration for information about how to use this file.
+#
 
 app = 'badminton-smashhub'
 primary_region = 'sin'
@@ -9,7 +11,7 @@ primary_region = 'sin'
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = 'stop'
+  auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 0
   processes = ['app']
@@ -18,3 +20,11 @@ primary_region = 'sin'
   memory = '256mb'
   cpu_kind = 'shared'
   cpus = 1
+
+[[vm]]
+  memory = '512mb'
+  cpu_kind = 'shared'
+  cpus = 1
+  memory_mb = 512
+  processes = ['app']
+  size = 'shared-cpu-1x'
