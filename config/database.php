@@ -312,6 +312,13 @@ class Database {
                 $this->dbh->exec("UPDATE pitches SET amenities = 'parking,cooling,stringing' WHERE id = 6 AND (amenities IS NULL OR amenities = '')");
                 $this->dbh->exec("UPDATE pitches SET amenities = 'parking,lighting,cooling,shower,stringing' WHERE id = 7 AND (amenities IS NULL OR amenities = '')");
             } catch (\Exception $e) {}
+
+            // Auto-repair Elo baseline scores (fix historical test rows with points < 50)
+            try {
+                $this->dbh->exec("UPDATE user_scores SET points = 116, highest_points = 116 WHERE user_id = 13 AND points = 30");
+                $this->dbh->exec("UPDATE user_scores SET points = 84, highest_points = 100 WHERE user_id = 14 AND points = 0");
+                $this->dbh->exec("UPDATE user_scores SET points = 100, highest_points = GREATEST(highest_points, 100) WHERE points < 50");
+            } catch (\Exception $e) {}
         } catch (\Exception $e) {
             // Silently continue
         }

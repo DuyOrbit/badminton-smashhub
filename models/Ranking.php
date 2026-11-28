@@ -126,6 +126,9 @@ class Ranking {
     
     private function updatePoints($user_id, $season, $delta) {
         $current = $this->getSeasonPoints($user_id, $season);
+        if ($current <= 0) {
+            $current = self::DEFAULT_ELO;
+        }
         $new_points = max(0, $current + $delta);
         
         $query = "INSERT INTO user_scores (user_id, season, points, highest_points) VALUES (?, ?, ?, ?) 
@@ -142,7 +145,8 @@ class Ranking {
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$user_id, $season]);
         if($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            return (int)$row['points'];
+            $pts = (int)$row['points'];
+            return $pts > 0 ? $pts : self::DEFAULT_ELO;
         }
         return self::DEFAULT_ELO;
     }
